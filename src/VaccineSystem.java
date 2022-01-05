@@ -1,82 +1,67 @@
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.*;
+import java.awt.*;
 
-public class VaccineSystem extends JFrame implements ActionListener {
 
-    enum PageName {
-        LOGIN,
-        HOME
-    }
+public class VaccineSystem extends JFrame {
 
-    private PageName pageName;
-    private Page page;
-    private String user, password;
-    private JButton loginButton;
+    private String pageName, user, password;
 
     public static void main(String[] args) {
         VaccineSystem vaccineSystem = new VaccineSystem("Vaccine System");
-
-        final int WINDOW_WIDTH = 700;
-        final int WINDOW_HEIGHT = 700;
-
-        vaccineSystem.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        vaccineSystem.setLocationRelativeTo(null); // Sets window to centre of screen
-        vaccineSystem.setVisible(true);
     }
 
     public VaccineSystem(String titleBarText) {
         super(titleBarText);
-        page = new Page();
-        pageName = PageName.LOGIN;
-        updatePage();
+
+        configureWindow(700, 700);
+        createInterface();
     }
 
-    private void updatePage() {
-        switch (pageName) {
-            case LOGIN:
-                page = new LoginPage();
-                loginButton = ((LoginPage) page).getSubmitButton();
-                loginButton.addActionListener(this);
-                break;
-            case HOME:
-                page = new Page();
-                System.out.println("Home page");
-                break;
-        }
-        this.add(page.getPanel());
+    private void configureWindow(int width, int height) {
+        this.setSize(width, height);
+        this.setLocationRelativeTo(null); // Sets window to centre of screen
+        this.setVisible(true);
     }
 
-    private boolean connected() throws SQLException {
-        try (Connection ignored = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306", user, password)) {
-            return true;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return false;
+    private void createInterface() {
+        CardLayout cardLayout = new CardLayout();
+        JPanel cards = new JPanel(cardLayout);
+
+        LoginPage loginPage = new LoginPage(this);
+        JPanel loginPanel = loginPage.getPanel();
+        cards.add(loginPanel, "login");
+
+        MainPage mainPage = new MainPage(this);
+        JPanel mainPanel = mainPage.getPanel();
+        cards.add(mainPanel, "main");
+
+//        cardLayout.show(cards, pageName);
+        cardLayout.last(cards); // Needs fixing
+
+        this.add(cards);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == loginButton) {
-            user = ((LoginPage) page).getUser();
-            password = ((LoginPage) page).getPassword();
+    public String getUser() {
+        return user;
+    }
 
-            try {
-                if (connected()) {
-                    pageName = PageName.HOME;
-                    updatePage();
-                }
-                else {
-                    String message = "Incorrect database login details";
-                    String title = "Error";
-                    JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
-                }
-            }
-            catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        }
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPageName() {
+        return pageName;
+    }
+
+    public void setPageName(String pageName) {
+        this.pageName = pageName;
     }
 }
