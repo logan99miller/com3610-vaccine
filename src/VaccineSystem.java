@@ -37,7 +37,7 @@ public class VaccineSystem extends JFrame {
         JPanel mainPanel = mainPage.getPanel();
         cards.add(mainPanel, "main");
 
-        cardLayout.first(cards);
+        cardLayout.last(cards);
 
         this.add(cards);
     }

@@ -60,7 +60,7 @@ public class MainPage extends Page {
         cards.add(logPanel, getSanatizedtext(logPageButton));
         cards.add(mapPanel, getSanatizedtext(mapPageButton));
 
-        cardLayout.first(cards); // Needs fixing
+        cardLayout.first(cards);
 
         return cards;
     }
@@ -80,7 +80,11 @@ public class MainPage extends Page {
                 }
                 else {
                     cardLayout.show(cards, getSanatizedtext(button));
+                    button.setFont(button.getFont().deriveFont(Font.BOLD));
                 }
+            }
+            else {
+                button.setFont(button.getFont().deriveFont(Font.PLAIN));
             }
         }
     }
