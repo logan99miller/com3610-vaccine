@@ -5,6 +5,8 @@ import java.awt.*;
 public class VaccineSystem extends JFrame {
 
     private String pageName, user, password;
+    CardLayout cardLayout;
+    JPanel cards;
 
     public static void main(String[] args) {
         VaccineSystem vaccineSystem = new VaccineSystem("Vaccine System");
@@ -24,8 +26,8 @@ public class VaccineSystem extends JFrame {
     }
 
     private void createInterface() {
-        CardLayout cardLayout = new CardLayout();
-        JPanel cards = new JPanel(cardLayout);
+        cardLayout = new CardLayout();
+         cards = new JPanel(cardLayout);
 
         LoginPage loginPage = new LoginPage(this);
         JPanel loginPanel = loginPage.getPanel();
@@ -35,8 +37,7 @@ public class VaccineSystem extends JFrame {
         JPanel mainPanel = mainPage.getPanel();
         cards.add(mainPanel, "main");
 
-//        cardLayout.show(cards, pageName);
-        cardLayout.last(cards); // Needs fixing
+        cardLayout.first(cards);
 
         this.add(cards);
     }
@@ -63,5 +64,9 @@ public class VaccineSystem extends JFrame {
 
     public void setPageName(String pageName) {
         this.pageName = pageName;
+    }
+
+    public void updatePage() {
+        cardLayout.show(cards, pageName);
     }
 }

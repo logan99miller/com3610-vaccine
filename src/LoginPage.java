@@ -56,7 +56,7 @@ public class LoginPage extends Page {
                 vaccineSystem.setUser(user);
                 vaccineSystem.setPassword(password);
                 vaccineSystem.setPageName("main");
-                System.out.println("Main page");
+                vaccineSystem.updatePage();
             } catch (Exception ex) {
                 ex.printStackTrace();
                 invalidLoginMessage();
