@@ -14,13 +14,21 @@ public class Page implements ActionListener {
 
     public Page(VaccineSystem vaccineSystem) {
         mainPanel = new JPanel();
-        buttons = new ArrayList<JButton>();
+        buttons = new ArrayList<>();
         this.vaccineSystem = vaccineSystem;
     }
 
-    JPanel createLabelledComponentPanel(JComponent component, String inputText) {
+    public Page() {}
+
+    protected JPanel createLabelledComponentPanel(JComponent component, String inputText) {
+//        JPanel panel = new JPanel();
+//        panel.setLayout(new GridLayout(0, 2));
+//
+//        panel.add(new JLabel(inputText));
+//        panel.add(component);
+//        panel.setMaximumSize(panel.getPreferredSize());
+//        return panel;
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(0, 2));
 
         panel.add(new JLabel(inputText));
         panel.add(component);
@@ -28,9 +36,19 @@ public class Page implements ActionListener {
         return panel;
     }
 
-    public void addButton(JButton button, JPanel panel) {
+    protected void addButton(JButton button, JPanel panel) {
         button.addActionListener(this);
         panel.add(button);
+    }
+
+    protected String getSanatizedtext(JButton button) {
+        return button.getText().replace(" ", "").toLowerCase();
+    }
+
+    protected void fitPanelToMainPanel(JPanel panel) {
+        int width = vaccineSystem.getWidth();
+        int height = panel.getMinimumSize().height;
+        panel.setMaximumSize(new Dimension(width, height));
     }
 
     public JPanel getPanel() {

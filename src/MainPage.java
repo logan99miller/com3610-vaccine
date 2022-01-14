@@ -1,21 +1,32 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.Locale;
 
 public class MainPage extends Page {
 
-    private String contentPageName;
+    private String pageName;
     private JButton addPageButton, editPageButton, logPageButton, mapPageButton, logoutButton;
-    CardLayout cardLayout;
-    JPanel cards;
+    private CardLayout cardLayout;
+    private JPanel cards;
 
     public MainPage(VaccineSystem vaccineSystem) {
         super(vaccineSystem);
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(createNavPanel(), BorderLayout.NORTH);
         mainPanel.add(createContentPanel(), BorderLayout.CENTER);
+
+//        mainPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        setSize();
     }
+
+//    private void setSize() {
+//        final int BORDER = 10;
+//        final int WIDTH = vaccineSystem.getWidth() - (BORDER * 2);
+//        final int HEIGHT = vaccineSystem.getHeight() - (BORDER * 2);
+//        System.out.println(WIDTH);
+//        System.out.println(HEIGHT);
+//        mainPanel.setSize(new Dimension(WIDTH, HEIGHT));
+//    }
 
     private JPanel createNavPanel() {
         JPanel panel = new JPanel();
@@ -40,18 +51,16 @@ public class MainPage extends Page {
     }
 
     private JPanel createContentPanel() {
-//        CardLayout cardLayout = new CardLayout();
-//        JPanel cards = new JPanel(cardLayout);
         cardLayout = new CardLayout();
         cards = new JPanel(cardLayout);
 
-        SelectTablePage addPage = new SelectTablePage(vaccineSystem, this, addPageButton.getText());
-        SelectTablePage editPage = new SelectTablePage(vaccineSystem, this, editPageButton.getText());
+        SelectAddPage selectAddPage = new SelectAddPage(vaccineSystem, this);
+        SelectEditPage selectEditPage = new SelectEditPage(vaccineSystem, this);
         Page logPage = new Page(vaccineSystem);
         Page mapPage = new Page(vaccineSystem);
 
-        JPanel addPanel = addPage.getPanel();
-        JPanel editPanel = editPage.getPanel();
+        JPanel addPanel = selectAddPage.getPanel();
+        JPanel editPanel = selectEditPage.getPanel();
         JPanel logPanel = logPage.getPanel();
         JPanel mapPanel = mapPage.getPanel();
 
@@ -60,13 +69,9 @@ public class MainPage extends Page {
         cards.add(logPanel, getSanatizedtext(logPageButton));
         cards.add(mapPanel, getSanatizedtext(mapPageButton));
 
-        cardLayout.first(cards);
+        cardLayout.show(cards, "add");
 
         return cards;
-    }
-
-    private String getSanatizedtext(JButton button) {
-        return button.getText().replace(" ", "").toLowerCase();
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -89,11 +94,27 @@ public class MainPage extends Page {
         }
     }
 
-    public String getContentPageName() {
-        return contentPageName;
+    public String getPageName() {
+        return pageName;
     }
 
-    public void setContentPageName(String contentPageName) {
-        this.contentPageName = contentPageName;
+    public void setPageName(String pageName) {
+        this.pageName = pageName;
+    }
+
+    public void updatePage() {
+        cardLayout.show(cards, pageName);
+    }
+
+    public JPanel getCards() {
+        return cards;
+    }
+
+    public void setCards(JPanel cards) {
+        this.cards = cards;
+    }
+
+    public void addCard(JComponent component, String name) {
+        cards.add(component, name);
     }
 }

@@ -1,21 +1,29 @@
 import javax.swing.*;
 import java.awt.*;
+import java.sql.*;
+import java.util.ArrayList;
 
 
 public class VaccineSystem extends JFrame {
 
+    final private String URL = "jdbc:mysql://127.0.0.1:3306/vaccine_system";
     private String pageName, user, password;
-    CardLayout cardLayout;
-    JPanel cards;
+    private CardLayout cardLayout;
+    private JPanel cards;
+    private final int WIDTH = 700;
+    private final int HEIGHT = 700;
 
     public static void main(String[] args) {
-        VaccineSystem vaccineSystem = new VaccineSystem("Vaccine System");
+        new VaccineSystem("Vaccine System");
     }
 
     public VaccineSystem(String titleBarText) {
         super(titleBarText);
 
-        configureWindow(700, 700);
+        user = "root";
+        password = "";
+
+        configureWindow(WIDTH, HEIGHT);
         createInterface();
     }
 
@@ -42,24 +50,70 @@ public class VaccineSystem extends JFrame {
         this.add(cards);
     }
 
-    public String getUser() {
-        return user;
+    public void executeUpdate(String statementText) throws SQLException {
+        Connection connection;
+        Statement statement = null;
+        try {
+            connection = DriverManager.getConnection(URL, user, password);
+            statement = connection.createStatement();
+            System.out.println(statementText);
+            statement.executeUpdate(statementText);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+    }
+
+    public ArrayList<ArrayList<String>> executeSelect(String[] columnLabels, String tableName) throws SQLException {
+        Connection connection = null;
+        Statement statement;
+
+        ArrayList<ArrayList<String>> res = new ArrayList<>();
+        ArrayList<String> values = new ArrayList<>();
+
+        String statementText = "SELECT ";
+        for (String columnLabel : columnLabels) {
+            statementText += columnLabel + ", ";
+        }
+        statementText = statementText.substring(0, statementText.length() - 2);
+        statementText += " FROM " + tableName;
+
+        try {
+            connection = DriverManager.getConnection(URL, user, password);
+            statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(statementText);
+            while(resultSet.next()) {
+                for (String columnLabel : columnLabels) {
+                    values.add(resultSet.getString(columnLabel));
+                }
+                res.add(values);
+                values = new ArrayList<>();
+            }
+            resultSet.close();
+            return res;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+        return null;
     }
 
     public void setUser(String user) {
         this.user = user;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getPageName() {
-        return pageName;
     }
 
     public void setPageName(String pageName) {
@@ -68,5 +122,13 @@ public class VaccineSystem extends JFrame {
 
     public void updatePage() {
         cardLayout.show(cards, pageName);
+    }
+
+    public String getURL() {
+        return URL;
+    }
+
+    public int getWIDTH() {
+        return WIDTH;
     }
 }

@@ -23,6 +23,7 @@ public class LoginPage extends Page {
     private JPanel createUserPanel() {
         userField = new JTextField();
         userField.setColumns(INPUT_COLUMN_SIZE);
+        userField.setText("root");
         return createLabelledComponentPanel(userField, "User:");
     }
 
@@ -51,8 +52,8 @@ public class LoginPage extends Page {
         if (e.getSource() == submitButton) {
             String user = userField.getText();
             String password = passwordField.getText();
-
-            try (Connection ignored = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306", user, password)) {
+            String url = vaccineSystem.getURL();
+            try (Connection ignored = DriverManager.getConnection(url, user, password)) {
                 vaccineSystem.setUser(user);
                 vaccineSystem.setPassword(password);
                 vaccineSystem.setPageName("main");

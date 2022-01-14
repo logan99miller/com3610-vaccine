@@ -1,13 +1,14 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 
 public class SelectTablePage extends Page {
 
-    private MainPage mainPage;
+    protected MainPage mainPage;
 
-    private JButton vaccineButton, personButton, medicalConditionButton, manufacturerButton, factoryButton;
-    private JButton transporterButton, transportLocationButton, distributionCentreButton, vaccinationCentreButton, bookingButton;
+    protected JButton vaccineButton, personButton, medicalConditionButton, manufacturerButton, factoryButton;
+    protected JButton transporterButton, transportLocationButton, distributionCentreButton, vaccinationCentreButton, bookingButton;
+
 
     public SelectTablePage(VaccineSystem vaccineSystem, MainPage mainPage, String buttonAction) {
         super(vaccineSystem);
@@ -39,6 +40,7 @@ public class SelectTablePage extends Page {
         buttons.add(transportLocationButton);
         buttons.add(distributionCentreButton);
         buttons.add(vaccinationCentreButton);
+        buttons.add(bookingButton);
 
         for (JButton button : buttons) {
             addButton(button, mainPanel);
@@ -48,9 +50,8 @@ public class SelectTablePage extends Page {
     public void actionPerformed(ActionEvent e) {
         for (JButton button : buttons) {
             if (e.getSource() == button) {
-                String contentPageName = buttonAction + button.getText().replace(" ", "");
-                System.out.println(contentPageName);
-                mainPage.setContentPageName(contentPageName);
+                mainPage.setPageName(buttonAction + getSanatizedtext(button));
+                mainPage.updatePage();
             }
         }
     }
