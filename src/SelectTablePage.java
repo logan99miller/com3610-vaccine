@@ -1,13 +1,13 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public class SelectTablePage extends Page {
 
     protected MainPage mainPage;
 
-    protected JButton vaccineButton, personButton, medicalConditionButton, manufacturerButton, factoryButton;
-    protected JButton transporterButton, transportLocationButton, distributionCentreButton, vaccinationCentreButton, bookingButton;
+    protected JButton vaccineButton, personButton, medicalConditionButton, manufacturerButton, factoryButton,
+            transporterButton, transportLocationButton, distributionCentreButton, vaccinationCentreButton,
+            bookingButton, vaccinePriorityButton;
 
 
     public SelectTablePage(VaccineSystem vaccineSystem, MainPage mainPage, String buttonAction) {
@@ -25,11 +25,12 @@ public class SelectTablePage extends Page {
         medicalConditionButton = new JButton("Medical Condition");
         manufacturerButton = new JButton("Manufacturer");
         factoryButton = new JButton("Factory");
-        transporterButton = new JButton("Transport Provider");
+        transporterButton = new JButton("Transporter");
         transportLocationButton = new JButton("Transport Location");
         distributionCentreButton = new JButton("Distribution Centre");
         vaccinationCentreButton = new JButton("Vaccination Centre");
         bookingButton = new JButton("Booking");
+        vaccinePriorityButton = new JButton("Vaccine Priority");
 
         buttons.add(vaccineButton);
         buttons.add(personButton);
@@ -41,6 +42,7 @@ public class SelectTablePage extends Page {
         buttons.add(distributionCentreButton);
         buttons.add(vaccinationCentreButton);
         buttons.add(bookingButton);
+        buttons.add(vaccinePriorityButton);
 
         for (JButton button : buttons) {
             addButton(button, mainPanel);

@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 public class AddFactoryPage extends AddStorageLocationPage {
 
@@ -9,28 +10,22 @@ public class AddFactoryPage extends AddStorageLocationPage {
 
     public AddFactoryPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Factory:");
-        createInputFieldsGridPanel();
-        fitPanelToMainPanel(inputFieldsPanel);
-    }
-
-    private void createInputFieldsGridPanel() {
-        JPanel inputFieldsGridPanel = new JPanel(new GridLayout(0, 2));
 
         vaccinesPerMinTextField = new JTextField();
 
         String[] columnNames = {"manufacturerID", "name"};
-        manufacturersComboBox = new JComboBox(getColumns(columnNames, "Manufacturer"));
+        manufacturersComboBox = new JComboBox(getFormattedSelect(columnNames, "Manufacturer"));
 
-        inputFieldsGridPanel.add(new JLabel("-*Vaccines per minute:"));
-        inputFieldsGridPanel.add(vaccinesPerMinTextField);
+        addLabelledComponent(inputGridPanel, "-*Vaccines per minute:", vaccinesPerMinTextField);
+        addLabelledComponent(inputGridPanel, "Manufacturer:", manufacturersComboBox);
 
-        inputFieldsGridPanel.add(new JLabel("Manufacturer:"));
-        inputFieldsGridPanel.add(manufacturersComboBox);
-
-        inputFieldsPanel.add(inputFieldsGridPanel);
+        setMaxWidthMinHeight(inputPanel);
     }
 
     protected void createStatements() {
+        super.createStatements();
+        statements = new ArrayList<>();
+
         String vaccinesPerMin = vaccinesPerMinTextField.getText();
         String manufacturer = (String) manufacturersComboBox.getSelectedItem();
 
@@ -42,17 +37,8 @@ public class AddFactoryPage extends AddStorageLocationPage {
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == submitButton) {
-            if (!capacityConditionsMet()) {
-                emptyCapacityMessage();
-            }
-            else if ((checkCoordinates()) && (fieldConditionsMet())) {
-                super.createStatements();
-                createStatements();
-                super.actionPerformed(e);
-            }
+            createStatements();
         }
-        else {
-            super.actionPerformed(e);
-        }
+        super.actionPerformed(e);
     }
 }

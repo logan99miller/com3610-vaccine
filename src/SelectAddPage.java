@@ -19,6 +19,7 @@ public class SelectAddPage extends SelectTablePage {
         AddDistributionCentrePage addDistributionCentrePage = new AddDistributionCentrePage(vaccineSystem, mainPage);
         AddVaccinationCentrePage addVaccinationCentrePage = new AddVaccinationCentrePage(vaccineSystem, mainPage);
         AddBookingPage addBookingPage = new AddBookingPage(vaccineSystem, mainPage);
+        AddVaccinePriorityPage addVaccinePriorityPage = new AddVaccinePriorityPage(vaccineSystem, mainPage);
 
         JPanel addVaccinePanel = addVaccinePage.getPanel();
         JPanel addPersonPanel = addPersonPage.getPanel();
@@ -30,6 +31,8 @@ public class SelectAddPage extends SelectTablePage {
         JPanel addDistributionCentrePanel = addDistributionCentrePage.getPanel();
         JPanel addVaccinationCentrePanel = addVaccinationCentrePage.getPanel();
         JPanel addBookingPanel = addBookingPage.getPanel();
+        JPanel addVaccinePriorityPanel = addVaccinePriorityPage.getPanel();
+
 
         mainPage.addCard(addVaccinePanel, "add" + getSanatizedtext(vaccineButton));
         mainPage.addCard(addPersonPanel, "add" + getSanatizedtext(personButton));
@@ -41,5 +44,6 @@ public class SelectAddPage extends SelectTablePage {
         mainPage.addCard(addDistributionCentrePanel, "add" + getSanatizedtext(distributionCentreButton));
         mainPage.addCard(addVaccinationCentrePanel, "add" + getSanatizedtext(vaccinationCentreButton));
         mainPage.addCard(addBookingPanel, "add" + getSanatizedtext(bookingButton));
+        mainPage.addCard(addVaccinePriorityPanel, "add" + getSanatizedtext(vaccinePriorityButton));
     }
 }

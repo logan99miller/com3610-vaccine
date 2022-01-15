@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class AddVaccinePage extends AddPage {
@@ -11,157 +10,122 @@ public class AddVaccinePage extends AddPage {
     private JButton lifespanButton;
     private JComboBox numLifespanComboBox;
     private JList<String> medicalConditionsList;
-    private Object[] medicalConditions;
     private ArrayList<AddVaccineLifespan> addLifespans;
-    private ArrayList<String> lifespans;
-
 
     public AddVaccinePage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Vaccine:");
 
-        createInputFieldsGridPanel();
-        createExemptionsPanel();
-        createLifespanPanel();
-        fitPanelToMainPanel(inputFieldsPanel);
+        JPanel lifespanPanel = new JPanel(new GridLayout(0, 2));
+        JPanel exemptionsPanel = new JPanel(new GridLayout(0, 2));
+        inputPanel.add(lifespanPanel);
+        inputPanel.add(exemptionsPanel);
+
+        nameTextField = new JTextField();
+        dosesNeededSpinner = createJSpinner(1, 100, 3);
+        medicalConditionsList = getColumnsAsJList(new String[] {"medicalConditionID", "name"}, "MedicalCondition");
+
+
+        addLabelledComponent(inputGridPanel, "Name:", nameTextField);
+        addLabelledComponent(inputGridPanel, "Doses Needed:", dosesNeededSpinner);
+        addLabelledComponent(lifespanPanel, "Number of lifespan temperature variations:", createLifespanPanel(10));
+        addLabelledComponent(exemptionsPanel, "Medical Exemptions:", medicalConditionsList);
+
+        setMaxWidthMinHeight(inputPanel);
 
         addLifespans = new ArrayList<>();
     }
 
-    private void createInputFieldsGridPanel() {
-        JPanel inputFieldsGridPanel = new JPanel(new GridLayout(0, 2));
 
-        nameTextField = new JTextField();
-        dosesNeededSpinner = createJSpinner(1, 100, 3);
-
-        inputFieldsGridPanel.add(new JLabel("Name:"));
-        inputFieldsGridPanel.add(nameTextField);
-        inputFieldsGridPanel.add(new JLabel("*Doses Needed:"));
-        inputFieldsGridPanel.add(dosesNeededSpinner);
-
-        inputFieldsPanel.add(inputFieldsGridPanel);
-    }
-
-    private void createLifespanPanel() {
+    private JPanel createLifespanPanel(int maxRange) {
         JPanel lifespanPanel = new JPanel();
 
-        lifespanButton = new JButton("Add Lifespans");
-
-        final int MAX_NUM_LIFESPANS = 10;
-        String[] numLifespans = new String[MAX_NUM_LIFESPANS];
-        for (int i = 0; i < MAX_NUM_LIFESPANS; i++) {
+        String[] numLifespans = new String[maxRange];
+        for (int i = 0; i < maxRange; i++) {
             numLifespans[i] = Integer.toString(i + 1);
         }
-        numLifespanComboBox = new JComboBox(numLifespans);
 
-        lifespanPanel.add(new JLabel("How many different temperature ranges for lifespan:"));
+        numLifespanComboBox = new JComboBox(numLifespans);
+        lifespanButton = new JButton("Add Lifespans");
+
         lifespanPanel.add(numLifespanComboBox);
         addButton(lifespanButton, lifespanPanel);
 
-        inputFieldsPanel.add(lifespanPanel);
+        return lifespanPanel;
     }
 
-
-    private void createExemptionsPanel() {
-        JPanel exemptionsPanel = new JPanel(new GridLayout(0, 2));
-
-        String[] columnNames = {"medicalConditionID", "name"};
-        DefaultListModel<String> listModel = new DefaultListModel<>();
-        medicalConditions = getColumns(columnNames, "MedicalCondition");
-        for (Object medicalCondition : medicalConditions) {
-            listModel.addElement((String) medicalCondition);
-        }
-        medicalConditionsList = new JList<>(listModel);
-
-        exemptionsPanel.add(new JLabel("Medical Exemptions:"));
-        exemptionsPanel.add(medicalConditionsList);
-
-        inputFieldsPanel.add(exemptionsPanel);
-    }
-
-    protected void updateLifespans() {
-        lifespans = new ArrayList<>();
-        for (AddVaccineLifespan addLifespan: addLifespans) {
-            String capacity = addLifespan.getLifespan();
-            lifespans.add(capacity);
-        }
-    }
-
-    protected void emptyLifespanMessage() {
-        String message = "Lifespan must be an integer greater than 0";
-        String title = "Error";
-        JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
-    }
-
-    protected boolean lifespansConditionsMet() {
-        updateLifespans();
-        if (lifespans.size() < 1) {
-            return false;
-        }
+    private boolean checkLifespanConditions() {
         try {
-            for (String lifespan : lifespans) {
-                if (Integer.parseInt(lifespan) < 1) {
+            for (AddVaccineLifespan addLifespan : addLifespans) {
+                int lifespan = Integer.parseInt(addLifespan.getLifespan());
+                if (lifespan < 1) {
                     return false;
                 }
             }
-            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
-        catch (NumberFormatException ex) {}
-        return false;
+        return true;
     }
 
-
-    private void createStatements() {
-
-        try {
-            values = "\"" + nameTextField.getText() + "\", " + dosesNeededSpinner.getValue();
-            String statement = "INSERT INTO Vaccine (name, dosesNeeded) VALUES (" + values + ");";
-            vaccineSystem.executeUpdate(statement);
-            String[] columnNames = new String[]{"MAX(vaccineID)"};
-            ArrayList<ArrayList<String>> resultSet = vaccineSystem.executeSelect(columnNames, "Vaccine");
-            int vaccineID = Integer.parseInt(resultSet.get(0).get(0));
-
-            for (String medicalCondition : medicalConditionsList.getSelectedValuesList()) {
-                int medicalConditionID = Integer.parseInt( medicalCondition.split(":")[0]);
-                values = vaccineID + "," + medicalConditionID;
-                statements.add("INSERT INTO VaccineExemption (vaccineID, medicalConditionID) VALUES (" + values + ");");
-            }
-
-            for (AddVaccineLifespan addLifespan : addLifespans) {
-                String lifespan = addLifespan.getLifespan();
-                int lowestTemperature = (int) addLifespan.getMinimumTemperature();
-                int highestTemperature = (int) addLifespan.getMaximumTemperature();
-
-                values = vaccineID + ", " + lifespan + ", " + lowestTemperature + ", " + highestTemperature;
-                statements.add("INSERT INTO VaccineLifespan (vaccineID, lifespan, lowestTemperature, highestTemperature) VALUES (" + values + ");");
+    private boolean checkTemperatureConditions() {
+        for (AddVaccineLifespan addLifespan : addLifespans) {
+            int minimumTemperature = (int) addLifespan.getMinimumTemperature();
+            int maximumTemperature = (int) addLifespan.getMaximumTemperature();
+            if (minimumTemperature > maximumTemperature) {
+                return false;
             }
         }
-        catch (SQLException ex) {}
-        catch (NumberFormatException ex) {}
+        return true;
+    }
+
+    private void createStatements() {
+        statements = new ArrayList<>();
+
+        String values = "\"" + nameTextField.getText() + "\", " + dosesNeededSpinner.getValue();
+        String statement = "INSERT INTO Vaccine (name, dosesNeeded) VALUES (" + values + ");";
+        int vaccineID = insertAndGetID(statement, "vaccineID", "Vaccine");
+
+        for (String medicalCondition : medicalConditionsList.getSelectedValuesList()) {
+            int medicalConditionID = Integer.parseInt( medicalCondition.split(":")[0]);
+            values = vaccineID + "," + medicalConditionID;
+            statements.add("INSERT INTO VaccineExemption (vaccineID, medicalConditionID) VALUES (" + values + ");");
+        }
+
+        for (AddVaccineLifespan addLifespan : addLifespans) {
+            String lifespan = addLifespan.getLifespan();
+            int lowestTemperature = (int) addLifespan.getMinimumTemperature();
+            int highestTemperature = (int) addLifespan.getMaximumTemperature();
+
+            values = vaccineID + ", " + lifespan + ", " + lowestTemperature + ", " + highestTemperature;
+            statements.add("INSERT INTO VaccineLifespan (vaccineID, lifespan, lowestTemperature, highestTemperature) VALUES (" + values + ");");
+        }
+    }
+
+    private void createLifespanFrame() {
+        final int FRAME_WIDTH = 800;
+
+        JFrame addLifespanFrame = new JFrame();
+
+        AddVaccineLifespanPage addLifespanPage = new AddVaccineLifespanPage(this, addLifespanFrame, FRAME_WIDTH);
+        addLifespanFrame.add(addLifespanPage.getPanel());
+
+        createPopupFrame(addLifespanFrame, addLifespanPage.getPanel(), FRAME_WIDTH, 500);
     }
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == lifespanButton) {
-            JFrame addLifespanFrame = new JFrame();
-
-            final int ADD_LIFESPAN_WIDTH = 800;
-            final int ADD_LIFESPAN_HEIGHT = 500;
-
-            AddVaccineLifespanPage addLifespanPage = new AddVaccineLifespanPage(this, addLifespanFrame, ADD_LIFESPAN_WIDTH);
-            addLifespanFrame.add(addLifespanPage.getPanel());
-
-            addLifespanFrame.setSize(ADD_LIFESPAN_WIDTH, ADD_LIFESPAN_HEIGHT);
-            addLifespanFrame.setLocationRelativeTo(null); // Sets window to centre of screen
-            addLifespanFrame.setVisible(true);
+            createLifespanFrame();
         }
         else if (e.getSource() == submitButton) {
-            if (lifespansConditionsMet()) {
-                if (fieldConditionsMet()) {
-                    createStatements();
-                    super.actionPerformed(e);
-                }
+            if (!checkLifespanConditions()) {
+                errorMessage("Lifespans must be an integer greater than 0");
+            }
+            else if (!checkTemperatureConditions()) {
+                errorMessage("Minimum temperature cannot be greater than maximum temperature");
             }
             else {
-                emptyLifespanMessage();
+                createStatements();
+                super.actionPerformed(e);
             }
         }
         else {

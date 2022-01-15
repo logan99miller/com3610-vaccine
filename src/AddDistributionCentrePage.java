@@ -1,24 +1,22 @@
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 public class AddDistributionCentrePage extends AddStorageLocationPage {
 
     public AddDistributionCentrePage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Distribution Centre:");
-        fitPanelToMainPanel(inputFieldsPanel);
+        setMaxWidthMinHeight(inputPanel);
     }
 
     protected void createStatements() {
+        statements = new ArrayList<>();
         statements.add("INSERT INTO DistributionCentre (storageLocationID) VALUES (" + storageLocationID + ");");
     }
 
     public void actionPerformed(ActionEvent e) {
-        if ((e.getSource() == submitButton) && (checkCoordinates()) && (fieldConditionsMet())) {
-            super.createStatements();
+        if (e.getSource() == submitButton) {
             createStatements();
-            super.actionPerformed(e);
         }
-        else {
-            super.actionPerformed(e);
-        }
+        super.actionPerformed(e);
     }
 }

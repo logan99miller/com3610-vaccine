@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 public class AddTransporterLocationPage extends AddLocationPage {
 
@@ -11,7 +12,7 @@ public class AddTransporterLocationPage extends AddLocationPage {
     public AddTransporterLocationPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Transporter Location:");
         createInputFieldsGridPanel();
-        fitPanelToMainPanel(inputFieldsPanel);
+        setMaxWidthMinHeight(inputPanel);
     }
 
     private void createInputFieldsGridPanel() {
@@ -20,7 +21,7 @@ public class AddTransporterLocationPage extends AddLocationPage {
         totalCapacityTextField = new JTextField();
 
         String[] columnNames = {"transporterID", "name"};
-        transportersComboBox = new JComboBox(getColumns(columnNames, "Transporter"));
+        transportersComboBox = new JComboBox(getFormattedSelect(columnNames, "Transporter"));
 
         inputFieldsGridPanel.add(new JLabel("-*Total capacity:"));
         inputFieldsGridPanel.add(totalCapacityTextField);
@@ -28,10 +29,13 @@ public class AddTransporterLocationPage extends AddLocationPage {
         inputFieldsGridPanel.add(new JLabel("Transporter:"));
         inputFieldsGridPanel.add(transportersComboBox);
 
-        inputFieldsPanel.add(inputFieldsGridPanel);
+        inputPanel.add(inputFieldsGridPanel);
     }
 
     protected void createStatements() {
+        super.createStatements();
+        statements = new ArrayList<>();
+
         totalCapacity = totalCapacityTextField.getText();
         String transporter = (String) transportersComboBox.getSelectedItem();
 
@@ -41,30 +45,10 @@ public class AddTransporterLocationPage extends AddLocationPage {
         statements.add("INSERT INTO TransporterLocation (transporterID, locationID, totalCapacity, availableCapacity) VALUES (" + values + ");");
     }
 
-    protected void emptyCapacityMessage() {
-        String message = "Capacity must be an integer greater than 0";
-        String title = "Error";
-        JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
-    }
-
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == submitButton) {
-            if (checkCoordinates()) {
-                super.createStatements();
-                createStatements();
-            }
-            try {
-                if (Integer.parseInt(totalCapacity) > 0) {
-                    super.actionPerformed(e);
-                } else {
-                    emptyCapacityMessage();
-                }
-            } catch (NumberFormatException ex) {
-                emptyCapacityMessage();
-            }
+            createStatements();
         }
-        else {
-            super.actionPerformed(e);
-        }
+        super.actionPerformed(e);
     }
 }

@@ -1,6 +1,6 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class AddStorageLocationPage extends AddLocationPage {
@@ -9,111 +9,88 @@ public class AddStorageLocationPage extends AddLocationPage {
     private JButton storeButton;
     private ArrayList<AddStore> addStores;
     protected int storageLocationID;
-    private ArrayList<String> capacities;
 
     public AddStorageLocationPage(VaccineSystem vaccineSystem, MainPage mainPage, String title) {
         super(vaccineSystem, mainPage, title);
-        createStorePanel();
+
+        JPanel temperatureVariationsPanel = new JPanel(new GridLayout(0, 2));
+        inputPanel.add(temperatureVariationsPanel);
+
+        JPanel storePanel = createStorePanel(10);
+        addLabelledComponent(temperatureVariationsPanel, "Number of storage temperature variations:", storePanel);
+
         addStores = new ArrayList<>();
     }
 
-    private void createStorePanel() {
+    private JPanel createStorePanel(int maxRange) {
         JPanel storePanel = new JPanel();
 
+        String[] numLifespans = new String[maxRange];
+        for (int i = 0; i < maxRange; i++) {
+            numLifespans[i] = Integer.toString(i + 1);
+        }
+
+        numStoreComboBox = new JComboBox(numLifespans);
         storeButton = new JButton("Add Capacities");
 
-        final int MAX_NUM_STORAGE_TEMPS = 10;
-        String[] numStorageTemps = new String[MAX_NUM_STORAGE_TEMPS];
-        for (int i = 0; i < MAX_NUM_STORAGE_TEMPS; i++) {
-            numStorageTemps[i] = Integer.toString(i + 1);
-        }
-        numStoreComboBox = new JComboBox(numStorageTemps);
-
-        storePanel.add(new JLabel("How many different storage temperatures:"));
         storePanel.add(numStoreComboBox);
         addButton(storeButton, storePanel);
 
-        inputFieldsPanel.add(storePanel);
+        return storePanel;
     }
 
     protected void createStatements() {
         super.createStatements();
 
-        if (checkCoordinates()) {
-            try {
-                String statement = "INSERT INTO StorageLocation (locationID) VALUES (" + locationID + ");";
-                vaccineSystem.executeUpdate(statement);
-                String[] columnNames = new String[]{"MAX(storageLocationID)"};
-                ArrayList<ArrayList<String>> resultSet = vaccineSystem.executeSelect(columnNames, "storageLocation");
-                storageLocationID = Integer.parseInt(resultSet.get(0).get(0));
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            } catch (NumberFormatException ex) {
-                ex.printStackTrace();
-            }
+        String statement = "INSERT INTO StorageLocation (locationID) VALUES (" + locationID + ");";
+        storageLocationID = insertAndGetID(statement, "storageLocationID", "StorageLocation");
 
-            updateCapacities();
-            for (AddStore addStore : addStores) {
-                int temperature = (int) addStore.getTemperature();
-                String capacity = addStore.getCapacity();
-
-                values = storageLocationID + ", " + temperature + ", " + capacity;
-                statements.add("INSERT INTO Store (storageLocationID, temperature, capacity) VALUES (" + values + ");");
-            }
-        }
-    }
-
-    protected void emptyCapacityMessage() {
-        String message = "Capacity must be an integer greater than 0";
-        String title = "Error";
-        JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
-    }
-
-    protected void updateCapacities() {
-        capacities = new ArrayList<>();
-        for (AddStore addStore: addStores) {
+        for (AddStore addStore : addStores) {
+            int temperature = (int) addStore.getTemperature();
             String capacity = addStore.getCapacity();
-            capacities.add(capacity);
+
+            values = storageLocationID + ", " + temperature + ", " + capacity;
+            statements.add("INSERT INTO Store (storageLocationID, temperature, capacity) VALUES (" + values + ");");
         }
     }
 
-    protected boolean capacityConditionsMet() {
-        updateCapacities();
-        if (capacities.size() < 1) {
-            return false;
-        }
+    private boolean checkCapacitiesCondition() {
         try {
-            for (String capacity : capacities) {
-                if (Integer.parseInt(capacity) < 1) {
+            for (AddStore addStore : addStores) {
+                int capacity = Integer.parseInt(addStore.getCapacity());
+                if (capacity < 1) {
                     return false;
                 }
             }
-            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
-        catch (NumberFormatException ex) {}
-        return false;
+        return true;
+    }
+
+
+    private void createStoreFrame() {
+        final int FRAME_WIDTH = 400;
+
+        JFrame addStoreFrame = new JFrame();
+
+        AddStorePage addStorePage = new AddStorePage(this, addStoreFrame, FRAME_WIDTH);
+        addStoreFrame.add(addStorePage.getPanel());
+
+        createPopupFrame(addStoreFrame, addStorePage.getPanel(), FRAME_WIDTH, 500);
     }
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == storeButton) {
-            JFrame addStoreFrame = new JFrame();
-
-            final int ADD_STORE_WIDTH = 400;
-            final int ADD_STORE_HEIGHT = 500;
-
-            AddStorePage addStorePage = new AddStorePage(this, addStoreFrame, ADD_STORE_WIDTH);
-            addStoreFrame.add(addStorePage.getPanel());
-
-            addStoreFrame.setSize(ADD_STORE_WIDTH, ADD_STORE_HEIGHT);
-            addStoreFrame.setLocationRelativeTo(null); // Sets window to centre of screen
-            addStoreFrame.setVisible(true);
+            createStoreFrame();
         }
         else if (e.getSource() == submitButton) {
-            if (capacityConditionsMet()) {
+            if (checkCapacitiesCondition()) {
+                createStatements();
                 super.actionPerformed(e);
             }
             else {
-                emptyCapacityMessage();
+                errorMessage("Capacities must be an integer greater than 0");
             }
         }
         else {

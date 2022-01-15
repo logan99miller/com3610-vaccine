@@ -18,7 +18,7 @@ public class AddVaccineLifespanPage extends AddPage {
         mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-        createPageTitle("Lifespane:");
+        createPageTitle("Lifespans:");
         createInputFieldsPanel();
         createAddLifespanPanel();
         createSubmitButton();
@@ -37,17 +37,15 @@ public class AddVaccineLifespanPage extends AddPage {
         for (AddVaccineLifespan addVaccineLifespan : addVaccineLifespans) {
             JPanel panel = addVaccineLifespan.getPanel();
             panel.setMaximumSize(new Dimension(frameWidth, panel.getMinimumSize().height));
-            inputFieldsPanel.add(panel);
+            inputPanel.add(panel);
         }
 
     }
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == submitButton) {
-            if (fieldConditionsMet()) {
-                addVaccinePage.setAddLifespans(addVaccineLifespans);
-                addVaccineLifespanFrame.setVisible(false);
-            }
+            addVaccinePage.setAddLifespans(addVaccineLifespans);
+            addVaccineLifespanFrame.setVisible(false);
         }
     }
 }

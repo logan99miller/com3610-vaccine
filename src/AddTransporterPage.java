@@ -9,28 +9,25 @@ public class AddTransporterPage extends AddPage {
 
     public AddTransporterPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Transporter:");
-        createNamePanel();
-        fitPanelToMainPanel(inputFieldsPanel);
-    }
-
-    private void createNamePanel() {
-        JPanel namePanel = new JPanel(new GridLayout(0, 2));
 
         nameTextField = new JTextField();
 
-        namePanel.add(new JLabel("*Name:"));
-        namePanel.add(nameTextField);
+        addLabelledComponent(inputGridPanel, "*Name:", nameTextField);
 
-        inputFieldsPanel.add(namePanel);
+        setMaxWidthMinHeight(inputPanel);
     }
 
     private void createStatements() {
-        values = "\"" + nameTextField.getText() + "\"";
+        statements = new ArrayList<>();
+
+        String values = "\"" + nameTextField.getText() + "\"";
         statements.add("INSERT INTO Transporter (name) VALUES (" + values + ");");
     }
 
     public void actionPerformed(ActionEvent e) {
-        createStatements();
+        if (e.getSource() == submitButton) {
+            createStatements();
+        }
         super.actionPerformed(e);
     }
 }

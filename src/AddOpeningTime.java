@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.time.LocalTime;
 
-public class AddOpeningTime {
+public class AddOpeningTime extends Page {
 
     private String day;
     private JSpinner startTimeHourSpinner, startTimeMinuteSpinner, endTimeHourSpinner, endTimeMinuteSpinner;
@@ -27,18 +27,14 @@ public class AddOpeningTime {
     public JPanel getStartTimePanel() {
         JPanel panel = new JPanel();
         panel.add(new JLabel("Start (HH:MM):"));
-        panel.add(startTimeHourSpinner);
-        panel.add(new JLabel(":"));
-        panel.add(startTimeMinuteSpinner);
+        panel.add(createTimePanel(startTimeHourSpinner, startTimeMinuteSpinner, 9, 0));
         return panel;
     }
 
     public JPanel getEndTimePanel() {
         JPanel panel = new JPanel();
         panel.add(new JLabel("End (HH:MM):"));
-        panel.add(endTimeHourSpinner);
-        panel.add(new JLabel(":"));
-        panel.add(endTimeMinuteSpinner);
+        panel.add(createTimePanel(endTimeHourSpinner, endTimeMinuteSpinner, 17, 0));
         return panel;
     }
 

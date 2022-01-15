@@ -37,17 +37,14 @@ public class AddStorePage extends AddPage {
         for (AddStore addStore : addStores) {
             JPanel panel = addStore.getPanel();
             panel.setMaximumSize(new Dimension(frameWidth, panel.getMinimumSize().height));
-            inputFieldsPanel.add(panel);
+            inputPanel.add(panel);
         }
-
     }
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == submitButton) {
-            if (fieldConditionsMet()) {
-                addStorageLocationPage.setAddStores(addStores);
-                addStoreFrame.setVisible(false);
-            }
+            addStorageLocationPage.setAddStores(addStores);
+            addStoreFrame.setVisible(false);
         }
     }
 }

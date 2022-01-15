@@ -1,6 +1,6 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 public class AddPersonPage extends AddPage {
 
@@ -9,28 +9,20 @@ public class AddPersonPage extends AddPage {
     public AddPersonPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Person:");
 
-        createInputFieldsGridPanel();
-        fitPanelToMainPanel(inputFieldsPanel);
-    }
-
-    private void createInputFieldsGridPanel() {
-        JPanel inputFieldsGridPanel = new JPanel(new GridLayout(0, 2));
-
         forenameTextField = new JTextField();
         surnameTextField = new JTextField();
         DoBTextField = new JTextField();
 
-        inputFieldsGridPanel.add(new JLabel("Forename:"));
-        inputFieldsGridPanel.add(forenameTextField);
-        inputFieldsGridPanel.add(new JLabel("*Surname:"));
-        inputFieldsGridPanel.add(surnameTextField);
-        inputFieldsGridPanel.add(new JLabel("*DoB (YYYY-MM-DD):"));
-        inputFieldsGridPanel.add(DoBTextField);
+        addLabelledComponent(inputGridPanel, "*Forename:", forenameTextField);
+        addLabelledComponent(inputGridPanel, "*Surname:", surnameTextField);
+        addLabelledComponent(inputGridPanel, "*DoB (YYYY-MM-DD):", DoBTextField);
 
-        inputFieldsPanel.add(inputFieldsGridPanel);
+        setMaxWidthMinHeight(inputPanel);
     }
 
     private void createStatements() {
+        statements = new ArrayList<>();
+
         String forename = forenameTextField.getText();
         String surname = surnameTextField.getText();
         String DoB = DoBTextField.getText();
@@ -41,16 +33,8 @@ public class AddPersonPage extends AddPage {
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == submitButton) {
-            if (checkDate(DoBTextField.getText())) {
-                createStatements();
-                super.actionPerformed(e);
-            }
-            else {
-                incorrectDateMessage();
-            }
+            createStatements();
         }
-        else {
-            super.actionPerformed(e);
-        }
+        super.actionPerformed(e);
     }
 }

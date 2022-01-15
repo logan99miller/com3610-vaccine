@@ -7,9 +7,9 @@ import java.util.ArrayList;
 
 public class AddPage extends Page {
 
-    private MainPage mainPage;
+    protected MainPage mainPage;
     private JButton backButton;
-    protected JPanel inputFieldsPanel;
+    protected JPanel inputPanel, inputGridPanel;
     protected JButton submitButton;
     protected ArrayList<String> statements;
     protected String values;
@@ -26,28 +26,13 @@ public class AddPage extends Page {
         createInputFieldsPanel();
         createSubmitButton();
         createFieldExplanations();
+
+        inputGridPanel = new JPanel(new GridLayout(0, 2));
+        inputPanel.add(inputGridPanel);
     }
 
     public AddPage() {
         super();
-    }
-
-    protected static JSpinner createJSpinner(int minValue, int maxValue, int columns) {
-        ArrayList<Integer> possibleValues = new ArrayList<>();
-        for (int i = minValue; i < maxValue; i++) {
-            possibleValues.add(i);
-        }
-
-        SpinnerListModel spinnerListModel = new SpinnerListModel(possibleValues);
-
-        JSpinner spinner = new JSpinner(spinnerListModel);
-        JFormattedTextField textField = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
-        textField.setEditable(false);
-        textField.setColumns(columns);
-
-        return spinner;
-
-
     }
 
     private void createBackButton() {
@@ -61,10 +46,10 @@ public class AddPage extends Page {
     }
 
     protected void createInputFieldsPanel() {
-        inputFieldsPanel = new JPanel();
-        inputFieldsPanel.setLayout(new BoxLayout(inputFieldsPanel, BoxLayout.Y_AXIS));
-        inputFieldsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        mainPanel.add(inputFieldsPanel);
+        inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        mainPanel.add(inputPanel);
     }
 
     protected void createSubmitButton() {
@@ -83,95 +68,127 @@ public class AddPage extends Page {
         mainPage.updatePage();
     }
 
-    protected void emptyFieldsMessage() {
-        String message = "Not all required fields have been filled";
-        String title = "Error";
-        JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
+    protected JPanel addLabelledComponent(JPanel panel, String label, JComponent component) {
+        panel.add(new JLabel(label));
+        panel.add(component);
+        return panel;
     }
 
-    protected void numericFieldsMessage() {
-        String message = "Fields marked with a - must have contain numeric values";
-        String title = "Error";
-        JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
-    }
+    protected int insertAndGetID(String statement, String IDFieldName, String tableName) {
 
-    protected void incorrectDateMessage() {
-        String message = "Dates must be in the format YYYY-MM-DD";
-        String title = "Error";
-        JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
-    }
-
-    protected boolean checkDate(String dateAsString) {
-        ArrayList<Integer> dateComponents = new ArrayList<>();
-        try {
-            for (String dateComponent : dateAsString.split("-")) {
-                dateComponents.add(Integer.parseInt(dateComponent));
+        if (checkInputConditions()) {
+            try {
+                vaccineSystem.executeUpdate(statement);
+                String[] columnNames = new String[]{"MAX(" + IDFieldName + ")"};
+                ArrayList<ArrayList<String>> resultSet = vaccineSystem.executeSelect(columnNames, tableName);
+                return Integer.parseInt(resultSet.get(0).get(0));
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-
-            LocalDate date = LocalDate.of(dateComponents.get(0), dateComponents.get(1), dateComponents.get(2));
         }
-        catch (Exception e) {
-            return false;
-        }
-        return true;
+        return 0;
     }
 
-    protected boolean fieldConditionsMet() {
-        for (Component component : inputFieldsPanel.getComponents()) {
+    protected boolean checkInputConditions() {
 
-            if (component instanceof JPanel) {
-                Component[] panelComponents = ((JPanel) component).getComponents();
+        /**
+         * required fields DONE
+         * numeric fields DONE
+         * longitude & latitude DONE
+         * dates DONE
+         * capacities > 0 DONE
+         * max temperature higher than min temperature DONE
+         * someone has not been double booked (same personID & vaccineID)
+         */
 
-                // If panel contains a JLabel and an input field
-                if ((panelComponents.length > 1) && (panelComponents[0] instanceof JLabel)) {
-                    String labelText = ((JLabel) panelComponents[0]).getText();
+        Component previousComponent = new JPanel();
 
-                    for (int i = 1; i < panelComponents.length; i++) {
+        for (Component component : inputGridPanel.getComponents()) {
 
-                        if ((panelComponents[i] instanceof JTextField)) {
+            if (previousComponent instanceof JLabel) {
 
-                            String inputText = ((JTextField) panelComponents[i]).getText();
+                String label = ((JLabel) previousComponent).getText();
 
-                            // If label marked with a *, check field is not empty
-                            if (labelText.substring(0, 1).equals("*") || (labelText.substring(0, 2).equals("-*"))) {
-                                if (inputText.equals("")) {
-                                    emptyFieldsMessage();
-                                    return false;
-                                }
-                            }
-                            // If label marked with a -, check input is a numeric value
-                            if (labelText.substring(0, 1).equals("-")) {
-                                try {
-                                    Float.parseFloat(inputText);
-                                } catch (NumberFormatException e) {
-                                    numericFieldsMessage();
-                                    return false;
-                                }
-                            }
-                        }
+                if (component instanceof JTextField) {
+                    String text = ((JTextField) component).getText();
+                    if (!checkRequiredInput(label, text)) {
+                        errorMessage("Fields marked with a * must be filled");
+                        return false;
+                    }
+                    else if (!checkNumericInput(label, text)) {
+                        errorMessage("Fields marked with a - must have a numeric value");
+                        return false;
+                    }
+                    else if (!checkDateInput(label, text)) {
+                        errorMessage("Dates must be input in the format YYYY-MM-DD");
+                        return false;
+                    }
+                    else if (!checkCoordinates(label, text)) {
+                        errorMessage("Coordinates values must be between -90 and 90");
+                        return false;
                     }
                 }
+
+                if (component instanceof JSpinner) {
+                    int value = (int) ((JSpinner) component).getValue();
+
+                    System.out.println(label + value);
+                }
+            }
+
+            previousComponent = component;
+        }
+
+        return true;
+    }
+
+    private boolean checkRequiredInput(String label, String text) {
+        if (label.startsWith("*") || (label.startsWith("-*"))) {
+            return !text.equals("");
+        }
+        return true;
+    }
+
+    private boolean checkNumericInput(String label, String text) {
+        if (label.startsWith("-")) {
+            try {
+                Float.parseFloat(text);
+            } catch (NumberFormatException e) {
+                return false;
             }
         }
         return true;
     }
 
-    protected Object[] getColumns(String[] columnNames, String tableName) {
-        ArrayList<String> records = new ArrayList<>();
-
-        try {
-
-            ArrayList<ArrayList<String>> resultSet = vaccineSystem.executeSelect(columnNames, tableName);
-            for (ArrayList<String> record : resultSet) {
-                String addToRecord = record.get(0) + ":";
-                for (int i = 1; i < record.size(); i++) {
-                    addToRecord += " " + record.get(i);
+    private boolean checkDateInput(String label, String text) {
+        if (label.contains("YYYY-MM-DD")) {
+            ArrayList<Integer> dateComponents = new ArrayList<>();
+            try {
+                for (String dateComponent : text.split("-")) {
+                    dateComponents.add(Integer.parseInt(dateComponent));
                 }
-                records.add(addToRecord);
-            }
-        } catch (SQLException e) {}
 
-        return (records.toArray());
+                LocalDate.of(dateComponents.get(0), dateComponents.get(1), dateComponents.get(2));
+            }
+            catch (Exception ex) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkCoordinates(String label, String text) {
+        if (label.contains("longitude") || label.contains("latitude")) {
+            try {
+                float coordinate = Float.parseFloat(text);
+                if ((coordinate > 90) || (coordinate < 90)) {
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
     }
 
     protected void performStatements() {
@@ -181,7 +198,9 @@ public class AddPage extends Page {
             }
             returnToSelectPage();
         }
-        catch (SQLException ex) {}
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -189,7 +208,7 @@ public class AddPage extends Page {
             returnToSelectPage();
         }
         else if (e.getSource() == submitButton) {
-            if (fieldConditionsMet()) {
+            if (checkInputConditions()) {
                 performStatements();
             }
         }
