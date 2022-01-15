@@ -15,6 +15,8 @@ public class Page implements ActionListener {
 
     public Page(VaccineSystem vaccineSystem) {
         mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
         buttons = new ArrayList<>();
         this.vaccineSystem = vaccineSystem;
     }
@@ -25,19 +27,9 @@ public class Page implements ActionListener {
         JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    protected JPanel createLabelledComponentPanel(JComponent component, String inputText) {
-//        JPanel panel = new JPanel();
-//        panel.setLayout(new GridLayout(0, 2));
-//
-//        panel.add(new JLabel(inputText));
-//        panel.add(component);
-//        panel.setMaximumSize(panel.getPreferredSize());
-//        return panel;
-        JPanel panel = new JPanel();
-
-        panel.add(new JLabel(inputText));
+    protected JPanel addLabelledComponent(JPanel panel, String label, JComponent component) {
+        panel.add(new JLabel(label));
         panel.add(component);
-        panel.setMaximumSize(panel.getPreferredSize());
         return panel;
     }
 
@@ -46,7 +38,7 @@ public class Page implements ActionListener {
         panel.add(button);
     }
 
-    protected String getSanatizedtext(JButton button) {
+    protected String getSanitizedButtonText(JButton button) {
         return button.getText().replace(" ", "").toLowerCase();
     }
 

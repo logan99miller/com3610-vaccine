@@ -24,7 +24,6 @@ public class AddVaccinePage extends AddPage {
         dosesNeededSpinner = createJSpinner(1, 100, 3);
         medicalConditionsList = getColumnsAsJList(new String[] {"medicalConditionID", "name"}, "MedicalCondition");
 
-
         addLabelledComponent(inputGridPanel, "Name:", nameTextField);
         addLabelledComponent(inputGridPanel, "Doses Needed:", dosesNeededSpinner);
         addLabelledComponent(lifespanPanel, "Number of lifespan temperature variations:", createLifespanPanel(10));

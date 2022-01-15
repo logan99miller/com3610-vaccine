@@ -17,7 +17,6 @@ public class AddPage extends Page {
     public AddPage(VaccineSystem vaccineSystem, MainPage mainPage, String title) {
         super(vaccineSystem);
         this.mainPage = mainPage;
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         statements = new ArrayList<>();
 
@@ -68,12 +67,6 @@ public class AddPage extends Page {
         mainPage.updatePage();
     }
 
-    protected JPanel addLabelledComponent(JPanel panel, String label, JComponent component) {
-        panel.add(new JLabel(label));
-        panel.add(component);
-        return panel;
-    }
-
     protected int insertAndGetID(String statement, String IDFieldName, String tableName) {
 
         if (checkInputConditions()) {
@@ -90,17 +83,6 @@ public class AddPage extends Page {
     }
 
     protected boolean checkInputConditions() {
-
-        /**
-         * required fields DONE
-         * numeric fields DONE
-         * longitude & latitude DONE
-         * dates DONE
-         * capacities > 0 DONE
-         * max temperature higher than min temperature DONE
-         * someone has not been double booked (same personID & vaccineID)
-         */
-
         Component previousComponent = new JPanel();
 
         for (Component component : inputGridPanel.getComponents()) {

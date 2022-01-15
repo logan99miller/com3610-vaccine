@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 public class SelectAddPage extends SelectTablePage {
 
@@ -33,17 +34,27 @@ public class SelectAddPage extends SelectTablePage {
         JPanel addBookingPanel = addBookingPage.getPanel();
         JPanel addVaccinePriorityPanel = addVaccinePriorityPage.getPanel();
 
+        mainPage.addCard(addVaccinePanel, "add" + getSanitizedButtonText(vaccineButton));
+        mainPage.addCard(addPersonPanel, "add" + getSanitizedButtonText(personButton));
+        mainPage.addCard(addMedicalConditionPanel, "add" + getSanitizedButtonText(medicalConditionButton));
+        mainPage.addCard(addManufacturerPanel, "add" + getSanitizedButtonText(manufacturerButton));
+        mainPage.addCard(addFactoryPanel, "add" + getSanitizedButtonText(factoryButton));
+        mainPage.addCard(addTransporterPanel, "add" + getSanitizedButtonText(transporterButton));
+        mainPage.addCard(addTransportLocationPanel, "add" + getSanitizedButtonText(transportLocationButton));
+        mainPage.addCard(addDistributionCentrePanel, "add" + getSanitizedButtonText(distributionCentreButton));
+        mainPage.addCard(addVaccinationCentrePanel, "add" + getSanitizedButtonText(vaccinationCentreButton));
+        mainPage.addCard(addBookingPanel, "add" + getSanitizedButtonText(bookingButton));
+        mainPage.addCard(addVaccinePriorityPanel, "add" + getSanitizedButtonText(vaccinePriorityButton));
+    }
 
-        mainPage.addCard(addVaccinePanel, "add" + getSanatizedtext(vaccineButton));
-        mainPage.addCard(addPersonPanel, "add" + getSanatizedtext(personButton));
-        mainPage.addCard(addMedicalConditionPanel, "add" + getSanatizedtext(medicalConditionButton));
-        mainPage.addCard(addManufacturerPanel, "add" + getSanatizedtext(manufacturerButton));
-        mainPage.addCard(addFactoryPanel, "add" + getSanatizedtext(factoryButton));
-        mainPage.addCard(addTransporterPanel, "add" + getSanatizedtext(transporterButton));
-        mainPage.addCard(addTransportLocationPanel, "add" + getSanatizedtext(transportLocationButton));
-        mainPage.addCard(addDistributionCentrePanel, "add" + getSanatizedtext(distributionCentreButton));
-        mainPage.addCard(addVaccinationCentrePanel, "add" + getSanatizedtext(vaccinationCentreButton));
-        mainPage.addCard(addBookingPanel, "add" + getSanatizedtext(bookingButton));
-        mainPage.addCard(addVaccinePriorityPanel, "add" + getSanatizedtext(vaccinePriorityButton));
+    // Crude solution to updating selection boxes when items are added to database
+    public void actionPerformed(ActionEvent e) {
+        for (JButton button : buttons) {
+            if (e.getSource() == button) {
+                createAddingPages();
+                mainPage.setPageName(buttonAction + getSanitizedButtonText(button));
+                mainPage.updatePage();
+            }
+        }
     }
 }

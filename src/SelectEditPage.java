@@ -31,15 +31,15 @@ public class SelectEditPage extends SelectTablePage {
         JPanel editVaccinationCentrePanel = editVaccinationCentrePage.getPanel();
         JPanel editBookingPanel = editBookingPage.getPanel();
 
-        mainPage.addCard(editVaccinePanel, "edit" + getSanatizedtext(vaccineButton));
-        mainPage.addCard(editPersonPanel, "edit" + getSanatizedtext(personButton));
-        mainPage.addCard(editMedicalConditionPanel, "edit" + getSanatizedtext(medicalConditionButton));
-        mainPage.addCard(editManufacturerPanel, "edit" + getSanatizedtext(manufacturerButton));
-        mainPage.addCard(editFactoryPanel, "edit" + getSanatizedtext(factoryButton));
-        mainPage.addCard(editTransporterPanel, "edit" + getSanatizedtext(transporterButton));
-        mainPage.addCard(editTransportLocationPanel, "edit" + getSanatizedtext(transportLocationButton));
-        mainPage.addCard(editDistributionCentrePanel, "edit" + getSanatizedtext(distributionCentreButton));
-        mainPage.addCard(editVaccinationCentrePanel, "edit" + getSanatizedtext(vaccinationCentreButton));
-        mainPage.addCard(editBookingPanel, "edit" + getSanatizedtext(bookingButton));
+        mainPage.addCard(editVaccinePanel, "edit" + getSanitizedButtonText(vaccineButton));
+        mainPage.addCard(editPersonPanel, "edit" + getSanitizedButtonText(personButton));
+        mainPage.addCard(editMedicalConditionPanel, "edit" + getSanitizedButtonText(medicalConditionButton));
+        mainPage.addCard(editManufacturerPanel, "edit" + getSanitizedButtonText(manufacturerButton));
+        mainPage.addCard(editFactoryPanel, "edit" + getSanitizedButtonText(factoryButton));
+        mainPage.addCard(editTransporterPanel, "edit" + getSanitizedButtonText(transporterButton));
+        mainPage.addCard(editTransportLocationPanel, "edit" + getSanitizedButtonText(transportLocationButton));
+        mainPage.addCard(editDistributionCentrePanel, "edit" + getSanitizedButtonText(distributionCentreButton));
+        mainPage.addCard(editVaccinationCentrePanel, "edit" + getSanitizedButtonText(vaccinationCentreButton));
+        mainPage.addCard(editBookingPanel, "edit" + getSanitizedButtonText(bookingButton));
     }
 }

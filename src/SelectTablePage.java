@@ -52,7 +52,7 @@ public class SelectTablePage extends Page {
     public void actionPerformed(ActionEvent e) {
         for (JButton button : buttons) {
             if (e.getSource() == button) {
-                mainPage.setPageName(buttonAction + getSanatizedtext(button));
+                mainPage.setPageName(buttonAction + getSanitizedButtonText(button));
                 mainPage.updatePage();
             }
         }

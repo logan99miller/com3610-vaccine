@@ -10,8 +10,6 @@ public class VaccineSystem extends JFrame {
     private String pageName, user, password;
     private CardLayout cardLayout;
     private JPanel cards;
-    private final int WIDTH = 700;
-    private final int HEIGHT = 700;
 
     public static void main(String[] args) {
         new VaccineSystem("Vaccine System");
@@ -21,9 +19,9 @@ public class VaccineSystem extends JFrame {
         super(titleBarText);
 
         user = "root";
-        password = "";
+        password = "artstowerhas20";
 
-        configureWindow(WIDTH, HEIGHT);
+        configureWindow(700, 700);
         createInterface();
     }
 
@@ -126,9 +124,5 @@ public class VaccineSystem extends JFrame {
 
     public String getURL() {
         return URL;
-    }
-
-    public int getWIDTH() {
-        return WIDTH;
     }
 }

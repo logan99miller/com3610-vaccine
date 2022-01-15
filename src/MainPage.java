@@ -14,19 +14,8 @@ public class MainPage extends Page {
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(createNavPanel(), BorderLayout.NORTH);
         mainPanel.add(createContentPanel(), BorderLayout.CENTER);
-
-//        mainPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        setSize();
     }
 
-//    private void setSize() {
-//        final int BORDER = 10;
-//        final int WIDTH = vaccineSystem.getWidth() - (BORDER * 2);
-//        final int HEIGHT = vaccineSystem.getHeight() - (BORDER * 2);
-//        System.out.println(WIDTH);
-//        System.out.println(HEIGHT);
-//        mainPanel.setSize(new Dimension(WIDTH, HEIGHT));
-//    }
 
     private JPanel createNavPanel() {
         JPanel panel = new JPanel();
@@ -64,10 +53,10 @@ public class MainPage extends Page {
         JPanel logPanel = logPage.getPanel();
         JPanel mapPanel = mapPage.getPanel();
 
-        cards.add(addPanel, getSanatizedtext(addPageButton));
-        cards.add(editPanel, getSanatizedtext(editPageButton));
-        cards.add(logPanel, getSanatizedtext(logPageButton));
-        cards.add(mapPanel, getSanatizedtext(mapPageButton));
+        cards.add(addPanel, getSanitizedButtonText(addPageButton));
+        cards.add(editPanel, getSanitizedButtonText(editPageButton));
+        cards.add(logPanel, getSanitizedButtonText(logPageButton));
+        cards.add(mapPanel, getSanitizedButtonText(mapPageButton));
 
         cardLayout.show(cards, "add");
 
@@ -78,13 +67,13 @@ public class MainPage extends Page {
         for (JButton button : buttons) {
             if (e.getSource() == button) {
 
-                String buttonText = getSanatizedtext(button);
+                String buttonText = getSanitizedButtonText(button);
                 if (buttonText.equals("logout")) {
                     vaccineSystem.setPageName("login");
                     vaccineSystem.updatePage();
                 }
                 else {
-                    cardLayout.show(cards, getSanatizedtext(button));
+                    cardLayout.show(cards, getSanitizedButtonText(button));
                     button.setFont(button.getFont().deriveFont(Font.BOLD));
                 }
             }
@@ -94,24 +83,12 @@ public class MainPage extends Page {
         }
     }
 
-    public String getPageName() {
-        return pageName;
-    }
-
     public void setPageName(String pageName) {
         this.pageName = pageName;
     }
 
     public void updatePage() {
         cardLayout.show(cards, pageName);
-    }
-
-    public JPanel getCards() {
-        return cards;
-    }
-
-    public void setCards(JPanel cards) {
-        this.cards = cards;
     }
 
     public void addCard(JComponent component, String name) {
