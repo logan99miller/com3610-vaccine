@@ -4,7 +4,7 @@ import java.util.HashMap;
 public class SelectViewPage extends SelectPage {
 
     private HashMap<String, Object> vaccineMap, personMap, medicalConditionMap, manufacturerMap, transporterMap, vaccinationCentreMap,
-        bookingMap, openingTimeMap, factoryMap, transportLocationMap, distributionCentreMap, vaccinePriorityMap;
+        bookingMap, factoryMap, transportLocationMap, distributionCentreMap, vaccinePriorityMap;
 
     private ViewPage viewVaccinePage, viewPersonPage, viewMedicalConditionPage, viewManufacturerPage, viewFactoryPage, viewTransporterPage,
         viewTransportLocationPage, viewDistributionCentrePage, viewVaccinationCentrePage, viewBookingPage, viewVaccinePriorityPage;
@@ -18,9 +18,9 @@ public class SelectViewPage extends SelectPage {
 
     private void createMaps() {
 
-        openingTimeMap = new HashMap<>();
+        HashMap<String, Object> openingTimeMap = new HashMap<>();
         openingTimeMap.put("heading", "Opening Times");
-        openingTimeMap.put("idFieldName", "locationID");
+        openingTimeMap.put("IDFieldName", "locationID");
         openingTimeMap.put("title", "Opening Times");
         openingTimeMap.put("headings", new String[] {"Day", "Start Time", "End Time"});
         openingTimeMap.put("columnNames", new String[] {"day", "startTime", "endTime"});
@@ -29,7 +29,7 @@ public class SelectViewPage extends SelectPage {
 
         HashMap<String, Object> minimalMedicalConditionMap = new HashMap<>();
         minimalMedicalConditionMap.put("heading", "Medical Condition");
-        minimalMedicalConditionMap.put("idFieldName", "medicalConditionID");
+        minimalMedicalConditionMap.put("IDFieldName", "medicalConditionID");
         minimalMedicalConditionMap.put("title", "Medical Condition");
         minimalMedicalConditionMap.put("headings", new String[] {"ID", "Name", "Vulnerability Level"});
         minimalMedicalConditionMap.put("columnNames", new String[] {"medicalConditionID", "name", "vulnerabilityLevel"});
@@ -37,7 +37,7 @@ public class SelectViewPage extends SelectPage {
 
         HashMap<String, Object> vaccineExemptionMap = new HashMap<>();
         vaccineExemptionMap.put("heading", "Exemptions");
-        vaccineExemptionMap.put("idFieldName", "vaccineID");
+        vaccineExemptionMap.put("IDFieldName", "vaccineID");
         vaccineExemptionMap.put("title", "Exemption(s)");
         vaccineExemptionMap.put("headings", new String[] {"Medical Condition"});
         vaccineExemptionMap.put("columnNames", new String[] {"medicalConditionID"});
@@ -46,7 +46,7 @@ public class SelectViewPage extends SelectPage {
 
         HashMap<String, Object> vaccineLifespanMap = new HashMap<>();
         vaccineLifespanMap.put("heading", "Lifespan");
-        vaccineLifespanMap.put("idFieldName", "vaccineID");
+        vaccineLifespanMap.put("IDFieldName", "vaccineID");
         vaccineLifespanMap.put("title", "Lifespan(s)");
         vaccineLifespanMap.put("headings", new String[] {"Lifespan", "Lowest Temperature", "Highest Temperature"});
         vaccineLifespanMap.put("columnNames", new String[] {"lifespan", "lowestTemperature", "highestTemperature"});
@@ -55,7 +55,7 @@ public class SelectViewPage extends SelectPage {
 
         HashMap<String, Object> minimalVaccineMap = new HashMap<>();
         minimalVaccineMap.put("heading", "Vaccine");
-        minimalVaccineMap.put("idFieldName", "vaccineID");
+        minimalVaccineMap.put("IDFieldName", "vaccineID");
         minimalVaccineMap.put("title", "Vaccine");
         minimalVaccineMap.put("headings", new String[] {"ID", "Name", "Doses Needed", "Lifespan"});
         minimalVaccineMap.put("columnNames", new String[] {"vaccineID", "name", "dosesNeeded", "vaccineID"});
@@ -64,7 +64,7 @@ public class SelectViewPage extends SelectPage {
 
         HashMap<String, Object> medicalExemptionMap = new HashMap<>();
         medicalExemptionMap.put("heading", "Exemptions");
-        medicalExemptionMap.put("idFieldName", "medicalConditionID");
+        medicalExemptionMap.put("IDFieldName", "medicalConditionID");
         medicalExemptionMap.put("title", "Exemption(s)");
         medicalExemptionMap.put("headings", new String[] {"Vaccine"});
         medicalExemptionMap.put("columnNames", new String[] {"vaccineID"});
@@ -73,25 +73,27 @@ public class SelectViewPage extends SelectPage {
 
         vaccineMap = new HashMap<>();
         vaccineMap.put("heading", "Vaccine");
-        vaccineMap.put("idFieldName", "vaccineID");
+        vaccineMap.put("IDFieldName", "vaccineID");
         vaccineMap.put("title", "Vaccine");
         vaccineMap.put("headings", new String[] {"ID", "Name", "Doses Needed", "Lifespan", "Exemptions"});
         vaccineMap.put("columnNames", new String[] {"vaccineID", "name", "dosesNeeded", "vaccineID", "vaccineID"});
         vaccineMap.put("references", new Object[] {vaccineLifespanMap, vaccineExemptionMap});
         vaccineMap.put("tableName", "vaccine");
+        vaccineMap.put("deleteOption", true);
 
         medicalConditionMap = new HashMap<>();
         medicalConditionMap.put("heading", "Medical Conditions");
-        medicalConditionMap.put("idFieldName", "medicalConditionID");
+        medicalConditionMap.put("IDFieldName", "medicalConditionID");
         medicalConditionMap.put("title", "Medical Conditions");
         medicalConditionMap.put("headings", new String[] {"ID", "Name", "Vulnerability Level", "Exemptions"});
         medicalConditionMap.put("columnNames", new String[] {"medicalConditionID", "name", "vulnerabilityLevel", "medicalConditionID"});
         medicalConditionMap.put("references", new Object[] {medicalExemptionMap});
         medicalConditionMap.put("tableName", "medicalCondition");
+        medicalConditionMap.put("deleteOption", true);
 
         HashMap<String, Object> personVaccineMap = new HashMap<>();
         personVaccineMap.put("heading", "Vaccines");
-        personVaccineMap.put("idFieldName", "personID");
+        personVaccineMap.put("IDFieldName", "personID");
         personVaccineMap.put("title", "Vaccines Received");
         personVaccineMap.put("headings", new String[] {"Vaccine", "Doses Received"});
         personVaccineMap.put("columnNames", new String[] {"vaccineID", "dosesRecieved"});
@@ -101,7 +103,7 @@ public class SelectViewPage extends SelectPage {
 
         HashMap<String, Object> personBookingMap = new HashMap<>();
         personBookingMap.put("heading", "Bookings");
-        personBookingMap.put("idFieldName", "personID");
+        personBookingMap.put("IDFieldName", "personID");
         personBookingMap.put("title", "Vaccination Centre");
         personBookingMap.put("headings", new String[] {"ID", "Vaccination Centre", "Date"});
         personBookingMap.put("columnNames", new String[] {"bookingID", "vaccinationCentreID", "date"});
@@ -110,16 +112,17 @@ public class SelectViewPage extends SelectPage {
 
         personMap = new HashMap<>();
         personMap.put("heading", "Person");
-        personMap.put("idFieldName", "personID");
+        personMap.put("IDFieldName", "personID");
         personMap.put("title", "Person");
         personMap.put("headings", new String[] {"ID", "Forename", "Surname", "DoB", "Medical Conditions", "Bookings", "Vaccines"});
         personMap.put("columnNames", new String[]  {"personID", "forename", "surname", "dob", "personID", "personID", "personID"});
         personMap.put("references", new Object[] {medicalConditionMap, personBookingMap, personVaccineMap});
         personMap.put("tableName", "person");
+        personMap.put("deleteOption", true);
 
         HashMap<String, Object> vaccineInStorageMap = new HashMap<>();
         vaccineInStorageMap.put("heading", "Used Storage");
-        vaccineInStorageMap.put("idFieldName", "storeID");
+        vaccineInStorageMap.put("IDFieldName", "storeID");
         vaccineInStorageMap.put("title", "Vaccines In Storage:");
         vaccineInStorageMap.put("headings", new String[] {"Vaccine", "Stock Level", "Expiration Date"});
         vaccineInStorageMap.put("columnNames", new String[] {"vaccineID", "stockLevel", "expirationDate"});
@@ -129,7 +132,7 @@ public class SelectViewPage extends SelectPage {
 
         HashMap<String, Object> storeMap = new HashMap<>();
         storeMap.put("heading", "Storage");
-        storeMap.put("idFieldName", "storageLocationID");
+        storeMap.put("IDFieldName", "storageLocationID");
         storeMap.put("title", "Storage Details:");
         storeMap.put("headings", new String[] {"Temperature", "Capacity", "Used Storage"});
         storeMap.put("columnNames", new String[] {"temperature", "capacity", "storeID"});
@@ -140,8 +143,8 @@ public class SelectViewPage extends SelectPage {
         HashMap<String, Object> linkedLocationMap = new HashMap<>();
         linkedLocationMap.put("heading", "Location");
         linkedLocationMap.put("linkerTableName", "storageLocation");
-        linkedLocationMap.put("linkerIdFieldName", "locationID");
-        linkedLocationMap.put("idFieldName", "storageLocationID");
+        linkedLocationMap.put("linkerIDFieldName", "locationID");
+        linkedLocationMap.put("IDFieldName", "storageLocationID");
         linkedLocationMap.put("title", "Location");
         linkedLocationMap.put("headings", new String[] {"ID", "Longitude", "Latitude", "Opening Times"});
         linkedLocationMap.put("columnNames", new String[] {"locationID", "longitude", "latitude", "locationID"});
@@ -151,51 +154,45 @@ public class SelectViewPage extends SelectPage {
 
         vaccinationCentreMap = new HashMap<>();
         vaccinationCentreMap.put("heading", "Vaccination Centre");
-        vaccinationCentreMap.put("idFieldName", "vaccinationCentreID");
+        vaccinationCentreMap.put("IDFieldName", "vaccinationCentreID");
         vaccinationCentreMap.put("title", "Vaccination Centre");
         vaccinationCentreMap.put("headings", new String[] {"ID", "Name", "Location", "Storage"});
         vaccinationCentreMap.put("columnNames", new String[] {"vaccinationCentreID", "name", "storageLocationID", "storageLocationID"});
         vaccinationCentreMap.put("references", new Object[] {linkedLocationMap, storeMap});
         vaccinationCentreMap.put("tableName", "vaccinationCentre");
+        vaccinationCentreMap.put("deleteOption", true);
 
         bookingMap = new HashMap<>();
         bookingMap.put("heading", "Bookings");
-        bookingMap.put("idFieldName", "personID");
+        bookingMap.put("IDFieldName", "personID");
         bookingMap.put("title", "Vaccination Centre");
         bookingMap.put("headings", new String[] {"ID", "Person", "Vaccination Centre", "Date"});
         bookingMap.put("columnNames", new String[] {"bookingID", "personID", "vaccinationCentreID", "date"});
         bookingMap.put("references", new Object[] {personMap, vaccinationCentreMap});
         bookingMap.put("tableName", "booking");
-
-        HashMap<String, Object> personMedicalConditionMap = new HashMap<>();
-        personMedicalConditionMap.put("heading", "People");
-        personMedicalConditionMap.put("idFieldName", "personID");
-        personMedicalConditionMap.put("title", "Medical Conditions");
-        personMedicalConditionMap.put("headings", new String[] {"Medical Condition"});
-        personMedicalConditionMap.put("columnNames", new String[] {"medicalConditionID"});
-        personMedicalConditionMap.put("references", new Object[] {medicalConditionMap});
-        personMedicalConditionMap.put("tableName", "personMedicalCondition");
-        personMedicalConditionMap.put("buttonText", "View");
+        bookingMap.put("deleteOption", true);
 
         manufacturerMap = new HashMap<>();
         manufacturerMap.put("heading", "Manufacturer");
-        manufacturerMap.put("idFieldName", "manufacturerID");
+        manufacturerMap.put("IDFieldName", "manufacturerID");
         manufacturerMap.put("title", "Manufacturers");
         manufacturerMap.put("headings", new String[] {"ID", "Name"});
         manufacturerMap.put("columnNames", new String[] {"manufacturerID", "name"});
         manufacturerMap.put("tableName", "manufacturer");
+        manufacturerMap.put("deleteOption", true);
 
         transporterMap = new HashMap<>();
         transporterMap.put("heading", "Transporter");
-        transporterMap.put("idFieldName", "transporterID");
+        transporterMap.put("IDFieldName", "transporterID");
         transporterMap.put("title", "Transporter");
         transporterMap.put("headings", new String[] {"ID", "Name"});
         transporterMap.put("columnNames", new String[] {"transporterID", "name"});
         transporterMap.put("tableName", "transporter");
+        transporterMap.put("deleteOption", true);
 
         HashMap<String, Object> locationMap = new HashMap<>();
         locationMap.put("heading", "Location");
-        locationMap.put("idFieldName", "locationID");
+        locationMap.put("IDFieldName", "locationID");
         locationMap.put("title", "Location");
         locationMap.put("headings", new String[] {"ID", "Longitude", "Latitude", "Opening Times"});
         locationMap.put("columnNames", new String[] {"locationID", "longitude", "latitude", "locationID"});
@@ -207,36 +204,47 @@ public class SelectViewPage extends SelectPage {
         factoryMap.put("columnNames", new String[] {"factoryID", "storageLocationID", "storageLocationID", "manufacturerID", "vaccinesPerMin"});
         factoryMap.put("references", new Object[] {storeMap, linkedLocationMap, manufacturerMap});
         factoryMap.put("tableName", "factory");
+        factoryMap.put("deleteOption", true);
 
         transportLocationMap = new HashMap<>();
         transportLocationMap.put("headings", new String[] {"ID", "Location", "Transporter", "Available Capacity", "Total Capacity"});
         transportLocationMap.put("columnNames", new String[] {"transporterLocationID", "locationID", "transporterID", "availableCapacity", "totalCapacity"});
         transportLocationMap.put("references", new Object[] {locationMap, transporterMap});
         transportLocationMap.put("tableName", "transporterLocation");
+        transportLocationMap.put("deleteOption", true);
 
         distributionCentreMap = new HashMap<>();
         distributionCentreMap.put("headings", new String[] {"ID", "Location", "Storage"});
         distributionCentreMap.put("columnNames", new String[] {"distributionCentreID", "storageLocationID", "storageLocationID"});
         distributionCentreMap.put("references", new Object[] {linkedLocationMap, storeMap});
         distributionCentreMap.put("tableName", "distributionCentre");
+        distributionCentreMap.put("deleteOption", true);
 
         vaccinePriorityMap = new HashMap<>();
         vaccinePriorityMap.put("headings", new String[] {"Vaccine", "Lowest Age", "Highest Age", "Dose Number", "Position in Queue", "Eligible"});
         vaccinePriorityMap.put("columnNames", new String[] {"vaccineID", "lowestAge", "highestAge", "doseNumber", "positionInQueue", "eligible"});
         vaccinePriorityMap.put("references", new Object[] {vaccineMap});
         vaccinePriorityMap.put("tableName", "vaccinePriority");
+        vaccinePriorityMap.put("deleteOption", true);
     }
 
     private ViewPage createViewPage(HashMap<String, Object> map, String title) {
         ViewPage viewPage;
 
-        try {
-            viewPage = new ViewPage(vaccineSystem, mainPage, title, (String[]) map.get("headings"),
-                (String[]) map.get("columnNames"), (Object[]) map.get("references"), (String) map.get("tableName"));
-        } catch (Exception e) {
-            viewPage = new ViewPage(vaccineSystem, mainPage, title, (String[]) map.get("headings"),
-                (String[]) map.get("columnNames"), (String) map.get("tableName"));
+        if (!map.containsKey("references")) {
+            map.put("references", null);
         }
+        if (!map.containsKey("deleteOption")) {
+            map.put("deleteOption", false);
+        }
+
+        viewPage = new ViewPage(
+        vaccineSystem, mainPage, title,
+        (String[]) map.get("headings"),
+        (String[]) map.get("columnNames"),
+        (Object[]) map.get("references"),
+        (String) map.get("tableName"),
+        (boolean) map.get("deleteOption"));
 
         return viewPage;
     }

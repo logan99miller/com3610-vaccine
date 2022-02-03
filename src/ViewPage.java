@@ -1,38 +1,41 @@
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ViewPage extends Page {
 
-    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
-        Object[] references, String tableName, String where) {
+    private MainPage mainPage;
+    private String[] headings;
+    private String[] columnNames;
+    private Object[] references;
+    private String tableName;
+    private String where;
+    private boolean deleteOption;
 
+    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
+        Object[] references, String tableName, boolean deleteOption, String where) {
         super(vaccineSystem);
 
+        this.mainPage = mainPage;
+        this.headings = headings;
+        this.columnNames = columnNames;
+        this.references = references;
+        this.tableName = tableName;
+        this.deleteOption = deleteOption;
+        this.where = where;
+
         mainPanel.add(new JLabel(title));
-        mainPanel.add(createTablePanel(mainPage, headings, columnNames, references, tableName, where));
+        mainPanel.add(createTablePanel());
 
         setMaxWidthMinHeight(mainPanel);
     }
 
     public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
-        Object[] references, String tableName) {
-
-        this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, null);
-    }
-
-    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
-        String tableName, String where) {
-
-        this(vaccineSystem, mainPage, title, headings, columnNames, new Object[] {}, tableName, where);
-    }
-
-    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
-        String tableName) {
-
-        this(vaccineSystem, mainPage, title, headings, columnNames, new Object[] {}, tableName, null);
+        Object[] references, String tableName, boolean deleteOption) {
+        this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, null);
     }
 
     private String[] addElement(String element, String[] array) {
@@ -40,12 +43,15 @@ public class ViewPage extends Page {
         for (int i = 0; i < array.length; i++) {
             newArray[i] = array[i];
         }
-        newArray[array.length] = "Delete";
+        newArray[array.length] = element;
         return newArray;
     }
 
-    private void addHeadings(String[] headings, JPanel tablePanel) {
-        headings = addElement("Delete", headings);
+    private void addHeadings(JPanel tablePanel) {
+
+        if (deleteOption) {
+            headings = addElement("Delete", headings);
+        }
 
         for (String heading : headings) {
             JLabel header = new JLabel(heading);
@@ -55,22 +61,22 @@ public class ViewPage extends Page {
     }
 
     private String createWhere(HashMap<String, Object> reference, String id) {
-        String where = "(" + reference.get("idFieldName") + " = " + id + ")";
+        String where = "(" + reference.get("IDFieldName") + " = " + id + ")";
 
         String linkerTable = (String) reference.get("linkerTableName");
-        String linkerIdFieldName = (String) reference.get("linkerIdFieldName");
+        String linkerIDFieldName = (String) reference.get("linkerIDFieldName");
 
-        if ((linkerTable != null) && (linkerIdFieldName != null)) {
+        if ((linkerTable != null) && (linkerIDFieldName != null)) {
             try {
-                ArrayList<ArrayList<String>> records = vaccineSystem.executeSelect(new String[]{linkerIdFieldName}, linkerTable, where);
-                return "(" + reference.get("linkerIdFieldName") + " = " + records.get(0).get(0) + ")";
+                ArrayList<ArrayList<String>> records = vaccineSystem.executeSelect(new String[]{linkerIDFieldName}, linkerTable, where);
+                return "(" + reference.get("linkerIDFieldName") + " = " + records.get(0).get(0) + ")";
             }
             catch (SQLException e) {}
         }
         return where;
     }
 
-    private void addReferenceButton(MainPage mainPage, HashMap<String, Object> reference, String id, JPanel tablePanel) {
+    private void addReferenceButton(HashMap<String, Object> reference, String id, JPanel tablePanel) {
         JButton button = new JButton();
 
         if (reference.containsKey("buttonText")) {
@@ -86,26 +92,18 @@ public class ViewPage extends Page {
 
             String where = createWhere(reference, id);
 
-            try {
-                viewPage = new ViewPage(
-                    vaccineSystem,
-                    mainPage,
-                    (String) reference.get("title"),
-                    (String[]) reference.get("headings"),
-                    (String[]) reference.get("columnNames"),
-                    (Object[]) reference.get("references"),
-                    (String) reference.get("tableName"),
-                    where);
-            } catch (Exception ex) {
-                viewPage = new ViewPage(
-                    vaccineSystem,
-                    mainPage,
-                    (String) reference.get("title"),
-                    (String[]) reference.get("headings"),
-                    (String[]) reference.get("columnNames"),
-                    (String) reference.get("tableName"),
-                    where);
+            if (!reference.containsKey("references")) {
+                reference.put("references", null);
             }
+
+            viewPage = new ViewPage(
+                vaccineSystem, mainPage,
+                (String) reference.get("title"),
+                (String[]) reference.get("headings"),
+                (String[]) reference.get("columnNames"),
+                (Object[]) reference.get("references"),
+                (String) reference.get("tableName"),
+                false, where);
 
             JFrame frame = new JFrame();
             frame.add(viewPage.getPanel());
@@ -116,22 +114,39 @@ public class ViewPage extends Page {
         tablePanel.add(button);
     }
 
-    private void addTableContents(MainPage mainPage, ArrayList<ArrayList<String>> contents, Object[] references, JPanel tablePanel) {
+    private void deleteRow(String tableName, String IDFieldName, String ID) {
+        try {
+            String statementText = "DELETE FROM " + tableName + " WHERE " + IDFieldName +" = " + ID;
+            vaccineSystem.executeUpdate(statementText);
+        }
+        catch (Exception e) {
+            System.out.println("Hello");
+            errorMessage("ex");
+        }
+    }
+
+    private void addTableContents(ArrayList<ArrayList<String>> contents, JPanel tablePanel) {
         for (ArrayList<String> row : contents) {
             for (int i = 0; i < row.size() + 1; i ++) {
 
                 if (i > row.size() - 1) {
-                    JButton button = new JButton("hello");
-                    tablePanel.add(button);
+                    if (deleteOption) {
+                        JButton button = new JButton("X");
+                        button.addActionListener(e -> { deleteRow(tableName, columnNames[0], row.get(0)); });
+                        tablePanel.add(button);
+                    }
                 }
                 else {
                     boolean isReference = false;
-                    for (Object referenceObject : references) {
-                        HashMap<String, Object> reference = (HashMap<String, Object>) referenceObject;
 
-                        if (reference.get("columnNumber").equals(i)) {
-                            addReferenceButton(mainPage, reference, row.get(i), tablePanel);
-                            isReference = true;
+                    if (references != null) {
+                        for (Object referenceObject : references) {
+                            HashMap<String, Object> reference = (HashMap<String, Object>) referenceObject;
+
+                            if (reference.get("columnNumber").equals(i)) {
+                                addReferenceButton(reference, row.get(i), tablePanel);
+                                isReference = true;
+                            }
                         }
                     }
                     if (!isReference) {
@@ -142,17 +157,26 @@ public class ViewPage extends Page {
         }
     }
 
-    private JPanel createTablePanel(MainPage mainPage, String[] headings, String[] columnNames, Object[] references, String tableName, String where) {
-        JPanel tablePanel = new JPanel(new GridLayout(0, columnNames.length + 1));
-        addHeadings(headings, tablePanel);
+    private JPanel createTablePanel() {
+
+        JPanel tablePanel = new JPanel();
+        if (deleteOption) {
+            tablePanel.setLayout(new GridLayout(0, columnNames.length + 1));
+        }
+        else {
+            tablePanel.setLayout(new GridLayout(0, columnNames.length));
+        }
+        addHeadings(tablePanel);
 
         for (int i = 0; i < columnNames.length; i++) {
 
-            for (Object referenceObject : references) {
-                HashMap<String, Object> reference = (HashMap<String, Object>) referenceObject;
+            if (references != null) {
+                for (Object referenceObject : references) {
+                    HashMap<String, Object> reference = (HashMap<String, Object>) referenceObject;
 
-                if (reference.get("heading").equals(headings[i])) {
-                    reference.put("columnNumber", i);
+                    if (reference.get("heading").equals(headings[i])) {
+                        reference.put("columnNumber", i);
+                    }
                 }
             }
         }
@@ -166,12 +190,11 @@ public class ViewPage extends Page {
                 tableContents = vaccineSystem.executeSelect(columnNames, tableName, where);
             }
 
-            addTableContents(mainPage, tableContents, references, tablePanel);
+            addTableContents(tableContents, tablePanel);
         }
         catch (SQLException ignored) {}
 
         setMaxWidthMinHeight(tablePanel);
         return tablePanel;
     }
-
 }
