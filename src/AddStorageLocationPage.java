@@ -50,6 +50,7 @@ public class AddStorageLocationPage extends AddLocationPage {
             String capacity = addStore.getCapacity();
 
             values = storageLocationID + ", " + temperature + ", " + capacity;
+            System.out.println(values);
             statements.add("INSERT INTO Store (storageLocationID, temperature, capacity) VALUES (" + values + ");");
         }
     }

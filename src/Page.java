@@ -9,14 +9,12 @@ public class Page implements ActionListener {
 
     protected JPanel mainPanel;
     protected VaccineSystem vaccineSystem;
-
     protected ArrayList<JButton> buttons;
     protected String buttonAction;
 
     public Page(VaccineSystem vaccineSystem) {
         mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-
         buttons = new ArrayList<>();
         this.vaccineSystem = vaccineSystem;
     }
@@ -49,18 +47,16 @@ public class Page implements ActionListener {
         panel.setMaximumSize(new Dimension(width, height));
     }
 
-    protected JList getColumnsAsJList(String[] columnNames, String tableName) {
-
+    protected ListModel ArrayListToListModel(ArrayList<String> arrayList) {
         DefaultListModel<String> listModel = new DefaultListModel<>();
-        Object[] records = getFormattedSelect(columnNames, tableName);
 
-        for (Object record : records) {
-            listModel.addElement((String) record);
+        for (Object listItem : arrayList) {
+            listModel.addElement((String) listItem);
         }
-        return (new JList<>(listModel));
+        return (listModel);
     }
 
-    protected Object[] getFormattedSelect(String[] columnNames, String tableName) {
+    protected ArrayList<String> getFormattedSelect(String[] columnNames, String tableName) {
         ArrayList<String> output = new ArrayList<>();
 
         try {
@@ -77,7 +73,7 @@ public class Page implements ActionListener {
             }
         } catch (SQLException e) {}
 
-        return (output.toArray());
+        return (output);
     }
 
     protected static JSpinner createJSpinner(int minValue, int maxValue, int columns) {

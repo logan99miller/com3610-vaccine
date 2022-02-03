@@ -46,7 +46,6 @@ public class AddLocationPage extends AddPage {
     }
 
     protected void createStatements() {
-
         String values = longitudeTextField.getText() + ", " + latitudeTextField.getText();
         String statement = "INSERT INTO Location (longitude, latitude) VALUES (" + values + ");";
         locationID = insertAndGetID(statement, "locationID", "Location");

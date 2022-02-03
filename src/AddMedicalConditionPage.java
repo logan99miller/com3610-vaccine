@@ -15,9 +15,11 @@ public class AddMedicalConditionPage extends AddPage {
         JPanel listPanel = new JPanel(new GridLayout(0, 2));
         inputPanel.add(listPanel);
 
+        ListModel vaccines = ArrayListToListModel(getFormattedSelect(new String[] {"vaccineID", "name"}, "vaccine"));
+
         nameTextField = new JTextField();
         vulnerabilityLevelSpinner = createJSpinner(1, 100, 3);
-        vaccinesList = getColumnsAsJList(new String[] {"vaccineID", "name"}, "vaccine");
+        vaccinesList = new JList(vaccines);
 
         addLabelledComponent(inputGridPanel, "*Name:", nameTextField);
         addLabelledComponent(inputGridPanel, "Vulnerability Level:", vulnerabilityLevelSpinner);

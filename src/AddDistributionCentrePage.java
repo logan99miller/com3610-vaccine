@@ -1,5 +1,4 @@
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 
 public class AddDistributionCentrePage extends AddStorageLocationPage {
 
@@ -9,7 +8,7 @@ public class AddDistributionCentrePage extends AddStorageLocationPage {
     }
 
     protected void createStatements() {
-        statements = new ArrayList<>();
+        super.createStatements();
         statements.add("INSERT INTO DistributionCentre (storageLocationID) VALUES (" + storageLocationID + ");");
     }
 

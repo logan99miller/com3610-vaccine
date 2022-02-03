@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 
 public class AddTransporterLocationPage extends AddLocationPage {
 
@@ -21,7 +20,7 @@ public class AddTransporterLocationPage extends AddLocationPage {
         totalCapacityTextField = new JTextField();
 
         String[] columnNames = {"transporterID", "name"};
-        transportersComboBox = new JComboBox(getFormattedSelect(columnNames, "Transporter"));
+        transportersComboBox = new JComboBox(getFormattedSelect(columnNames, "Transporter").toArray());
 
         inputFieldsGridPanel.add(new JLabel("-*Total capacity:"));
         inputFieldsGridPanel.add(totalCapacityTextField);
@@ -34,7 +33,6 @@ public class AddTransporterLocationPage extends AddLocationPage {
 
     protected void createStatements() {
         super.createStatements();
-        statements = new ArrayList<>();
 
         totalCapacity = totalCapacityTextField.getText();
         String transporter = (String) transportersComboBox.getSelectedItem();

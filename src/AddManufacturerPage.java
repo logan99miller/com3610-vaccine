@@ -14,15 +14,16 @@ public class AddManufacturerPage extends AddPage {
         JPanel listPanel = new JPanel(new GridLayout(0, 2));
         inputPanel.add(listPanel);
 
+        ListModel vaccines = ArrayListToListModel(getFormattedSelect(new String[] {"vaccineID", "name"}, "Vaccine"));
+
         nameTextField = new JTextField();
-        vaccinesList = getColumnsAsJList(new String[] {"vaccineID", "name"}, "Vaccine");
+        vaccinesList = new JList(vaccines);
 
         addLabelledComponent(inputGridPanel, "*Name:", nameTextField);
         addLabelledComponent(listPanel, "Vaccines produced: ", vaccinesList);
 
         setMaxWidthMinHeight(inputPanel);
     }
-
 
     private void createStatements() {
         statements = new ArrayList<>();

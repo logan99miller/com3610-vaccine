@@ -20,9 +20,12 @@ public class AddVaccinePage extends AddPage {
         inputPanel.add(lifespanPanel);
         inputPanel.add(exemptionsPanel);
 
+        ArrayList<String> medicalCondtionsList = getFormattedSelect(new String[] {"medicalConditionID", "name"}, "MedicalCondition");
+        ListModel medicalConditionsListModel = ArrayListToListModel(medicalCondtionsList);
+
         nameTextField = new JTextField();
         dosesNeededSpinner = createJSpinner(1, 100, 3);
-        medicalConditionsList = getColumnsAsJList(new String[] {"medicalConditionID", "name"}, "MedicalCondition");
+        medicalConditionsList = new JList(medicalConditionsListModel);
 
         addLabelledComponent(inputGridPanel, "Name:", nameTextField);
         addLabelledComponent(inputGridPanel, "Doses Needed:", dosesNeededSpinner);

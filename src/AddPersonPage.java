@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class AddPersonPage extends AddPage {
 
-    JTextField forenameTextField, surnameTextField, DoBTextField;
+    private JTextField forenameTextField, surnameTextField, DoBTextField;
 
     public AddPersonPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Person:");

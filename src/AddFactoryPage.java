@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
@@ -14,7 +13,7 @@ public class AddFactoryPage extends AddStorageLocationPage {
         vaccinesPerMinTextField = new JTextField();
 
         String[] columnNames = {"manufacturerID", "name"};
-        manufacturersComboBox = new JComboBox(getFormattedSelect(columnNames, "Manufacturer"));
+        manufacturersComboBox = new JComboBox(getFormattedSelect(columnNames, "Manufacturer").toArray());
 
         addLabelledComponent(inputGridPanel, "-*Vaccines per minute:", vaccinesPerMinTextField);
         addLabelledComponent(inputGridPanel, "Manufacturer:", manufacturersComboBox);
@@ -24,7 +23,6 @@ public class AddFactoryPage extends AddStorageLocationPage {
 
     protected void createStatements() {
         super.createStatements();
-        statements = new ArrayList<>();
 
         String vaccinesPerMin = vaccinesPerMinTextField.getText();
         String manufacturer = (String) manufacturersComboBox.getSelectedItem();

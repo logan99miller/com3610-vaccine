@@ -5,7 +5,7 @@ import java.awt.event.ActionEvent;
 public class MainPage extends Page {
 
     private String pageName;
-    private JButton addPageButton, editPageButton, logPageButton, mapPageButton, logoutButton;
+    private JButton addPageButton, viewPageButton, logPageButton, mapPageButton, logoutButton;
     private CardLayout cardLayout;
     private JPanel cards;
 
@@ -21,13 +21,13 @@ public class MainPage extends Page {
         JPanel panel = new JPanel();
 
         addPageButton = new JButton("Add");
-        editPageButton = new JButton("View / Edit");
+        viewPageButton = new JButton("View");
         logPageButton = new JButton("Activity Log");
         mapPageButton = new JButton("Map View");
         logoutButton = new JButton("Log Out");
 
         buttons.add(addPageButton);
-        buttons.add(editPageButton);
+        buttons.add(viewPageButton);
         buttons.add(logPageButton);
         buttons.add(mapPageButton);
         buttons.add(logoutButton);
@@ -44,41 +44,41 @@ public class MainPage extends Page {
         cards = new JPanel(cardLayout);
 
         SelectAddPage selectAddPage = new SelectAddPage(vaccineSystem, this);
-        SelectEditPage selectEditPage = new SelectEditPage(vaccineSystem, this);
+        SelectViewPage selectViewPage = new SelectViewPage(vaccineSystem, this);
         Page logPage = new Page(vaccineSystem);
         Page mapPage = new Page(vaccineSystem);
 
         JPanel addPanel = selectAddPage.getPanel();
-        JPanel editPanel = selectEditPage.getPanel();
+        JPanel viewPanel = selectViewPage.getPanel();
         JPanel logPanel = logPage.getPanel();
         JPanel mapPanel = mapPage.getPanel();
 
+        // Bad code practice, need to replace
         cards.add(addPanel, getSanitizedButtonText(addPageButton));
-        cards.add(editPanel, getSanitizedButtonText(editPageButton));
+        cards.add(viewPanel, getSanitizedButtonText(viewPageButton));
         cards.add(logPanel, getSanitizedButtonText(logPageButton));
         cards.add(mapPanel, getSanitizedButtonText(mapPageButton));
 
-        cardLayout.show(cards, "add");
+        cardLayout.show(cards, "view");
 
         return cards;
     }
 
     public void actionPerformed(ActionEvent e) {
-        for (JButton button : buttons) {
-            if (e.getSource() == button) {
-
-                String buttonText = getSanitizedButtonText(button);
-                if (buttonText.equals("logout")) {
-                    vaccineSystem.setPageName("login");
-                    vaccineSystem.updatePage();
-                }
-                else {
+        if (e.getSource() == logoutButton) {
+            vaccineSystem.setPageName("login");
+            vaccineSystem.updatePage();
+        }
+        else {
+            for (JButton button : buttons) {
+                if (e.getSource() == button) {
                     cardLayout.show(cards, getSanitizedButtonText(button));
                     button.setFont(button.getFont().deriveFont(Font.BOLD));
                 }
-            }
-            else {
-                button.setFont(button.getFont().deriveFont(Font.PLAIN));
+                else {
+                    button.setFont(button.getFont().deriveFont(Font.PLAIN));
+
+                }
             }
         }
     }

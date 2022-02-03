@@ -40,8 +40,7 @@ public class AddPage extends Page {
     }
 
     protected void createPageTitle(String title) {
-        JLabel pageTitle = new JLabel(title);
-        mainPanel.add(pageTitle);
+        mainPanel.add(new JLabel(title));
     }
 
     protected void createInputFieldsPanel() {
@@ -56,7 +55,7 @@ public class AddPage extends Page {
         addButton(submitButton, mainPanel);
     }
 
-    protected void createFieldExplanations() {
+    private void createFieldExplanations() {
         mainPanel.add(new JLabel("Fields marked with a * are required"));
         mainPanel.add(new JLabel("Fields marked with a - require a numeric input"));
     }

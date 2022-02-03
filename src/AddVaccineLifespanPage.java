@@ -39,7 +39,6 @@ public class AddVaccineLifespanPage extends AddPage {
             panel.setMaximumSize(new Dimension(frameWidth, panel.getMinimumSize().height));
             inputPanel.add(panel);
         }
-
     }
 
     public void actionPerformed(ActionEvent e) {

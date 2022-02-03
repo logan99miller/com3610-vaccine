@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
@@ -15,8 +14,8 @@ public class AddBookingPage extends AddPage {
         String[] personColumnNames = {"personID", "forename", "surname"};
         String[] vaccinationCentreColumnNames = new String[] {"vaccinationCentreID", "name"};
 
-        personComboBox = new JComboBox(getFormattedSelect(personColumnNames, "Person"));
-        vaccinationCentreComboBox = new JComboBox(getFormattedSelect(vaccinationCentreColumnNames, "VaccinationCentre"));
+        personComboBox = new JComboBox(getFormattedSelect(personColumnNames, "Person").toArray());
+        vaccinationCentreComboBox = new JComboBox(getFormattedSelect(vaccinationCentreColumnNames, "VaccinationCentre").toArray());
         dateTextField = new JTextField();
         hourSpinner = createJSpinner(0, 24, 2);
         minuteSpinner = createJSpinner(0, 60, 2);
@@ -25,7 +24,6 @@ public class AddBookingPage extends AddPage {
         addLabelledComponent(inputGridPanel, "Vaccination Centre:", vaccinationCentreComboBox);
         addLabelledComponent(inputGridPanel, "*Date (YYYY-MM-DD):", dateTextField);
         addLabelledComponent(inputGridPanel, "Time:", createTimePanel(hourSpinner, minuteSpinner, 9, 0));
-
 
         setMaxWidthMinHeight(inputPanel);
     }

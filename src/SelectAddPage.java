@@ -1,7 +1,9 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class SelectAddPage extends SelectTablePage {
+public class SelectAddPage extends SelectPage {
+
+    private JButton stockButton;
 
     public SelectAddPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "add");
@@ -9,6 +11,12 @@ public class SelectAddPage extends SelectTablePage {
     }
 
     private void createAddingPages() {
+
+
+        // MOVE THIS TO ADD OPTION IN VIEW PAGES
+        stockButton = new JButton("Stock");
+        buttons.add(stockButton);
+        addButton(stockButton, mainPanel);
 
         AddVaccinePage addVaccinePage = new AddVaccinePage(vaccineSystem, mainPage);
         AddPersonPage addPersonPage = new AddPersonPage(vaccineSystem, mainPage);
@@ -21,6 +29,7 @@ public class SelectAddPage extends SelectTablePage {
         AddVaccinationCentrePage addVaccinationCentrePage = new AddVaccinationCentrePage(vaccineSystem, mainPage);
         AddBookingPage addBookingPage = new AddBookingPage(vaccineSystem, mainPage);
         AddVaccinePriorityPage addVaccinePriorityPage = new AddVaccinePriorityPage(vaccineSystem, mainPage);
+        AddStockPage addStockPage = new AddStockPage(vaccineSystem, mainPage);
 
         JPanel addVaccinePanel = addVaccinePage.getPanel();
         JPanel addPersonPanel = addPersonPage.getPanel();
@@ -33,6 +42,7 @@ public class SelectAddPage extends SelectTablePage {
         JPanel addVaccinationCentrePanel = addVaccinationCentrePage.getPanel();
         JPanel addBookingPanel = addBookingPage.getPanel();
         JPanel addVaccinePriorityPanel = addVaccinePriorityPage.getPanel();
+        JPanel addStockPanel = addStockPage.getPanel();
 
         mainPage.addCard(addVaccinePanel, "add" + getSanitizedButtonText(vaccineButton));
         mainPage.addCard(addPersonPanel, "add" + getSanitizedButtonText(personButton));
@@ -45,6 +55,8 @@ public class SelectAddPage extends SelectTablePage {
         mainPage.addCard(addVaccinationCentrePanel, "add" + getSanitizedButtonText(vaccinationCentreButton));
         mainPage.addCard(addBookingPanel, "add" + getSanitizedButtonText(bookingButton));
         mainPage.addCard(addVaccinePriorityPanel, "add" + getSanitizedButtonText(vaccinePriorityButton));
+        mainPage.addCard(addStockPanel, "add" + getSanitizedButtonText(stockButton));
+
     }
 
     // Crude solution to updating selection boxes when items are added to database

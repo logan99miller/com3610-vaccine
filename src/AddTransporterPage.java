@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
@@ -9,11 +8,8 @@ public class AddTransporterPage extends AddPage {
 
     public AddTransporterPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Transporter:");
-
         nameTextField = new JTextField();
-
         addLabelledComponent(inputGridPanel, "*Name:", nameTextField);
-
         setMaxWidthMinHeight(inputPanel);
     }
 

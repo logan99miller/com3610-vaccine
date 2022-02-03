@@ -17,13 +17,16 @@ public class AddVaccinePriorityPage extends AddPage {
         inputPanel.add(listPanel);
 
         String[] vaccineColumnNames = new String[]{"vaccineID", "name"};
+        String[] vaccinePriorityColumnNames = new String[] {"vaccinePriorityID", "eligible", "vaccineID", "lowestAge", "highestAge", "doseNumber", "positionInQueue"};
+
+        ListModel vaccinePriorities = ArrayListToListModel(getFormattedSelect(vaccinePriorityColumnNames, "VaccinePriority"));
 
         eligibleCheckbox = new JCheckBox();
-        vaccineComboBox = new JComboBox(getFormattedSelect(vaccineColumnNames, "Vaccine"));
+        vaccineComboBox = new JComboBox(getFormattedSelect(vaccineColumnNames, "Vaccine").toArray());
         lowestAgeSpinner = createJSpinner(1, 100, 3);
         highestAgeSpinner = createJSpinner(1, 100, 3);
         doseNumberSpinner = createJSpinner(1, 100, 3);
-        vaccinePriorityList = getColumnsAsJList(new String[] {"vaccinePriorityID", "eligible", "vaccineID", "lowestAge", "highestAge", "doseNumber", "positionInQueue"}, "VaccinePriority");
+        vaccinePriorityList = new JList(vaccinePriorities);
 
         eligibleCheckbox.setSelected(true);
 

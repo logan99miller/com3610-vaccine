@@ -19,7 +19,7 @@ public class VaccineSystem extends JFrame {
         super(titleBarText);
 
         user = "root";
-        password = "artstowerhas20";
+        password = "";
 
         configureWindow(700, 700);
         createInterface();
@@ -67,7 +67,7 @@ public class VaccineSystem extends JFrame {
         }
     }
 
-    public ArrayList<ArrayList<String>> executeSelect(String[] columnLabels, String tableName) throws SQLException {
+    public ArrayList<ArrayList<String>> executeSelect(String[] columnLabels, String tableName, String where) throws SQLException {
         Connection connection = null;
         Statement statement;
 
@@ -81,6 +81,11 @@ public class VaccineSystem extends JFrame {
         statementText = statementText.substring(0, statementText.length() - 2);
         statementText += " FROM " + tableName;
 
+        if (where != null) {
+            statementText += " WHERE " + where;
+        }
+
+        System.out.println(statementText);
         try {
             connection = DriverManager.getConnection(URL, user, password);
             statement = connection.createStatement();
@@ -104,6 +109,10 @@ public class VaccineSystem extends JFrame {
             }
         }
         return null;
+    }
+
+    public ArrayList<ArrayList<String>> executeSelect(String[] columnLabels, String tableName) throws SQLException {
+        return executeSelect(columnLabels, tableName, null);
     }
 
     public void setUser(String user) {
