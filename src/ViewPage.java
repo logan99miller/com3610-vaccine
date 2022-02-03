@@ -38,6 +38,17 @@ public class ViewPage extends Page {
         this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, null);
     }
 
+    private JPanel createTablePanel() {
+        JPanel tablePanel = new JPanel();
+        setTableLayout(tablePanel);
+        addHeadings(tablePanel);
+        addReferenceColumnNumbers();
+        addTableContents(getTableContents(), tablePanel);
+
+        setMaxWidthMinHeight(tablePanel);
+        return tablePanel;
+    }
+
     private String[] addElement(String element, String[] array) {
         String[] newArray = new String[array.length + 1];
         for (int i = 0; i < array.length; i++) {
@@ -48,7 +59,6 @@ public class ViewPage extends Page {
     }
 
     private void addHeadings(JPanel tablePanel) {
-
         if (deleteOption) {
             headings = addElement("Delete", headings);
         }
@@ -76,27 +86,22 @@ public class ViewPage extends Page {
         return where;
     }
 
-    private void addReferenceButton(HashMap<String, Object> reference, String id, JPanel tablePanel) {
-        JButton button = new JButton();
-
+    private JButton setReferenceButtonText(HashMap<String, Object> reference, JButton button, String id) {
         if (reference.containsKey("buttonText")) {
             button.setText((String) reference.get("buttonText"));
         }
         else {
             button.setText(id);
         }
+        return button;
+    }
 
-        button.addActionListener(e -> {
+    private void addReferenceButtonActionListener(HashMap<String, Object> reference, String where) {
+        if (!reference.containsKey("references")) {
+            reference.put("references", null);
+        }
 
-            ViewPage viewPage;
-
-            String where = createWhere(reference, id);
-
-            if (!reference.containsKey("references")) {
-                reference.put("references", null);
-            }
-
-            viewPage = new ViewPage(
+        ViewPage viewPage = new ViewPage(
                 vaccineSystem, mainPage,
                 (String) reference.get("title"),
                 (String[]) reference.get("headings"),
@@ -105,11 +110,18 @@ public class ViewPage extends Page {
                 (String) reference.get("tableName"),
                 false, where);
 
-            JFrame frame = new JFrame();
-            frame.add(viewPage.getPanel());
+        JFrame frame = new JFrame();
+        frame.add(viewPage.getPanel());
 
-            createPopupFrame(frame, viewPage.getPanel(), 800, 500);
-        });
+        createPopupFrame(frame, viewPage.getPanel(), 800, 500);
+    }
+
+    private void addReferenceButton(HashMap<String, Object> reference, String id, JPanel tablePanel) {
+        JButton button = new JButton();
+        button = setReferenceButtonText(reference, button, id);
+        String where = createWhere(reference, id);
+
+        button.addActionListener(e -> { addReferenceButtonActionListener(reference, where);});
 
         tablePanel.add(button);
     }
@@ -156,19 +168,19 @@ public class ViewPage extends Page {
         }
     }
 
-    private JPanel createTablePanel() {
-
-        JPanel tablePanel = new JPanel();
+    // Add an extra column to the table's grid layout if a delete column is required
+    private void setTableLayout(JPanel tablePanel) {
         if (deleteOption) {
             tablePanel.setLayout(new GridLayout(0, columnNames.length + 1));
         }
         else {
             tablePanel.setLayout(new GridLayout(0, columnNames.length));
         }
-        addHeadings(tablePanel);
+    }
 
+    // Add column number of table for when a button to a reference will be needed
+    private void addReferenceColumnNumbers() {
         for (int i = 0; i < columnNames.length; i++) {
-
             if (references != null) {
                 for (Object referenceObject : references) {
                     HashMap<String, Object> reference = (HashMap<String, Object>) referenceObject;
@@ -179,21 +191,18 @@ public class ViewPage extends Page {
                 }
             }
         }
+    }
 
+    private ArrayList<ArrayList<String>> getTableContents() {
+        ArrayList<ArrayList<String>> tableContents = new ArrayList<>();
         try {
-            ArrayList<ArrayList<String>> tableContents;
             if (where == null) {
                 tableContents = vaccineSystem.executeSelect(columnNames, tableName);
             }
             else {
                 tableContents = vaccineSystem.executeSelect(columnNames, tableName, where);
             }
-
-            addTableContents(tableContents, tablePanel);
-        }
-        catch (SQLException ignored) {}
-
-        setMaxWidthMinHeight(tablePanel);
-        return tablePanel;
+        } catch (SQLException e) {}
+        return tableContents;
     }
 }
