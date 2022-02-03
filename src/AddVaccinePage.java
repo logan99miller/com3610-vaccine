@@ -7,6 +7,7 @@ public class AddVaccinePage extends AddPage {
 
     private JTextField nameTextField;
     private JSpinner dosesNeededSpinner;
+    private JTextField daysBetweenDosesTextField;
     private JButton lifespanButton;
     private JComboBox numLifespanComboBox;
     private JList<String> medicalConditionsList;
@@ -20,17 +21,19 @@ public class AddVaccinePage extends AddPage {
         inputPanel.add(lifespanPanel);
         inputPanel.add(exemptionsPanel);
 
-        ArrayList<String> medicalCondtionsList = getFormattedSelect(new String[] {"medicalConditionID", "name"}, "MedicalCondition");
-        ListModel medicalConditionsListModel = ArrayListToListModel(medicalCondtionsList);
+        ArrayList<String> medicalConditions = getFormattedSelect(new String[] {"medicalConditionID", "name"}, "MedicalCondition");
+        ListModel medicalConditionsListModel = ArrayListToListModel(medicalConditions);
 
         nameTextField = new JTextField();
         dosesNeededSpinner = createJSpinner(1, 100, 3);
+        daysBetweenDosesTextField = new JTextField();
         medicalConditionsList = new JList(medicalConditionsListModel);
 
         addLabelledComponent(inputGridPanel, "Name:", nameTextField);
         addLabelledComponent(inputGridPanel, "Doses Needed:", dosesNeededSpinner);
+        addLabelledComponent(inputGridPanel, "-Days Between Doses:", daysBetweenDosesTextField);
         addLabelledComponent(lifespanPanel, "Number of lifespan temperature variations:", createLifespanPanel(10));
-        addLabelledComponent(exemptionsPanel, "Medical Exemptions:", medicalConditionsList);
+        addLabelledComponent(exemptionsPanel, "Medical Conditions:", medicalConditionsList);
 
         setMaxWidthMinHeight(inputPanel);
 
@@ -83,8 +86,8 @@ public class AddVaccinePage extends AddPage {
     private void createStatements() {
         statements = new ArrayList<>();
 
-        String values = "\"" + nameTextField.getText() + "\", " + dosesNeededSpinner.getValue();
-        String statement = "INSERT INTO Vaccine (name, dosesNeeded) VALUES (" + values + ");";
+        String values = "\"" + nameTextField.getText() + "\", " + dosesNeededSpinner.getValue() + ", " + daysBetweenDosesTextField.getText();
+        String statement = "INSERT INTO Vaccine (name, dosesNeeded, daysBetweenDoses) VALUES (" + values + ");";
         int vaccineID = insertAndGetID(statement, "vaccineID", "Vaccine");
 
         for (String medicalCondition : medicalConditionsList.getSelectedValuesList()) {

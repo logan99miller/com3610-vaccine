@@ -22,6 +22,8 @@ public class SelectAddPage extends SelectPage {
         pages.put("Vaccination Centres", AddVaccinationCentrePage.class);
         pages.put("Bookings", AddBookingPage.class);
         pages.put("Vaccine Priorities", AddVaccinePriorityPage.class);
+        pages.put("Add Stocks", AddStocksPage.class);
+        pages.put("Add Vaccination", AddVaccinationPage.class);
         return pages;
     }
 

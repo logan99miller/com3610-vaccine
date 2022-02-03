@@ -101,8 +101,8 @@ public class SelectViewPage extends SelectPage {
         minimalVaccineMap.put("heading", "Vaccine");
         minimalVaccineMap.put("IDFieldName", "vaccineID");
         minimalVaccineMap.put("title", "Vaccine");
-        minimalVaccineMap.put("headings", new String[] {"ID", "Name", "Doses Needed", "Lifespan"});
-        minimalVaccineMap.put("columnNames", new String[] {"vaccineID", "name", "dosesNeeded", "vaccineID"});
+        minimalVaccineMap.put("headings", new String[] {"ID", "Name", "Doses Needed", "Days Between Doses", "Lifespan"});
+        minimalVaccineMap.put("columnNames", new String[] {"vaccineID", "name", "dosesNeeded", "daysBetweenDoses", "vaccineID"});
         minimalVaccineMap.put("references", new Object[] {vaccineLifespanMap});
         minimalVaccineMap.put("tableName", "vaccine");
 
@@ -119,8 +119,8 @@ public class SelectViewPage extends SelectPage {
         vaccineMap.put("heading", "Vaccine");
         vaccineMap.put("IDFieldName", "vaccineID");
         vaccineMap.put("title", "Vaccine");
-        vaccineMap.put("headings", new String[] {"ID", "Name", "Doses Needed", "Lifespan", "Exemptions"});
-        vaccineMap.put("columnNames", new String[] {"vaccineID", "name", "dosesNeeded", "vaccineID", "vaccineID"});
+        vaccineMap.put("headings", new String[] {"ID", "Name", "Doses Needed", "Days Between Doses", "Lifespan", "Exemptions"});
+        vaccineMap.put("columnNames", new String[] {"vaccineID", "name", "dosesNeeded", "daysBetweenDoses", "vaccineID", "vaccineID"});
         vaccineMap.put("references", new Object[] {vaccineLifespanMap, vaccineExemptionMap});
         vaccineMap.put("tableName", "vaccine");
         vaccineMap.put("deleteOption", true);
@@ -139,30 +139,11 @@ public class SelectViewPage extends SelectPage {
         personVaccineMap.put("heading", "Vaccines");
         personVaccineMap.put("IDFieldName", "personID");
         personVaccineMap.put("title", "Vaccines Received");
-        personVaccineMap.put("headings", new String[] {"Vaccine", "Doses Received"});
-        personVaccineMap.put("columnNames", new String[] {"vaccineID", "dosesRecieved"});
+        personVaccineMap.put("headings", new String[] {"Date", "Vaccine"});
+        personVaccineMap.put("columnNames", new String[] {"date", "vaccineID"});
         personVaccineMap.put("references", new Object[] {vaccineMap});
-        personVaccineMap.put("tableName", "personVaccine");
+        personVaccineMap.put("tableName", "vaccineReceived");
         personVaccineMap.put("buttonText", "View");
-
-        HashMap<String, Object> personBookingMap = new HashMap<>();
-        personBookingMap.put("heading", "Bookings");
-        personBookingMap.put("IDFieldName", "personID");
-        personBookingMap.put("title", "Vaccination Centre");
-        personBookingMap.put("headings", new String[] {"ID", "Vaccination Centre", "Date"});
-        personBookingMap.put("columnNames", new String[] {"bookingID", "vaccinationCentreID", "date"});
-        personBookingMap.put("references", new Object[] {vaccinationCentreMap});
-        personBookingMap.put("tableName", "booking");
-
-        personMap = new HashMap<>();
-        personMap.put("heading", "Person");
-        personMap.put("IDFieldName", "personID");
-        personMap.put("title", "Person");
-        personMap.put("headings", new String[] {"ID", "Forename", "Surname", "DoB", "Medical Conditions", "Bookings", "Vaccines"});
-        personMap.put("columnNames", new String[]  {"personID", "forename", "surname", "dob", "personID", "personID", "personID"});
-        personMap.put("references", new Object[] {medicalConditionMap, personBookingMap, personVaccineMap});
-        personMap.put("tableName", "person");
-        personMap.put("deleteOption", true);
 
         HashMap<String, Object> vaccineInStorageMap = new HashMap<>();
         vaccineInStorageMap.put("heading", "Used Storage");
@@ -205,6 +186,25 @@ public class SelectViewPage extends SelectPage {
         vaccinationCentreMap.put("references", new Object[] {linkedLocationMap, storeMap});
         vaccinationCentreMap.put("tableName", "vaccinationCentre");
         vaccinationCentreMap.put("deleteOption", true);
+
+        HashMap<String, Object> personBookingMap = new HashMap<>();
+        personBookingMap.put("heading", "Bookings");
+        personBookingMap.put("IDFieldName", "personID");
+        personBookingMap.put("title", "Vaccination Centre");
+        personBookingMap.put("headings", new String[] {"ID", "Vaccination Centre", "Date"});
+        personBookingMap.put("columnNames", new String[] {"bookingID", "vaccinationCentreID", "date"});
+        personBookingMap.put("references", new Object[] {vaccinationCentreMap});
+        personBookingMap.put("tableName", "booking");
+
+        personMap = new HashMap<>();
+        personMap.put("heading", "Person");
+        personMap.put("IDFieldName", "personID");
+        personMap.put("title", "Person");
+        personMap.put("headings", new String[] {"ID", "Forename", "Surname", "DoB", "Medical Conditions", "Bookings", "Vaccines"});
+        personMap.put("columnNames", new String[]  {"personID", "forename", "surname", "dob", "personID", "personID", "personID"});
+        personMap.put("references", new Object[] {medicalConditionMap, personBookingMap, personVaccineMap});
+        personMap.put("tableName", "person");
+        personMap.put("deleteOption", true);
 
         bookingMap = new HashMap<>();
         bookingMap.put("heading", "Bookings");
