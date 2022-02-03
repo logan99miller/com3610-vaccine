@@ -1,23 +1,67 @@
 import javax.swing.*;
 import java.util.HashMap;
+import java.util.Map;
 
 public class SelectViewPage extends SelectPage {
 
     private HashMap<String, Object> vaccineMap, personMap, medicalConditionMap, manufacturerMap, transporterMap, vaccinationCentreMap,
         bookingMap, factoryMap, transportLocationMap, distributionCentreMap, vaccinePriorityMap;
 
-    private ViewPage viewVaccinePage, viewPersonPage, viewMedicalConditionPage, viewManufacturerPage, viewFactoryPage, viewTransporterPage,
-        viewTransportLocationPage, viewDistributionCentrePage, viewVaccinationCentrePage, viewBookingPage, viewVaccinePriorityPage;
-
     public SelectViewPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "view");
         createMaps();
-        createViewPages();
-        createPanels();
+        addButtons(createPages());
+    }
+
+    private ViewPage createViewPage(HashMap<String, Object> map, String title) {
+        ViewPage viewPage;
+
+        if (!map.containsKey("references")) {
+            map.put("references", null);
+        }
+        if (!map.containsKey("deleteOption")) {
+            map.put("deleteOption", false);
+        }
+
+        viewPage = new ViewPage(
+                vaccineSystem, mainPage, title,
+                (String[]) map.get("headings"),
+                (String[]) map.get("columnNames"),
+                (Object[]) map.get("references"),
+                (String) map.get("tableName"),
+                (boolean) map.get("deleteOption"));
+
+        return viewPage;
+    }
+
+    private HashMap<String, HashMap<String, Object>> createPages() {
+        HashMap<String, HashMap<String, Object>> pages = new HashMap<>();
+        pages.put("Vaccines", vaccineMap);
+        pages.put("People", personMap);
+        pages.put("Medical Conditions", medicalConditionMap);
+        pages.put("Manufacturers", manufacturerMap);
+        pages.put("Factories", factoryMap);
+        pages.put("Transporters", transporterMap);
+        pages.put("Transport Locations", transportLocationMap);
+        pages.put("Distribution Centres", distributionCentreMap);
+        pages.put("Vaccination Centres", vaccinationCentreMap);
+        pages.put("Bookings", bookingMap);
+        pages.put("Vaccine Priorities", vaccinePriorityMap);
+        return pages;
+    }
+
+    private void addButtons(HashMap<String, HashMap<String, Object>> pages) {
+        for (Map.Entry<String, HashMap<String, Object>> set : pages.entrySet()) {
+            JButton button = new JButton(set.getKey());
+            button.addActionListener(e -> {
+                ViewPage viewPage = createViewPage(set.getValue(), button.getText());
+                mainPage.updatePageToComponent(viewPage.getPanel());
+            });
+            mainPanel.add(button);
+        }
     }
 
     private void createMaps() {
-
         HashMap<String, Object> openingTimeMap = new HashMap<>();
         openingTimeMap.put("heading", "Opening Times");
         openingTimeMap.put("IDFieldName", "locationID");
@@ -226,67 +270,5 @@ public class SelectViewPage extends SelectPage {
         vaccinePriorityMap.put("references", new Object[] {vaccineMap});
         vaccinePriorityMap.put("tableName", "vaccinePriority");
         vaccinePriorityMap.put("deleteOption", true);
-    }
-
-    private ViewPage createViewPage(HashMap<String, Object> map, String title) {
-        ViewPage viewPage;
-
-        if (!map.containsKey("references")) {
-            map.put("references", null);
-        }
-        if (!map.containsKey("deleteOption")) {
-            map.put("deleteOption", false);
-        }
-
-        viewPage = new ViewPage(
-        vaccineSystem, mainPage, title,
-        (String[]) map.get("headings"),
-        (String[]) map.get("columnNames"),
-        (Object[]) map.get("references"),
-        (String) map.get("tableName"),
-        (boolean) map.get("deleteOption"));
-
-        return viewPage;
-    }
-
-    private void createViewPages() {
-        viewVaccinePage = createViewPage(vaccineMap, "Vaccines");
-        viewPersonPage = createViewPage(personMap, "People");
-        viewMedicalConditionPage = createViewPage(medicalConditionMap, "Medical Conditions");
-        viewManufacturerPage = createViewPage(manufacturerMap, "Manufacturers");
-        viewFactoryPage = createViewPage(factoryMap, "Factories");
-        viewTransporterPage = createViewPage(transporterMap, "Transporters");
-        viewTransportLocationPage = createViewPage(transportLocationMap, "Transport Locations");
-        viewDistributionCentrePage = createViewPage(distributionCentreMap, "Distribution Centres");
-        viewVaccinationCentrePage = createViewPage(vaccinationCentreMap, "Vaccination Centres");
-        viewBookingPage = createViewPage(bookingMap, "Bookings");
-        viewVaccinePriorityPage = createViewPage(vaccinePriorityMap, "Vaccine Priority");
-    }
-
-    private void createPanels() {
-
-        JPanel viewVaccinePanel = viewVaccinePage.getPanel();
-        JPanel viewPersonPanel = viewPersonPage.getPanel();
-        JPanel viewMedicalConditionPanel = viewMedicalConditionPage.getPanel();
-        JPanel viewManufacturerPanel = viewManufacturerPage.getPanel();
-        JPanel viewFactoryPanel = viewFactoryPage.getPanel();
-        JPanel viewTransporterPanel = viewTransporterPage.getPanel();
-        JPanel viewTransportLocationPanel = viewTransportLocationPage.getPanel();
-        JPanel viewDistributionCentrePanel = viewDistributionCentrePage.getPanel();
-        JPanel viewVaccinationCentrePanel = viewVaccinationCentrePage.getPanel();
-        JPanel viewBookingPanel = viewBookingPage.getPanel();
-        JPanel viewVaccinePriorityPanel = viewVaccinePriorityPage.getPanel();
-
-        mainPage.addCard(viewVaccinePanel, "view" + getSanitizedButtonText(vaccineButton));
-        mainPage.addCard(viewPersonPanel, "view" + getSanitizedButtonText(personButton));
-        mainPage.addCard(viewMedicalConditionPanel, "view" + getSanitizedButtonText(medicalConditionButton));
-        mainPage.addCard(viewManufacturerPanel, "view" + getSanitizedButtonText(manufacturerButton));
-        mainPage.addCard(viewFactoryPanel, "view" + getSanitizedButtonText(factoryButton));
-        mainPage.addCard(viewTransporterPanel, "view" + getSanitizedButtonText(transporterButton));
-        mainPage.addCard(viewTransportLocationPanel, "view" + getSanitizedButtonText(transportLocationButton));
-        mainPage.addCard(viewDistributionCentrePanel, "view" + getSanitizedButtonText(distributionCentreButton));
-        mainPage.addCard(viewVaccinationCentrePanel, "view" + getSanitizedButtonText(vaccinationCentreButton));
-        mainPage.addCard(viewBookingPanel, "view" + getSanitizedButtonText(bookingButton));
-        mainPage.addCard(viewVaccinePriorityPanel, "view" + getSanitizedButtonText(vaccinePriorityButton));
     }
 }

@@ -91,7 +91,8 @@ public class MainPage extends Page {
         cardLayout.show(cards, pageName);
     }
 
-    public void addCard(JComponent component, String name) {
-        cards.add(component, name);
+    public void updatePageToComponent(JComponent component) {
+        cards.add(component);
+        cardLayout.last(cards);
     }
 }

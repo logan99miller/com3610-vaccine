@@ -120,7 +120,6 @@ public class ViewPage extends Page {
             vaccineSystem.executeUpdate(statementText);
         }
         catch (Exception e) {
-            System.out.println("Hello");
             errorMessage("ex");
         }
     }

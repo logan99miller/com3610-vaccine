@@ -1,72 +1,44 @@
 import javax.swing.*;
-import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SelectAddPage extends SelectPage {
 
-    private JButton stockButton;
-
     public SelectAddPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "add");
-        createAddingPages();
+        addButtons(createPages());
     }
 
-    private void createAddingPages() {
-
-
-        // MOVE THIS TO ADD OPTION IN VIEW PAGES
-        stockButton = new JButton("Stock");
-        buttons.add(stockButton);
-        addButton(stockButton, mainPanel);
-
-        AddVaccinePage addVaccinePage = new AddVaccinePage(vaccineSystem, mainPage);
-        AddPersonPage addPersonPage = new AddPersonPage(vaccineSystem, mainPage);
-        AddMedicalConditionPage addMedicalConditionPage = new AddMedicalConditionPage(vaccineSystem, mainPage);
-        AddManufacturerPage addManufacturerPage = new AddManufacturerPage(vaccineSystem, mainPage);
-        AddFactoryPage addFactoryPage = new AddFactoryPage(vaccineSystem, mainPage);
-        AddTransporterPage addTransporterPage = new AddTransporterPage(vaccineSystem, mainPage);
-        AddTransporterLocationPage addTransporterLocationPage = new AddTransporterLocationPage(vaccineSystem, mainPage);
-        AddDistributionCentrePage addDistributionCentrePage = new AddDistributionCentrePage(vaccineSystem, mainPage);
-        AddVaccinationCentrePage addVaccinationCentrePage = new AddVaccinationCentrePage(vaccineSystem, mainPage);
-        AddBookingPage addBookingPage = new AddBookingPage(vaccineSystem, mainPage);
-        AddVaccinePriorityPage addVaccinePriorityPage = new AddVaccinePriorityPage(vaccineSystem, mainPage);
-        AddStockPage addStockPage = new AddStockPage(vaccineSystem, mainPage);
-
-        JPanel addVaccinePanel = addVaccinePage.getPanel();
-        JPanel addPersonPanel = addPersonPage.getPanel();
-        JPanel addMedicalConditionPanel = addMedicalConditionPage.getPanel();
-        JPanel addManufacturerPanel = addManufacturerPage.getPanel();
-        JPanel addFactoryPanel = addFactoryPage.getPanel();
-        JPanel addTransporterPanel = addTransporterPage.getPanel();
-        JPanel addTransportLocationPanel = addTransporterLocationPage.getPanel();
-        JPanel addDistributionCentrePanel = addDistributionCentrePage.getPanel();
-        JPanel addVaccinationCentrePanel = addVaccinationCentrePage.getPanel();
-        JPanel addBookingPanel = addBookingPage.getPanel();
-        JPanel addVaccinePriorityPanel = addVaccinePriorityPage.getPanel();
-        JPanel addStockPanel = addStockPage.getPanel();
-
-        mainPage.addCard(addVaccinePanel, "add" + getSanitizedButtonText(vaccineButton));
-        mainPage.addCard(addPersonPanel, "add" + getSanitizedButtonText(personButton));
-        mainPage.addCard(addMedicalConditionPanel, "add" + getSanitizedButtonText(medicalConditionButton));
-        mainPage.addCard(addManufacturerPanel, "add" + getSanitizedButtonText(manufacturerButton));
-        mainPage.addCard(addFactoryPanel, "add" + getSanitizedButtonText(factoryButton));
-        mainPage.addCard(addTransporterPanel, "add" + getSanitizedButtonText(transporterButton));
-        mainPage.addCard(addTransportLocationPanel, "add" + getSanitizedButtonText(transportLocationButton));
-        mainPage.addCard(addDistributionCentrePanel, "add" + getSanitizedButtonText(distributionCentreButton));
-        mainPage.addCard(addVaccinationCentrePanel, "add" + getSanitizedButtonText(vaccinationCentreButton));
-        mainPage.addCard(addBookingPanel, "add" + getSanitizedButtonText(bookingButton));
-        mainPage.addCard(addVaccinePriorityPanel, "add" + getSanitizedButtonText(vaccinePriorityButton));
-        mainPage.addCard(addStockPanel, "add" + getSanitizedButtonText(stockButton));
-
+    private HashMap<String, Class> createPages() {
+        HashMap<String, Class> pages = new HashMap<>();
+        pages.put("Vaccines", AddVaccinePage.class);
+        pages.put("People", AddPersonPage.class);
+        pages.put("Medical Conditions", AddMedicalConditionPage.class);
+        pages.put("Manufacturers", AddManufacturerPage.class);
+        pages.put("Factories", AddFactoryPage.class);
+        pages.put("Transporters", AddTransporterPage.class);
+        pages.put("Transport Locations", AddTransporterLocationPage.class);
+        pages.put("Distribution Centres", AddDistributionCentrePage.class);
+        pages.put("Vaccination Centres", AddVaccinationCentrePage.class);
+        pages.put("Bookings", AddBookingPage.class);
+        pages.put("Vaccine Priorities", AddVaccinePriorityPage.class);
+        return pages;
     }
 
-    // Crude solution to updating selection boxes when items are added to database
-    public void actionPerformed(ActionEvent e) {
-        for (JButton button : buttons) {
-            if (e.getSource() == button) {
-                createAddingPages();
-                mainPage.setPageName(buttonAction + getSanitizedButtonText(button));
-                mainPage.updatePage();
-            }
+    private void addButtons(HashMap<String, Class> pages) {
+        for (Map.Entry<String, Class> set : pages.entrySet()) {
+            JButton button = new JButton(set.getKey());
+            button.addActionListener(e -> {
+                try {
+                    AddPage addPage = (AddPage) set.getValue().asSubclass(AddPage.class)
+                        .getConstructor(VaccineSystem.class, MainPage.class)
+                        .newInstance(vaccineSystem, mainPage);
+                    mainPage.updatePageToComponent(addPage.getPanel());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+            mainPanel.add(button);
         }
     }
 }
