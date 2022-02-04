@@ -1,21 +1,20 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ViewPage extends Page {
 
     private MainPage mainPage;
-    private JButton backButton;
-    private String[] headings;
-    private String[] columnNames;
+    private JButton backButton, refreshButton;
+    private String[]  originalHeadings, headings, columnNames;
     private Object[] references;
-    private String tableName;
-    private String where;
+    private String tableName, where;
     private boolean deleteOption;
     private JFrame frame;
+    private JPanel tablePanel;
 
     public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
         Object[] references, String tableName, boolean deleteOption, String where, JFrame frame) {
@@ -23,6 +22,7 @@ public class ViewPage extends Page {
 
         this.mainPage = mainPage;
         this.headings = headings;
+        this.originalHeadings = headings;
         this.columnNames = columnNames;
         this.references = references;
         this.tableName = tableName;
@@ -30,9 +30,11 @@ public class ViewPage extends Page {
         this.where = where;
         this.frame = frame;
 
+        tablePanel = createTablePanel();
+
         mainPanel.add(new JLabel(title));
-        createBackButton();
-        mainPanel.add(createTablePanel());
+        mainPanel.add(createButtonPanel());
+        mainPanel.add(tablePanel);
 
         setMaxWidthMinHeight(mainPanel);
     }
@@ -53,18 +55,28 @@ public class ViewPage extends Page {
 
     }
 
-    private void createBackButton() {
+    private JPanel createButtonPanel() {
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 2));
+
         backButton = new JButton("Back");
-        mainPanel.add(backButton);
-        backButton.addActionListener(e -> {
-            if (frame == null) {
-                mainPage.setPageName("view");
-                mainPage.updatePage();
-            }
-            else {
-                frame.setVisible(false);
-            }
-        });
+        refreshButton = new JButton("Refresh");
+
+        addButton(backButton, buttonPanel);
+        addButton(refreshButton, buttonPanel);
+
+        setMaxWidthMinHeight(buttonPanel);
+
+        return buttonPanel;
+    }
+
+    private void refreshPage() {
+        mainPanel.remove(tablePanel);
+        tablePanel = createTablePanel();
+        mainPanel.add(tablePanel);
+
+        vaccineSystem.invalidate();
+        vaccineSystem.validate();
+        vaccineSystem.repaint();
     }
 
     private JPanel createTablePanel() {
@@ -88,6 +100,7 @@ public class ViewPage extends Page {
     }
 
     private void addHeadings(JPanel tablePanel) {
+        headings = originalHeadings;
         if (deleteOption) {
             headings = addElement("Delete", headings);
         }
@@ -161,9 +174,7 @@ public class ViewPage extends Page {
             String statementText = "DELETE FROM " + tableName + " WHERE " + IDFieldName +" = " + ID;
             vaccineSystem.executeUpdate(statementText);
         }
-        catch (Exception e) {
-            errorMessage("ex");
-        }
+        catch (Exception ignored) {}
     }
 
     private void addTableContents(ArrayList<ArrayList<String>> contents, JPanel tablePanel) {
@@ -173,7 +184,10 @@ public class ViewPage extends Page {
                 if (i > row.size() - 1) {
                     if (deleteOption) {
                         JButton button = new JButton("X");
-                        button.addActionListener(e -> { deleteRow(tableName, columnNames[0], row.get(0)); });
+                        button.addActionListener(e -> {
+                            deleteRow(tableName, columnNames[0], row.get(0));
+                            refreshPage();
+                        });
                         tablePanel.add(button);
                     }
                 }
@@ -219,6 +233,21 @@ public class ViewPage extends Page {
                         reference.put("columnNumber", i);
                     }
                 }
+            }
+        }
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == refreshButton) {
+            refreshPage();
+        }
+        else if (e.getSource() == backButton) {
+            if (frame == null) {
+                mainPage.setPageName("view");
+                mainPage.updatePage();
+            }
+            else {
+                frame.setVisible(false);
             }
         }
     }

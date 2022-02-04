@@ -87,7 +87,6 @@ public class AddStorageLocationPage extends AddLocationPage {
         }
         else if (e.getSource() == submitButton) {
             if (checkCapacitiesCondition()) {
-                createStatements();
                 super.actionPerformed(e);
             }
             else {

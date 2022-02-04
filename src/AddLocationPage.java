@@ -61,9 +61,6 @@ public class AddLocationPage extends AddPage {
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == submitButton) {
-            createStatements();
-        }
         super.actionPerformed(e);
     }
 }

@@ -42,7 +42,7 @@ public class SelectViewPage extends SelectPage {
         pages.put("Manufacturers", manufacturerMap);
         pages.put("Factories", factoryMap);
         pages.put("Transporters", transporterMap);
-        pages.put("Transport Locations", transportLocationMap);
+        pages.put("Transporter Locations", transportLocationMap);
         pages.put("Distribution Centres", distributionCentreMap);
         pages.put("Vaccination Centres", vaccinationCentreMap);
         pages.put("Bookings", bookingMap);

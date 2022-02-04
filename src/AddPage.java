@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class AddPage extends Page {
 
@@ -88,7 +89,7 @@ public class AddPage extends Page {
 
             if (previousComponent instanceof JLabel) {
 
-                String label = ((JLabel) previousComponent).getText();
+                String label = ((JLabel) previousComponent).getText().toLowerCase();
 
                 if (component instanceof JTextField) {
                     String text = ((JTextField) component).getText();
@@ -142,7 +143,7 @@ public class AddPage extends Page {
     }
 
     private boolean checkDateInput(String label, String text) {
-        if (label.contains("YYYY-MM-DD")) {
+        if (label.contains("yyyy-mm-dd")) {
             ArrayList<Integer> dateComponents = new ArrayList<>();
             try {
                 for (String dateComponent : text.split("-")) {
@@ -194,5 +195,4 @@ public class AddPage extends Page {
             }
         }
     }
-
 }
