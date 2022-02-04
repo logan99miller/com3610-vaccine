@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Page implements ActionListener {
-
     protected JPanel mainPanel;
     protected VaccineSystem vaccineSystem;
     protected ArrayList<JButton> buttons;
@@ -63,7 +62,11 @@ public class Page implements ActionListener {
             ArrayList<ArrayList<String>> resultSet = vaccineSystem.executeSelect(columnNames, tableName);
 
             for (ArrayList<String> record : resultSet) {
-                String addToOutput = record.get(0) + ":";
+                String addToOutput = record.get(0);
+
+                if (record.size() > 1) {
+                    addToOutput += ":";
+                }
 
                 for (int i = 1; i < record.size(); i++) {
                     addToOutput += " " + record.get(i);
@@ -71,7 +74,7 @@ public class Page implements ActionListener {
 
                 output.add(addToOutput);
             }
-        } catch (SQLException e) {}
+        } catch (SQLException ignored) {}
 
         return (output);
     }
@@ -117,5 +120,6 @@ public class Page implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+
     }
 }

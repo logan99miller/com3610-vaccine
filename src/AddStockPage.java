@@ -1,48 +1,122 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class AddStockPage extends AddPage {
 
-    private JComboBox vaccineComboBox, storeComboBox;
+    final private String VACCINATION_CENTRE_PREFIX = "(Vaccination Centre)    ";
+    final private String DISTRIBUTION_CENTRE_PREFIX = "(Distribution Centres)    ";
+    final private String FACTORY_PREFIX = "(Factory)    ";
+
+    private JComboBox facilityComboBox, vaccineComboBox;
     private JTextField expirationDateTextField;
-    private JSpinner stockLevelSpinner;
+    private JButton stockLevelButton;
+    private ArrayList<HashMap<String, Object>> stockLevels;
 
     public AddStockPage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "Add Stock:");
+        super(vaccineSystem, mainPage, "Add Stocks:");
 
-        String[] vaccineColumnNames = new String[] {"vaccineID", "name"};
-        String[] storeColumnNames = new String[] {"storeID", "capacity"};
+        String[] vaccinationCentreColumnNames = {"vaccinationCentreID", "name"};
+        String[] distributionCentreColumnNames = {"distributionCentreID"};
+        String[] factoryColumnNames = {"factoryID"};
+        String[] vaccineColumnNames = {"vaccineID", "name"};
 
+        ArrayList<String> vaccinationCentres = getFormattedSelect(vaccinationCentreColumnNames, "VaccinationCentre");
+        ArrayList<String> distributionCentres = getFormattedSelect(distributionCentreColumnNames, "DistributionCentre");
+        ArrayList<String> factories = getFormattedSelect(factoryColumnNames, "Factory");
+
+        vaccinationCentres = addToElements(vaccinationCentres, VACCINATION_CENTRE_PREFIX);
+        distributionCentres = addToElements(distributionCentres, DISTRIBUTION_CENTRE_PREFIX);
+        factories = addToElements(factories, FACTORY_PREFIX);
+
+        stockLevels = new ArrayList<>();
+
+        ArrayList<String> facilities = new ArrayList<>();
+        facilities.addAll(vaccinationCentres);
+        facilities.addAll(distributionCentres);
+        facilities.addAll(factories);
+
+        facilityComboBox = new JComboBox(facilities.toArray());
         vaccineComboBox = new JComboBox(getFormattedSelect(vaccineColumnNames, "Vaccine").toArray());
-        storeComboBox = new JComboBox(getFormattedSelect(storeColumnNames, "Store").toArray());
         expirationDateTextField = new JTextField();
-        stockLevelSpinner = createJSpinner(0, 24, 2);
+        stockLevelButton = new JButton("Continue");
 
+        addLabelledComponent(inputGridPanel, "Facility:", facilityComboBox);
         addLabelledComponent(inputGridPanel, "Vaccine:", vaccineComboBox);
-        addLabelledComponent(inputPanel, "Store:", storeComboBox);
-        addLabelledComponent(inputGridPanel, "Stock Level:", stockLevelSpinner);
-        addLabelledComponent(inputGridPanel, "*Expiration Date (YYYY-MM-DD):", expirationDateTextField);
+        addLabelledComponent(inputGridPanel, "Expiration Date (YYYY-MM-DD):", expirationDateTextField);
+        addLabelledComponent(inputGridPanel, "Stock Levels:", stockLevelButton);
+
+        stockLevelButton.addActionListener(this);
 
         setMaxWidthMinHeight(inputPanel);
     }
 
-    private void createStatements() {
-        statements = new ArrayList<>();
+    private ArrayList<String> addToElements(ArrayList<String> arrayList, String string) {
+        for (int i = 0; i < arrayList.size(); i++) {
+            arrayList.set(i, string + arrayList.get(i));
+        }
+        return arrayList;
+    }
 
-        String vaccineID = (String) vaccineComboBox.getSelectedItem();
-        String storeID = "0";
-        String stockLevel = (String) stockLevelSpinner.getValue();
+    private void createStockLevelFrame() {
+        final int FRAME_WIDTH = 800;
+
+        JFrame addStockLevelFrame = new JFrame();
+
+        String facility = (String) facilityComboBox.getSelectedItem();
+
+        AddStockLevelPage addStockLevelPage = new AddStockLevelPage(vaccineSystem, this, addStockLevelFrame, facility);
+        addStockLevelFrame.add(addStockLevelPage.getPanel());
+
+        createPopupFrame(addStockLevelFrame, addStockLevelPage.getPanel(), FRAME_WIDTH, 500);
+    }
+
+    public void setStockLevels(ArrayList<HashMap<String, Object>> stockLevels) {
+        this.stockLevels = stockLevels;
+    }
+
+    private void createStatements() {
+        String vaccine = (String) vaccineComboBox.getSelectedItem();
+
+        String vaccineID = vaccine.split(":")[0];
         String expirationDate = expirationDateTextField.getText();
 
-        values = vaccineID + ", " + storeID + ", " + stockLevel + ", " + expirationDate;
-        statements.add("INSERT INTO VaccineInStorage (vaccineID, storeID, stockLevel, expirationDate) VALUES (" + values + ");");
+        for (HashMap<String, Object> stockLevelMap : stockLevels) {
+            String storeID = (String) stockLevelMap.get("storeID");
+            String stockLevel = ((JTextField) stockLevelMap.get("textField")).getText();
+
+            String where = "(vaccineID = " + vaccineID + ") AND (storeID = " + storeID + ")";
+            try {
+                vaccineSystem.executeSelect(new String[]{"stockLevel"}, "vaccineInStorage", where);
+            }
+            catch (SQLException ignore) {}
+
+            String values = vaccineID + ", " + storeID + ", " + stockLevel + ", '" + expirationDate + "'";
+            statements.add("INSERT INTO VaccineInStorage (vaccineID, storeID, stockLevel, expirationDate) VALUES (" + values + ");");
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == submitButton) {
+        if (e.getSource() == stockLevelButton) {
+            createStockLevelFrame();
+        }
+        else if (e.getSource() == submitButton) {
             createStatements();
         }
         super.actionPerformed(e);
+    }
+
+    public String getVACCINATION_CENTRE_PREFIX() {
+        return VACCINATION_CENTRE_PREFIX;
+    }
+
+    public String getDISTRIBUTION_CENTRE_PREFIX() {
+        return DISTRIBUTION_CENTRE_PREFIX;
+    }
+
+    public String getFACTORY_PREFIX() {
+        return FACTORY_PREFIX;
     }
 }

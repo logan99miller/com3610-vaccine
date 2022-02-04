@@ -8,15 +8,17 @@ import java.util.HashMap;
 public class ViewPage extends Page {
 
     private MainPage mainPage;
+    private JButton backButton;
     private String[] headings;
     private String[] columnNames;
     private Object[] references;
     private String tableName;
     private String where;
     private boolean deleteOption;
+    private JFrame frame;
 
     public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
-        Object[] references, String tableName, boolean deleteOption, String where) {
+        Object[] references, String tableName, boolean deleteOption, String where, JFrame frame) {
         super(vaccineSystem);
 
         this.mainPage = mainPage;
@@ -26,16 +28,43 @@ public class ViewPage extends Page {
         this.tableName = tableName;
         this.deleteOption = deleteOption;
         this.where = where;
+        this.frame = frame;
 
         mainPanel.add(new JLabel(title));
+        createBackButton();
         mainPanel.add(createTablePanel());
 
         setMaxWidthMinHeight(mainPanel);
     }
 
     public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
+        Object[] references, String tableName, boolean deleteOption, JFrame frame) {
+        this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, null, frame);
+    }
+
+    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
         Object[] references, String tableName, boolean deleteOption) {
-        this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, null);
+        this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, null, null);
+    }
+
+    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
+        Object[] references, String tableName, boolean deleteOption, String where) {
+        this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, where, null);
+
+    }
+
+    private void createBackButton() {
+        backButton = new JButton("Back");
+        mainPanel.add(backButton);
+        backButton.addActionListener(e -> {
+            if (frame == null) {
+                mainPage.setPageName("view");
+                mainPage.updatePage();
+            }
+            else {
+                frame.setVisible(false);
+            }
+        });
     }
 
     private JPanel createTablePanel() {
@@ -101,6 +130,8 @@ public class ViewPage extends Page {
             reference.put("references", null);
         }
 
+        JFrame frame = new JFrame();
+
         ViewPage viewPage = new ViewPage(
                 vaccineSystem, mainPage,
                 (String) reference.get("title"),
@@ -108,9 +139,8 @@ public class ViewPage extends Page {
                 (String[]) reference.get("columnNames"),
                 (Object[]) reference.get("references"),
                 (String) reference.get("tableName"),
-                false, where);
+                false, where, frame);
 
-        JFrame frame = new JFrame();
         frame.add(viewPage.getPanel());
 
         createPopupFrame(frame, viewPage.getPanel(), 800, 500);
