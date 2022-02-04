@@ -11,6 +11,7 @@ public class MainPage extends Page {
 
     public MainPage(VaccineSystem vaccineSystem) {
         super(vaccineSystem);
+
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(createNavPanel(), BorderLayout.NORTH);
         mainPanel.add(createContentPanel(), BorderLayout.CENTER);

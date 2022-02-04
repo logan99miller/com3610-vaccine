@@ -40,10 +40,10 @@ public class Page implements ActionListener {
     }
 
 
-    protected void setMaxWidthMinHeight(JPanel panel) {
+    protected void setMaxWidthMinHeight(JComponent component) {
         int width = vaccineSystem.getWidth();
-        int height = panel.getMinimumSize().height;
-        panel.setMaximumSize(new Dimension(width, height));
+        int height = component.getMinimumSize().height;
+        component.setMaximumSize(new Dimension(width, height));
     }
 
     protected ListModel ArrayListToListModel(ArrayList<String> arrayList) {

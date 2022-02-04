@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class AddPage extends Page {
 

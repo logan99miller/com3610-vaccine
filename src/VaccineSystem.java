@@ -21,12 +21,12 @@ public class VaccineSystem extends JFrame {
         user = "root";
         password = "";
 
-        configureWindow(700, 700);
+        configureWindow();
         createInterface();
     }
 
-    private void configureWindow(int width, int height) {
-        this.setSize(width, height);
+    private void configureWindow() {
+        this.setSize(1000, 700);
         this.setLocationRelativeTo(null); // Sets window to centre of screen
         this.setVisible(true);
     }

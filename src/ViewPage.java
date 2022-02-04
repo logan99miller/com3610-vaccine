@@ -14,7 +14,7 @@ public class ViewPage extends Page {
     private String tableName, where;
     private boolean deleteOption;
     private JFrame frame;
-    private JPanel tablePanel;
+    private JScrollPane tablePanel;
 
     public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
         Object[] references, String tableName, boolean deleteOption, String where, JFrame frame) {
@@ -30,7 +30,7 @@ public class ViewPage extends Page {
         this.where = where;
         this.frame = frame;
 
-        tablePanel = createTablePanel();
+        tablePanel = createTableScrollPane();
 
         mainPanel.add(new JLabel(title));
         mainPanel.add(createButtonPanel());
@@ -40,19 +40,8 @@ public class ViewPage extends Page {
     }
 
     public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
-        Object[] references, String tableName, boolean deleteOption, JFrame frame) {
-        this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, null, frame);
-    }
-
-    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
         Object[] references, String tableName, boolean deleteOption) {
         this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, null, null);
-    }
-
-    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
-        Object[] references, String tableName, boolean deleteOption, String where) {
-        this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, where, null);
-
     }
 
     private JPanel createButtonPanel() {
@@ -71,7 +60,7 @@ public class ViewPage extends Page {
 
     private void refreshPage() {
         mainPanel.remove(tablePanel);
-        tablePanel = createTablePanel();
+        tablePanel = createTableScrollPane();
         mainPanel.add(tablePanel);
 
         vaccineSystem.invalidate();
@@ -79,7 +68,7 @@ public class ViewPage extends Page {
         vaccineSystem.repaint();
     }
 
-    private JPanel createTablePanel() {
+    private JScrollPane createTableScrollPane() {
         JPanel tablePanel = new JPanel();
         setTableLayout(tablePanel);
         addHeadings(tablePanel);
@@ -87,7 +76,14 @@ public class ViewPage extends Page {
         addTableContents(getTableContents(), tablePanel);
 
         setMaxWidthMinHeight(tablePanel);
-        return tablePanel;
+
+        JPanel scrollPanel = new JPanel();
+        scrollPanel.add(tablePanel);
+
+        JScrollPane scrollPane = new JScrollPane(scrollPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        return scrollPane;
     }
 
     private String[] addElement(String element, String[] array) {
@@ -123,7 +119,7 @@ public class ViewPage extends Page {
                 ArrayList<ArrayList<String>> records = vaccineSystem.executeSelect(new String[]{linkerIDFieldName}, linkerTable, where);
                 return "(" + reference.get("linkerIDFieldName") + " = " + records.get(0).get(0) + ")";
             }
-            catch (SQLException e) {}
+            catch (SQLException ignored) {}
         }
         return where;
     }

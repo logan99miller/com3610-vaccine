@@ -6,7 +6,7 @@ public class AddVaccinationCentrePage extends AddStorageLocationPage {
     JTextField nameTextField;
 
     public AddVaccinationCentrePage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "Add VaccinationCentre Centre:");
+        super(vaccineSystem, mainPage, "Add Vaccination Centre:");
         nameTextField = new JTextField();
         addLabelledComponent(inputGridPanel,"*Name:", nameTextField);
         setMaxWidthMinHeight(inputPanel);
