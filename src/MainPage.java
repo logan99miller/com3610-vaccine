@@ -47,7 +47,7 @@ public class MainPage extends Page {
         SelectAddPage selectAddPage = new SelectAddPage(vaccineSystem, this);
         SelectViewPage selectViewPage = new SelectViewPage(vaccineSystem, this);
         Page logPage = new Page(vaccineSystem);
-        Page mapPage = new Page(vaccineSystem);
+        Page mapPage = new MapPage(vaccineSystem, this);
 
         JPanel addPanel = selectAddPage.getPanel();
         JPanel viewPanel = selectViewPage.getPanel();
@@ -60,7 +60,7 @@ public class MainPage extends Page {
         cards.add(logPanel, getSanitizedButtonText(logPageButton));
         cards.add(mapPanel, getSanitizedButtonText(mapPageButton));
 
-        cardLayout.show(cards, "view");
+        cardLayout.show(cards, "mapview");
 
         return cards;
     }

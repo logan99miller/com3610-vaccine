@@ -82,6 +82,7 @@ public class AddPage extends Page {
     }
 
     protected boolean checkInputConditions() {
+        System.out.println("checkInputConditons()");
         Component previousComponent = new JPanel();
 
         for (Component component : inputGridPanel.getComponents()) {
@@ -104,19 +105,8 @@ public class AddPage extends Page {
                         errorMessage("Dates must be input in the format YYYY-MM-DD");
                         return false;
                     }
-                    else if (!checkCoordinates(label, text)) {
-                        errorMessage("Coordinates values must be between -90 and 90");
-                        return false;
-                    }
-                }
-
-                if (component instanceof JSpinner) {
-                    int value = (int) ((JSpinner) component).getValue();
-
-                    System.out.println(label + value);
                 }
             }
-
             previousComponent = component;
         }
 
@@ -152,20 +142,6 @@ public class AddPage extends Page {
                 LocalDate.of(dateComponents.get(0), dateComponents.get(1), dateComponents.get(2));
             }
             catch (Exception ex) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean checkCoordinates(String label, String text) {
-        if (label.contains("longitude") || label.contains("latitude")) {
-            try {
-                float coordinate = Float.parseFloat(text);
-                if ((coordinate > 90) || (coordinate < 90)) {
-                    return false;
-                }
-            } catch (NumberFormatException e) {
                 return false;
             }
         }

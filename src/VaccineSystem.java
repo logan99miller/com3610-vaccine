@@ -19,7 +19,7 @@ public class VaccineSystem extends JFrame {
         super(titleBarText);
 
         user = "root";
-        password = "";
+        password = "artstowerhas20";
 
         configureWindow();
         createInterface();

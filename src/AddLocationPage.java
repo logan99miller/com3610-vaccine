@@ -1,3 +1,5 @@
+import jdk.nashorn.internal.ir.Symbol;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -60,7 +62,39 @@ public class AddLocationPage extends AddPage {
         }
     }
 
+    private boolean checkCoordinates(String label, String text) {
+        if (label.contains("longitude") || label.contains("latitude")) {
+            try {
+                float coordinate = Float.parseFloat(text);
+                if ((coordinate > 90) || (coordinate < -90)) {
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void actionPerformed(ActionEvent e) {
-        super.actionPerformed(e);
+        if (e.getSource() == submitButton) {
+            Component previousComponent = new JPanel();
+
+            for (Component component : inputGridPanel.getComponents()) {
+                if (previousComponent instanceof JLabel) {
+                    String label = ((JLabel) previousComponent).getText().toLowerCase();
+                    if (component instanceof JTextField) {
+                        String text = ((JTextField) component).getText();
+                        if (!checkCoordinates(label, text)) {
+                            errorMessage("Coordinates values must be between -90 and 90");
+                        }
+                    }
+                }
+                previousComponent = component;
+            }
+        }
+        else {
+            super.actionPerformed(e);
+        }
     }
 }
