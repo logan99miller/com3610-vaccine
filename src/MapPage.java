@@ -12,23 +12,11 @@ public class MapPage extends Page {
 
         mainPanel = new JPanel();
 
-        MapPanel smiley = new MapPanel();
-
-        mainPanel.add(smiley, BorderLayout.CENTER);
-        mainPanel.add(new JButton("hi"));
-
-        // https://stackoverflow.com/questions/42465086/paintcomponent-is-not-working-when-add-to-panel
-        smiley.revalidate();
-        smiley.repaint();
-
-        setMaxWidthMinHeight(mainPanel);
-
-//        JFrame app = new JFrame("Smiley App");
-//        app.add(smiley, BorderLayout.CENTER);
-//        app.setSize(300, 300);
-//        app.setLocationRelativeTo(null);
-//        app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        app.setVisible(true);
+//        setMaxWidthMinHeight(mapPanel);
+//        mapPanel.setPreferredSize(new Dimension(400, 400));
+//        mapPanel.setPreferredSize(vaccineSystem.getSize());
+//        mapPanel.revalidate();
+//        mapPanel.repaint();
 
         try {
             String[] locationColumnNames = {"locationID", "longitude", "latitude"};
@@ -46,6 +34,14 @@ public class MapPage extends Page {
             ArrayList<ArrayList<String>> vaccinationCentres = vaccineSystem.executeSelect(vaccinationCentresColumnNames, "vaccinationCentre");
 
             HashMap<String, float[]> coordinateRange = coordinateRange(locations);
+
+            MapPanel mapPanel = new MapPanel(vaccineSystem, coordinateRange);
+            mainPanel.add(mapPanel, BorderLayout.CENTER);
+
+            for (ArrayList<String> transporterLocation : transporterLocations) {
+
+            }
+
 //            MapPanel mapPanel = new MapPanel(coordinateRange);
 //            mainPanel.add(mapPanel);
 //

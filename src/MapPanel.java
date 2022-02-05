@@ -4,9 +4,30 @@ import java.util.HashMap;
 
 public class MapPanel extends JPanel {
 
-//    public MapPanel(HashMap<String, float[]> coordinateRange) {
-    public MapPanel() {
+    public MapPanel(VaccineSystem vaccineSystem, HashMap<String, float[]> coordinateRange) {
+        this.setPreferredSize(vaccineSystem.getSize());
 
+        // Long = x, lat = y
+
+        int panelWidth = vaccineSystem.getWidth();
+        int panelHeight = vaccineSystem.getHeight();
+
+        float minLongitude = coordinateRange.get("longitude")[0];
+        float maxLongitude = coordinateRange.get("longitude")[1];
+        float longitudeRange = maxLongitude - minLongitude;
+
+        float minLatitude = coordinateRange.get("latitude")[0];
+        float maxLatitude = coordinateRange.get("latitude")[1];
+        float latitudeRange = maxLatitude - minLatitude;
+
+        System.out.println(minLongitude + ", " + maxLongitude);
+        System.out.println(minLatitude + ", " + maxLatitude);
+
+        System.out.println(panelWidth + ", " + longitudeRange);
+        System.out.println(panelHeight + ", " + latitudeRange);
+
+        System.out.println(panelWidth / longitudeRange); // how many pixels per longitude cord
+        System.out.println(panelHeight / latitudeRange); // how many pixel per latitude cord
     }
 
     public void paintComponent(Graphics g) {

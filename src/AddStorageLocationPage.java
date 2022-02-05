@@ -74,6 +74,7 @@ public class AddStorageLocationPage extends AddLocationPage {
         final int FRAME_WIDTH = 400;
 
         JFrame addStoreFrame = new JFrame();
+        addStoreFrame.setResizable(false);
 
         AddStorePage addStorePage = new AddStorePage(this, addStoreFrame, FRAME_WIDTH);
         addStoreFrame.add(addStorePage.getPanel());

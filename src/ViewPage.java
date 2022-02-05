@@ -140,6 +140,7 @@ public class ViewPage extends Page {
         }
 
         JFrame frame = new JFrame();
+        frame.setResizable(false);
 
         ViewPage viewPage = new ViewPage(
                 vaccineSystem, mainPage,

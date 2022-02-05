@@ -110,6 +110,7 @@ public class AddVaccinePage extends AddPage {
         final int FRAME_WIDTH = 800;
 
         JFrame addLifespanFrame = new JFrame();
+        addLifespanFrame.setResizable(false);
 
         AddVaccineLifespanPage addLifespanPage = new AddVaccineLifespanPage(this, addLifespanFrame, FRAME_WIDTH);
         addLifespanFrame.add(addLifespanPage.getPanel());

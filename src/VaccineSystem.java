@@ -29,6 +29,7 @@ public class VaccineSystem extends JFrame {
         this.setSize(1000, 700);
         this.setLocationRelativeTo(null); // Sets window to centre of screen
         this.setVisible(true);
+        this.setResizable(false);
     }
 
     private void createInterface() {
