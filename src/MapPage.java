@@ -7,6 +7,8 @@ import java.util.HashMap;
 
 public class MapPage extends Page {
 
+    private float xScale, yScale, xAddition, yAddition;
+
     public MapPage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem);
 
@@ -20,43 +22,50 @@ public class MapPage extends Page {
 
         try {
             String[] locationColumnNames = {"locationID", "longitude", "latitude"};
-            String[] storageLocationNames = {"locationID"};
+            String[] storageLocationNames = {"storageLocationID", "locationID"};
             String[] factoryColumnNames = {"factoryID", "storageLocationID"};
             String[] transporterLocationColumnNames = {"transporterLocationID", "locationID"};
             String[] distributionCentreColumnNames = {"distributionCentreID", "storageLocationID"};
             String[] vaccinationCentresColumnNames = {"vaccinationCentreID", "storageLocationID"};
 
-            ArrayList<ArrayList<String>> locations = vaccineSystem.executeSelect(locationColumnNames, "location");
-            ArrayList<ArrayList<String>> storageLocations = vaccineSystem.executeSelect(storageLocationNames, "storageLocation");
-            ArrayList<ArrayList<String>> factories = vaccineSystem.executeSelect(factoryColumnNames, "factory");
-            ArrayList<ArrayList<String>> transporterLocations = vaccineSystem.executeSelect(transporterLocationColumnNames, "transporterLocation");
-            ArrayList<ArrayList<String>> distributionCentres = vaccineSystem.executeSelect(distributionCentreColumnNames, "distributionCentre");
-            ArrayList<ArrayList<String>> vaccinationCentres = vaccineSystem.executeSelect(vaccinationCentresColumnNames, "vaccinationCentre");
+            ArrayList<HashMap<String, String>> locations = createMaps(locationColumnNames, "location");
+            ArrayList<HashMap<String, String>> storageLocations = createMaps(storageLocationNames, "storageLocation");
 
-            HashMap<String, float[]> coordinateRange = coordinateRange(locations);
+            HashMap<String, Float> coordinateRange = coordinateRange(locations);
 
-            MapPanel mapPanel = new MapPanel(vaccineSystem, coordinateRange);
-            mainPanel.add(mapPanel, BorderLayout.CENTER);
+            final int BORDER = 20;
 
-            for (ArrayList<String> transporterLocation : transporterLocations) {
+            final int NAV_PANEL_HEIGHT = mainPage.getNavPanel().getPreferredSize().height;
 
+            System.out.println("NAV_PANEL_HEIGHT: " + NAV_PANEL_HEIGHT);
+
+            final int MAP_PANEL_WIDTH = vaccineSystem.getWidth() - BORDER;
+            final int MAP_PANEL_HEIGHT = vaccineSystem.getHeight() - (2 * NAV_PANEL_HEIGHT);
+
+            xScale = (MAP_PANEL_WIDTH - BORDER) / coordinateRange.get("longitudeRange");
+            yScale =  (MAP_PANEL_HEIGHT - BORDER) / coordinateRange.get("latitudeRange");
+
+            xAddition = -BORDER;
+
+            if (coordinateRange.get("longitudeMin") < 0) {
+                xAddition = Math.abs(coordinateRange.get("longitudeMin"));
+            }
+            if (coordinateRange.get("latitudeMin") < 0) {
+                yAddition = Math.abs(coordinateRange.get("latitudeMin"));
             }
 
-//            MapPanel mapPanel = new MapPanel(coordinateRange);
-//            mainPanel.add(mapPanel);
-//
-//            mapPanel.setSize(mapPanel.getMaximumSize());
-//            System.out.println(mapPanel.getSize());
-//
-//            mapPanel.add(new JButton("Temp"));
+            ArrayList<HashMap<String, String>> factories = createFacilityMaps(factoryColumnNames, "factory", locations, storageLocations);
+            ArrayList<HashMap<String, String>> transporterLocations = createFacilityMaps(transporterLocationColumnNames, "transporterLocation", locations);
+            ArrayList<HashMap<String, String>> distributionCentres = createFacilityMaps(distributionCentreColumnNames, "distributionCentre", locations, storageLocations);
+            ArrayList<HashMap<String, String>> vaccinationCentres = createFacilityMaps(vaccinationCentresColumnNames, "vaccinationCentre", locations, storageLocations);
 
+            MapPanel mapPanel = new MapPanel(vaccineSystem, factories, transporterLocations, distributionCentres, vaccinationCentres);
+            mainPanel.add(mapPanel, BorderLayout.CENTER);
 
-//            ArrayList<String> locationIDs = getFacilityIDs(locations, 0);
-//            ArrayList<String> factoryIDs = getFacilityIDs(factories, 0);
-//            ArrayList<String> transpoterLocationIDs = getFacilityIDs(transporterLocations, 0);
-//            ArrayList<String> distributionCentreIDs = getFacilityIDs(distributionCentres, 0);
-//            ArrayList<String> vaccinationCentreIDs = getFacilityIDs(vaccinationCentres, 0);
+            mapPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
+            mapPanel.setPreferredSize(new Dimension(MAP_PANEL_WIDTH, MAP_PANEL_HEIGHT));
+            System.out.println("MAP PANEL SIZE: " + mapPanel.getPreferredSize());
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -64,33 +73,82 @@ public class MapPage extends Page {
 
     }
 
-    private HashMap<String, float[]> coordinateRange(ArrayList<ArrayList<String>> locations) {
+    private ArrayList<HashMap<String, String>> createFacilityMaps(String[] columnNames, String tableName,
+     ArrayList<HashMap<String, String>> locationMaps, ArrayList<HashMap<String, String>> storageLocationMaps) throws SQLException {
+
+        ArrayList<HashMap<String, String>> maps = createMaps(columnNames, tableName);
+
+        if (maps.size() > 0) {
+            if (!maps.get(0).containsKey("locationID")) {
+                addValues("storageLocationID", new String[]{"locationID"}, maps, storageLocationMaps);
+            }
+            addValues("locationID", new String[]{"longitude", "latitude"}, maps, locationMaps);
+            addScreenCoordinates(maps);
+        }
+        return maps;
+    }
+
+    private void addScreenCoordinates(ArrayList<HashMap<String, String>> facilities) {
+        for (HashMap<String, String> facility : facilities) {
+            facility.put("x", String.valueOf((int) ((Float.valueOf(facility.get("longitude")) + xAddition) * xScale)));
+            facility.put("y", String.valueOf((int) ((Float.valueOf(facility.get("latitude")) + yAddition) * yScale)));
+            System.out.println("x: " + facility.get("x") + ", y: " + facility.get("y"));
+        }
+    }
+
+    private ArrayList<HashMap<String, String>> createFacilityMaps(String[] columnNames, String tableName,
+      ArrayList<HashMap<String, String>> locationMaps) throws SQLException {
+        return createFacilityMaps(columnNames, tableName, locationMaps, null);
+    }
+
+    private ArrayList<HashMap<String, String>> createMaps(String[] columnNames, String tableName) throws SQLException {
+        ArrayList<ArrayList<String>> arrayLists = vaccineSystem.executeSelect(columnNames, tableName);
+        return arrayListToMap(arrayLists, columnNames);
+    }
+
+    private ArrayList<HashMap<String, String>> arrayListToMap(ArrayList<ArrayList<String>> arrayLists, String[] columnNames) {
+        ArrayList<HashMap<String, String>> maps = new ArrayList<>();
+        for (ArrayList<String> arrayList : arrayLists) {
+            HashMap<String, String> map = new HashMap<>();
+            for (int i = 0; i < columnNames.length; i++) {
+                map.put(columnNames[i], arrayList.get(i));
+            }
+            maps.add(map);
+        }
+        return maps;
+    }
+
+    private void addValues(String foreignKey, String[] valuesToAdd,
+                           ArrayList<HashMap<String, String>> primaryMaps, ArrayList<HashMap<String, String>> secondaryMaps) {
+
+        for (HashMap<String, String> primaryMap : primaryMaps) {
+            for (HashMap<String, String> secondaryMap : secondaryMaps) {
+                if (primaryMap.get(foreignKey).equals(secondaryMap.get(foreignKey))) {
+                    for (String valueToAdd : valuesToAdd) {
+                        primaryMap.put(valueToAdd, secondaryMap.get(valueToAdd));
+                    }
+                }
+            }
+        }
+    }
+
+    private HashMap<String, Float> coordinateRange(ArrayList<HashMap<String, String>> locations) {
         ArrayList<Float> longitudes = new ArrayList<>();
         ArrayList<Float> latitudes = new ArrayList<>();
-        for (ArrayList<String> location : locations) {
-            longitudes.add(Float.valueOf(location.get(1)));
-            latitudes.add(Float.valueOf(location.get(2)));
+        for (HashMap<String, String> location : locations) {
+            longitudes.add(Float.valueOf(location.get("longitude")));
+            latitudes.add(Float.valueOf(location.get("latitude")));
         }
 
-        HashMap<String, float[]> ranges = new HashMap<>();
-        ranges.put("longitude", arrayListRange(longitudes));
-        ranges.put("latitude", arrayListRange(latitudes));
+        float longitudeMin = Collections.min(longitudes);
+        float latitudeMin = Collections.min(latitudes);
+
+        HashMap<String, Float> ranges = new HashMap<>();
+        ranges.put("longitudeMin", longitudeMin);
+        ranges.put("latitudeMin", latitudeMin);
+        ranges.put("longitudeRange", Collections.max(longitudes) - longitudeMin);
+        ranges.put("latitudeRange", Collections.max(latitudes) - latitudeMin);
 
         return ranges;
     }
-
-    private float[] arrayListRange(ArrayList<Float> arrayList) {
-        float min = Collections.min(arrayList);
-        float max = Collections.max(arrayList);
-        return new float[] {min, max};
-    }
-
-//    private ArrayList<String> getFacilityIDs(ArrayList<ArrayList<String>> facilities, int index) {
-//        ArrayList<String> facilityIDs = new ArrayList<>();
-//        for (ArrayList<String> facility : facilities) {
-//            facilityIDs.add(facility.get(index));
-//        }
-//        return facilityIDs;
-//    }
-
 }

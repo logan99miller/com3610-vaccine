@@ -87,11 +87,13 @@ public class AddLocationPage extends AddPage {
                         String text = ((JTextField) component).getText();
                         if (!checkCoordinates(label, text)) {
                             errorMessage("Coordinates values must be between -90 and 90");
+                            break;
                         }
                     }
                 }
                 previousComponent = component;
             }
+            super.actionPerformed(e);
         }
         else {
             super.actionPerformed(e);

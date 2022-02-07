@@ -19,7 +19,7 @@ public class VaccineSystem extends JFrame {
         super(titleBarText);
 
         user = "root";
-        password = "artstowerhas20";
+        password = "";
 
         configureWindow();
         createInterface();
@@ -29,7 +29,7 @@ public class VaccineSystem extends JFrame {
         this.setSize(1000, 700);
         this.setLocationRelativeTo(null); // Sets window to centre of screen
         this.setVisible(true);
-        this.setResizable(false);
+        this.setResizable(true);
     }
 
     private void createInterface() {

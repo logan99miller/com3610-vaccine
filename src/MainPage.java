@@ -7,13 +7,15 @@ public class MainPage extends Page {
     private String pageName;
     private JButton addPageButton, viewPageButton, logPageButton, mapPageButton, logoutButton;
     private CardLayout cardLayout;
-    private JPanel cards;
+    private JPanel navPanel, cards;
 
     public MainPage(VaccineSystem vaccineSystem) {
         super(vaccineSystem);
 
+        navPanel = createNavPanel();
+
         mainPanel.setLayout(new BorderLayout());
-        mainPanel.add(createNavPanel(), BorderLayout.NORTH);
+        mainPanel.add(navPanel, BorderLayout.NORTH);
         mainPanel.add(createContentPanel(), BorderLayout.CENTER);
     }
 
@@ -36,7 +38,6 @@ public class MainPage extends Page {
         for (JButton button : buttons) {
             addButton(button, panel);
         }
-
         return panel;
     }
 
@@ -54,7 +55,6 @@ public class MainPage extends Page {
         JPanel logPanel = logPage.getPanel();
         JPanel mapPanel = mapPage.getPanel();
 
-        // Bad code practice, need to replace
         cards.add(addPanel, getSanitizedButtonText(addPageButton));
         cards.add(viewPanel, getSanitizedButtonText(viewPageButton));
         cards.add(logPanel, getSanitizedButtonText(logPageButton));
@@ -78,7 +78,6 @@ public class MainPage extends Page {
                 }
                 else {
                     button.setFont(button.getFont().deriveFont(Font.PLAIN));
-
                 }
             }
         }
@@ -95,5 +94,9 @@ public class MainPage extends Page {
     public void updatePageToComponent(JComponent component) {
         cards.add(component);
         cardLayout.last(cards);
+    }
+
+    public JPanel getNavPanel() {
+        return navPanel;
     }
 }
