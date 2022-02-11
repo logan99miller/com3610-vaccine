@@ -7,8 +7,7 @@ public class RunSystem extends Thread {
 
     private VaccineSystem vaccineSystem;
     private HashMap<String, String> locationMap, storageLocationMap, medicalConditionMap;
-    private ArrayList<HashMap<String, Object>> factories, transporterLocations, distributionCentres, vaccinationCentres;
-    private HashMap<String, HashMap<String, Object>> vaccines;
+    private HashMap<String, HashMap<String, Object>> vaccines, factories, transporterLocations, distributionCentres, vaccinationCentres;
     private LocalDate currentDate;
     private LocalTime currentTime;
 
@@ -62,10 +61,11 @@ public class RunSystem extends Thread {
     }
 
     private void updateFactoryStockLevels() throws SQLException {
-        for (HashMap<String, Object> factory : factories) {
+        for (String keyI : factories.keySet()) {
+            HashMap<String, Object> factory = factories.get(keyI);
             System.out.println("A1");
 
-            if (isOpen((ArrayList) factory.get("openingTimes"))) {
+            if (isOpen((HashMap<String, HashMap<String, Object>>) factory.get("openingTimes"))) {
                 System.out.println("A2");
                 int vaccinesPerMin = Integer.parseInt((String) factory.get("Factory.vaccinesPerMin"));
 
@@ -73,8 +73,9 @@ public class RunSystem extends Thread {
                 int simulationSpeed = vaccineSystem.getSimulationSpeed();
                 int totalVaccinesToAdd = (vaccinesPerMin * updateRate * simulationSpeed) / 60000;
 
-                for (HashMap<String, Object> store : (ArrayList<HashMap<String, Object>>) factory.get("stores")) {
-                    int availableCapacity = availableCapacity(store);
+                HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) factory.get("stores");
+                for (String keyJ : stores.keySet()) {
+                    int availableCapacity = availableCapacity(stores.get(keyJ));
 
                     if ((availableCapacity > 0) && (totalVaccinesToAdd > 0)) {
 
@@ -82,8 +83,8 @@ public class RunSystem extends Thread {
                         totalVaccinesToAdd -= vaccinesToAddToStore;
 
                         int vaccineID = Integer.parseInt((String) factory.get("Manufacturer.vaccineID"));
-                        int storeID = Integer.parseInt((String)store.get("Store.storeID"));
-                        String expirationDate = getExpirationDate(vaccineID, Integer.parseInt((String)store.get("Store.temperature")));
+                        int storeID = Integer.parseInt((String) stores.get(keyJ).get("Store.storeID"));
+                        String expirationDate = getExpirationDate(vaccineID, Integer.parseInt((String) stores.get(keyJ).get("Store.temperature")));
 
                         String[] columnNames = {"vaccineID", "storeID", "stockLevel", "expirationDate"};
                         String tableName = "VaccineInStorage";
@@ -92,14 +93,14 @@ public class RunSystem extends Thread {
                         HashMap<String, HashMap<String, Object>> matchingExistingStock = vaccineSystem.executeSelect4(columnNames, tableName, null, where);
 
                         if (matchingExistingStock.size() > 0) {
-                            String key = matchingExistingStock.keySet().iterator().next();
-                            vaccinesToAddToStore += Integer.parseInt((String) matchingExistingStock.get(key).get("stockLevel"));
-                            Object[] values = {vaccineID, store.get("Store.storeID"), vaccinesToAddToStore, expirationDate};
+                            String existingStockKey = matchingExistingStock.keySet().iterator().next();
+                            vaccinesToAddToStore += Integer.parseInt((String) matchingExistingStock.get(existingStockKey).get("stockLevel"));
+                            Object[] values = {vaccineID, stores.get(keyJ).get("Store.storeID"), vaccinesToAddToStore, expirationDate};
                             update(columnNames, values, tableName, where);
                         }
                         else {
                             System.out.println(matchingExistingStock);
-                            Object[] values = {vaccineID, store.get("Store.storeID"), (vaccinesToAddToStore), expirationDate};
+                            Object[] values = {vaccineID, stores.get(keyJ).get("Store.storeID"), (vaccinesToAddToStore), expirationDate};
                             insert(columnNames, values, tableName);
                         }
                     }
@@ -212,13 +213,16 @@ public class RunSystem extends Thread {
     private int availableCapacity(HashMap<String, Object> store) {
         int usedCapacity = 0;
         int totalCapacity = Integer.parseInt((String) store.get("Store.capacity"));
-        for (HashMap<String, Object> vaccineInStorage : (ArrayList<HashMap<String, Object>>) store.get("vaccinesInStorage")) {
-            usedCapacity += Integer.parseInt((String) vaccineInStorage.get("Store.stockLevel"));
+        HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccineInStorage");
+        if (vaccinesInStorage != null) {
+            for (String key : vaccinesInStorage.keySet()) {
+                usedCapacity += Integer.parseInt((String) vaccinesInStorage.get(key).get("Store.stockLevel"));
+            }
         }
         return (totalCapacity - usedCapacity);
     }
 
-    private boolean isOpen(ArrayList openingTimes) {
+    private boolean isOpen(HashMap<String, HashMap<String, Object>> openingTimes) {
         HashMap<String, Object> openingTime = getOpeningTime(openingTimes);
         LocalTime startTime = getLocalTime((String) openingTime.get("OpeningTime.startTime"));
         LocalTime endTime = getLocalTime((String) openingTime.get("OpeningTime.endTime"));
@@ -241,12 +245,12 @@ public class RunSystem extends Thread {
     }
 
 
-    private HashMap<String, Object> getOpeningTime(ArrayList<HashMap<String, Object>> openingTimes) {
-        for (HashMap<String, Object> openingTime : openingTimes) {
+    private HashMap<String, Object> getOpeningTime(HashMap<String, HashMap<String, Object>> openingTimes) {
+        for (String key : openingTimes.keySet()) {
             String currentDay = currentDate.getDayOfWeek().toString().toLowerCase();
-            String openingTimeDay = ((String) openingTime.get("OpeningTime.day")).toLowerCase();
+            String openingTimeDay = ((String) openingTimes.get(key).get("OpeningTime.day")).toLowerCase();
             if (currentDay.equals(openingTimeDay)) {
-                return openingTime;
+                return openingTimes.get(key);
             }
         }
         return null;
@@ -281,7 +285,7 @@ public class RunSystem extends Thread {
         return vaccineSystem.executeSelect4(columnNames, "VaccineExemption", innerJoins, "vaccineID = " + vaccineID);
     }
 
-    private ArrayList<HashMap<String, Object>> getFactories() throws SQLException {
+    private HashMap<String, HashMap<String, Object>> getFactories() throws SQLException {
         String[] columnNames = {"Factory.factoryID", "Factory.manufacturerID", "Manufacturer.name", "Manufacturer.vaccineID", "Factory.vaccinesPerMin"};
 
         HashMap<Object, Object> manufacturerMap = new HashMap<>();
@@ -296,7 +300,7 @@ public class RunSystem extends Thread {
         return getStorageLocations(columnNames, "Factory", innerJoins);
     }
 
-    private ArrayList<HashMap<String, Object>> getTransporterLocations() throws SQLException {
+    private HashMap<String, HashMap<String, Object>> getTransporterLocations() throws SQLException {
         String[] columnNames = {"TransporterLocation.transporterLocationID", "TransporterLocation.transporterID",
          "TransporterLocation.availableCapacity", "TransporterLocation.totalCapacity", "Transporter.name"};
 
@@ -312,19 +316,19 @@ public class RunSystem extends Thread {
         return getLocations(columnNames, "TransporterLocation", innerJoins);
     }
 
-    private ArrayList<HashMap<String, Object>> getDistributionCentres() throws SQLException {
+    private HashMap<String, HashMap<String, Object>> getDistributionCentres() throws SQLException {
         String[] columnNames = {"DistributionCentre.distributionCentreID"};
         storageLocationMap.put("localTableName", "DistributionCentre");
         return getStorageLocations(columnNames, "DistributionCentre", new HashMap[] {});
     }
 
-    private ArrayList<HashMap<String, Object>> getVaccinationCentres() throws SQLException {
+    private HashMap<String, HashMap<String, Object>> getVaccinationCentres() throws SQLException {
         String[] columnNames = {"VaccinationCentre.vaccinationCentreID", "VaccinationCentre.name"};
         storageLocationMap.put("localTableName", "VaccinationCentre");
         return getStorageLocations(columnNames, "VaccinationCentre", new HashMap[] {});
     }
 
-    private ArrayList<HashMap<String, Object>> getStorageLocations(String[] originalColumnNames, String tableName, HashMap[] originalInnerJoins) throws SQLException {
+    private HashMap<String, HashMap<String, Object>> getStorageLocations(String[] originalColumnNames, String tableName, HashMap[] originalInnerJoins) throws SQLException {
         locationMap.put("localTableName", "StorageLocation");
 
         String[] additionalColumnNames = {"StorageLocation.storageLocationID", "StorageLocation.locationID"};
@@ -333,21 +337,21 @@ public class RunSystem extends Thread {
         HashMap[] additionalInnerJoins = new HashMap[] {storageLocationMap};
         HashMap[] innerJoins = mergeInnerJoins(additionalInnerJoins, originalInnerJoins);
 
-        ArrayList<HashMap<String, Object>> facilities = getLocations(columnNames, tableName, innerJoins);
+        HashMap<String, HashMap<String, Object>> facilities = getLocations(columnNames, tableName, innerJoins);
 
-        for (int i = 0; i < facilities.size(); i++) {
-            ArrayList<HashMap<String, Object>> stores = getStores((String) facilities.get(i).get("StorageLocation.storageLocationID"));
-            for (int j = 0; j < stores.size(); j++) {
-                ArrayList<HashMap<String, Object>> vaccinesInStorage = getVaccinesInStorage((String) stores.get(j).get("storeID"));
-                stores.get(j).put("vaccinesInStorage", vaccinesInStorage);
+        for (String keyI : facilities.keySet()) {
+            HashMap<String, HashMap<String, Object>> stores = getStores((String) facilities.get(keyI).get("StorageLocation.storageLocationID"));
+            for (String keyJ : stores.keySet()) {
+                HashMap<String, HashMap<String, Object>> vaccinesInStorage = getVaccinesInStorage((String) stores.get(keyJ).get("storeID"));
+                stores.get(keyJ).put("vaccinesInStorage", vaccinesInStorage);
             }
-            facilities.get(i).put("stores", stores);
+            facilities.get(keyI).put("stores", stores);
         }
 
         return facilities;
     }
 
-    private ArrayList<HashMap<String, Object>> getLocations(String[] originalColumnNames, String tableName, HashMap[] originalInnerJoins) throws SQLException {
+    private HashMap<String, HashMap<String, Object>> getLocations(String[] originalColumnNames, String tableName, HashMap[] originalInnerJoins) throws SQLException {
 
         String[] additionalColumnNames = {"Location.locationID", "Location.longitude", "Location.latitude"};
         String[] columnNames = mergeColumnNames(originalColumnNames, additionalColumnNames);
@@ -355,11 +359,11 @@ public class RunSystem extends Thread {
         HashMap[] additionalInnerJoins = new HashMap[] {locationMap};
         HashMap[] innerJoins = mergeInnerJoins(originalInnerJoins, additionalInnerJoins);
 
-        ArrayList<HashMap<String, Object>> locations = vaccineSystem.executeSelect3(columnNames, tableName, innerJoins, null);
+        HashMap<String, HashMap<String, Object>> locations = vaccineSystem.executeSelect4(columnNames, tableName, innerJoins, null);
 
-        for (int i = 0; i < locations.size(); i++) {
-            ArrayList<HashMap<String, Object>> openingTimes = getOpeningTimes((String) locations.get(i).get("Location.locationID"));
-            locations.get(i).put("openingTimes", openingTimes);
+        for (String key : locations.keySet()) {
+            HashMap<String, HashMap<String, Object>> openingTimes = getOpeningTimes((String) locations.get(key).get("Location.locationID"));
+            locations.get(key).put("openingTimes", openingTimes);
         }
 
         return locations;
@@ -380,18 +384,18 @@ public class RunSystem extends Thread {
         return arrayC;
     }
 
-    private ArrayList<HashMap<String, Object>> getStores(String storageLocationID) throws SQLException {
+    private HashMap<String, HashMap<String, Object>> getStores(String storageLocationID) throws SQLException {
         String[] columnNames = {"Store.temperature", "Store.capacity", "Store.storeID"};
-        return vaccineSystem.executeSelect3(columnNames, "Store", null, "storageLocationID = " + storageLocationID);
+        return vaccineSystem.executeSelect4(columnNames, "Store", null, "storageLocationID = " + storageLocationID);
     }
 
-    private ArrayList<HashMap<String, Object>> getVaccinesInStorage(String storeID) throws SQLException {
+    private HashMap<String, HashMap<String, Object>> getVaccinesInStorage(String storeID) throws SQLException {
         String[] columnNames = {"VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.expirationDate"};
-        return vaccineSystem.executeSelect3(columnNames, "VaccineInStorage", null, "storeID = " + storeID);
+        return vaccineSystem.executeSelect4(columnNames, "VaccineInStorage", null, "storeID = " + storeID);
     }
 
-    private ArrayList<HashMap<String, Object>> getOpeningTimes(String locationID) throws SQLException {
+    private HashMap<String, HashMap<String, Object>> getOpeningTimes(String locationID) throws SQLException {
         String[] columnNames = {"OpeningTime.day", "OpeningTime.startTime", "OpeningTime.endTime"};
-        return vaccineSystem.executeSelect3(columnNames, "OpeningTime", null, "locationID = " + locationID);
+        return vaccineSystem.executeSelect4(columnNames, "OpeningTime", null, "locationID = " + locationID);
     }
 }
