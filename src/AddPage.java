@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IllegalFormatFlagsException;
 
 public class AddPage extends Page {
 
@@ -71,9 +73,11 @@ public class AddPage extends Page {
         if (checkInputConditions()) {
             try {
                 vaccineSystem.executeUpdate(statement);
-                String[] columnNames = new String[]{"MAX(" + IDFieldName + ")"};
-                ArrayList<ArrayList<String>> resultSet = vaccineSystem.executeSelect(columnNames, tableName);
-                return Integer.parseInt(resultSet.get(0).get(0));
+                final String maxID = "MAX(" + IDFieldName + ")";
+                String[] columnNames = new String[]{maxID};
+                ArrayList<HashMap<String, String>> resultSet = vaccineSystem.executeSelect2(columnNames, tableName);
+                System.out.println(resultSet);
+                return Integer.parseInt(resultSet.get(0).get(maxID));
             } catch (SQLException e) {
                 e.printStackTrace();
             }

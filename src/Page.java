@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Page implements ActionListener {
     protected JPanel mainPanel;
@@ -59,17 +60,17 @@ public class Page implements ActionListener {
         ArrayList<String> output = new ArrayList<>();
 
         try {
-            ArrayList<ArrayList<String>> resultSet = vaccineSystem.executeSelect(columnNames, tableName);
+            ArrayList<HashMap<String, String>> resultSet = vaccineSystem.executeSelect2(columnNames, tableName);
 
-            for (ArrayList<String> record : resultSet) {
-                String addToOutput = record.get(0);
+            for (HashMap<String, String> record : resultSet) {
+                String addToOutput = record.get(columnNames[0]);
 
                 if (record.size() > 1) {
                     addToOutput += ":";
                 }
 
                 for (int i = 1; i < record.size(); i++) {
-                    addToOutput += " " + record.get(i);
+                    addToOutput += " " + record.get(columnNames[i]);
                 }
 
                 output.add(addToOutput);

@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -86,12 +85,6 @@ public class AddStockPage extends AddPage {
         for (HashMap<String, Object> stockLevelMap : stockLevels) {
             String storeID = (String) stockLevelMap.get("storeID");
             String stockLevel = ((JTextField) stockLevelMap.get("textField")).getText();
-
-            String where = "(vaccineID = " + vaccineID + ") AND (storeID = " + storeID + ")";
-            try {
-                vaccineSystem.executeSelect(new String[]{"stockLevel"}, "vaccineInStorage", where);
-            }
-            catch (SQLException ignore) {}
 
             String values = vaccineID + ", " + storeID + ", " + stockLevel + ", '" + expirationDate + "'";
             statements.add("INSERT INTO VaccineInStorage (vaccineID, storeID, stockLevel, expirationDate) VALUES (" + values + ");");

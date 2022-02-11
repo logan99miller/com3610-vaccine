@@ -48,29 +48,28 @@ public class AddStockLevelPage extends AddPage {
         try {
             if (facility.startsWith(VACCINATION_CENTRE_PREFIX)) {
                 String where = "vaccinationCentreID = " + prefixAndID.replace(VACCINATION_CENTRE_PREFIX, "");
-                storageLocationID = vaccineSystem.executeSelect(columnNames, "vaccinationCentre", where).get(0).get(0);
+                storageLocationID = vaccineSystem.executeSelect2(columnNames, "vaccinationCentre", where).get(0).get("storageLocationID");
             } else if (facility.startsWith(DISTRIBUTION_CENTRE_PREFIX)) {
                 String where = "distributionCentreID = " + prefixAndID.replace(DISTRIBUTION_CENTRE_PREFIX, "");
-                System.out.println(vaccineSystem.executeSelect(columnNames, "distributionCentre", where));
-                storageLocationID = vaccineSystem.executeSelect(columnNames, "distributionCentre", where).get(0).get(0);
+                storageLocationID = vaccineSystem.executeSelect2(columnNames, "distributionCentre", where).get(0).get("storageLocationID");
             } else if (facility.startsWith(FACTORY_PREFIX)) {
                 String where = "factoryID = " + prefixAndID.replace(FACTORY_PREFIX, "");
-                storageLocationID = vaccineSystem.executeSelect(columnNames, "factory", where).get(0).get(0);
+                storageLocationID = vaccineSystem.executeSelect2(columnNames, "factory", where).get(0).get("storageLocationID");
             }
         } catch (SQLException ignored) {}
 
         columnNames = new String[] {"storeID", "capacity", "temperature"};
         String where = "storageLocationID = " + storageLocationID;
         try {
-            ArrayList<ArrayList<String>> stores = vaccineSystem.executeSelect(columnNames, "store", where);
+            ArrayList<HashMap<String, String>> stores = vaccineSystem.executeSelect2(columnNames, "store", where);
 
-            for (ArrayList<String> store : stores) {
-                String labelText = "-" + store.get(1) + " at " + store.get(2) + " degrees:";
+            for (HashMap<String, String> store : stores) {
+                String labelText = "-" + store.get("capacity") + " at " + store.get("temperature") + " degrees:";
 
                 stockLevels.add(new HashMap<>());
                 int lastIndex = stockLevels.size() - 1;
 
-                stockLevels.get(lastIndex).put("storeID", store.get(0));
+                stockLevels.get(lastIndex).put("storeID", store.get("storeID"));
                 stockLevels.get(lastIndex).put("textField", new JTextField());
 
                 addLabelledComponent(inputGridPanel, labelText, (JTextField) stockLevels.get(lastIndex).get("textField"));
