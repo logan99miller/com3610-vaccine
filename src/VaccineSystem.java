@@ -71,7 +71,6 @@ public class VaccineSystem extends JFrame {
         try {
             connection = DriverManager.getConnection(URL, user, password);
             statement = connection.createStatement();
-//            System.out.println(statementText);
             statement.executeUpdate(statementText);
 
         } catch (SQLException e) {
@@ -93,11 +92,10 @@ public class VaccineSystem extends JFrame {
         HashMap<String, HashMap<String, Object>> res = new HashMap<>();
         HashMap<String, Object> values = new HashMap<>();
 
-        String statementText = "SELECT ";
-        for (String columnLabel : columnNames) {
-            statementText += columnLabel + ", ";
+        String statementText = "SELECT " + columnNames[0];
+        for (int i = 1; i < columnNames.length; i++) {
+            statementText += ", " + columnNames[i];
         }
-        statementText = statementText.substring(0, statementText.length() - 2);
         statementText += " FROM " + tableName;
 
         if (innerJoins != null) {
@@ -112,7 +110,6 @@ public class VaccineSystem extends JFrame {
             statementText += " WHERE " + where;
         }
 
-//        System.out.println(statementText);
         try {
             connection = DriverManager.getConnection(URL, user, password);
             statement = connection.createStatement();

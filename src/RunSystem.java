@@ -18,9 +18,20 @@ public class RunSystem extends Thread {
     }
 
     public void run() {
-        updateData();
         try {
+            // Do these values also need to update HashMaps? - Probably not
+            updateDate();
+            removeExpiredStock();
+            updateData();
             updateFactoryStockLevels();
+            orderDistributionCentreStock();
+            // Functions to add:
+            // - Remove expired stocks
+            // - orderVaccinationCentreStock()
+            //      - best transport location option
+            // - create bookings
+            // - fufill bookings (assume average no show rate
+            //
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -41,18 +52,12 @@ public class RunSystem extends Thread {
         medicalConditionMap.put("foreignTableName", "MedicalCondition");
     }
 
-    private void updateData() {
-        updateDate();
-        try {
-            vaccines = getVaccines();
-            factories = getFactories();
-            transporterLocations = getTransporterLocations();
-            distributionCentres = getDistributionCentres();
-            vaccinationCentres = getVaccinationCentres();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
+    private void updateData() throws SQLException {
+        vaccines = getVaccines();
+        factories = getFactories();
+        transporterLocations = getTransporterLocations();
+        distributionCentres = getDistributionCentres();
+        vaccinationCentres = getVaccinationCentres();
     }
 
     private void updateDate() {
@@ -60,13 +65,51 @@ public class RunSystem extends Thread {
         currentTime = LocalTime.of(11, 0);
     }
 
+    private void removeExpiredStock() throws SQLException {
+        HashMap<String, HashMap<String, Object>> vaccinesInStorage = getVaccinesInStorage();
+
+        for (String key : vaccinesInStorage.keySet()) {
+            LocalDate expirationDate = getLocalDate((String) vaccinesInStorage.get(key).get("VaccineInStorage.expirationDate"));
+            if (expirationDate.isBefore(currentDate)) {
+                String ID = (String) vaccinesInStorage.get(key).get("VaccineInStorage.vaccineInStorageID");
+                delete("vaccineInStorageID", ID, "VaccineInStorage");
+            }
+        }
+    }
+
+    private LocalDate getLocalDate(String databaseDate) {
+        String[] dateValues = databaseDate.split("-");
+        LocalDate localDate = LocalDate.of(
+                Integer.parseInt(dateValues[0]),
+                Integer.parseInt(dateValues[1]),
+                Integer.parseInt(dateValues[2].substring(0, 2)));
+        return localDate;
+    }
+
+    // Should be modified as a modified trend projection algorithm rather than threshold algorithm
+    // Remember to keep original algorithm for comparison
+    private void orderDistributionCentreStock() throws SQLException {
+        System.out.println(distributionCentres);
+        for (String keyI : distributionCentres.keySet()) {
+            HashMap<String, Object> distributionCentre = distributionCentres.get(keyI);
+
+            if (isOpen((HashMap<String, HashMap<String, Object>>) distributionCentre.get("openingTimes"))) {
+                int stock = getTotalStock((HashMap<String, Object>) distributionCentre.get("stores"));
+            }
+        }
+    }
+
+    private int getTotalStock(HashMap<String, Object> stores) {
+        return 0;
+    }
+
+    // Should be modified to store vaccine in most suitable fridge by sorting lifespans and picking fridge with longest lifespan
+    // Remember to keep original algorithm for comparison
     private void updateFactoryStockLevels() throws SQLException {
         for (String keyI : factories.keySet()) {
             HashMap<String, Object> factory = factories.get(keyI);
-            System.out.println("A1");
 
             if (isOpen((HashMap<String, HashMap<String, Object>>) factory.get("openingTimes"))) {
-                System.out.println("A2");
                 int vaccinesPerMin = Integer.parseInt((String) factory.get("Factory.vaccinesPerMin"));
 
                 int updateRate = vaccineSystem.getUpdateRate();
@@ -75,38 +118,45 @@ public class RunSystem extends Thread {
 
                 HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) factory.get("stores");
                 for (String keyJ : stores.keySet()) {
+
+                    int vaccineID = Integer.parseInt((String) factory.get("Manufacturer.vaccineID"));
                     int availableCapacity = availableCapacity(stores.get(keyJ));
 
                     if ((availableCapacity > 0) && (totalVaccinesToAdd > 0)) {
-
-                        int vaccinesToAddToStore = Math.min(availableCapacity, totalVaccinesToAdd);
-                        totalVaccinesToAdd -= vaccinesToAddToStore;
-
-                        int vaccineID = Integer.parseInt((String) factory.get("Manufacturer.vaccineID"));
-                        int storeID = Integer.parseInt((String) stores.get(keyJ).get("Store.storeID"));
-                        String expirationDate = getExpirationDate(vaccineID, Integer.parseInt((String) stores.get(keyJ).get("Store.temperature")));
-
-                        String[] columnNames = {"vaccineID", "storeID", "stockLevel", "expirationDate"};
-                        String tableName = "VaccineInStorage";
-                        String where = "(vaccineID = " + vaccineID + ") AND (storeID = " + storeID + ") AND (expirationDate = '" + expirationDate + "')";
-
-                        HashMap<String, HashMap<String, Object>> matchingExistingStock = vaccineSystem.executeSelect4(columnNames, tableName, null, where);
-
-                        if (matchingExistingStock.size() > 0) {
-                            String existingStockKey = matchingExistingStock.keySet().iterator().next();
-                            vaccinesToAddToStore += Integer.parseInt((String) matchingExistingStock.get(existingStockKey).get("stockLevel"));
-                            Object[] values = {vaccineID, stores.get(keyJ).get("Store.storeID"), vaccinesToAddToStore, expirationDate};
-                            update(columnNames, values, tableName, where);
-                        }
-                        else {
-                            System.out.println(matchingExistingStock);
-                            Object[] values = {vaccineID, stores.get(keyJ).get("Store.storeID"), (vaccinesToAddToStore), expirationDate};
-                            insert(columnNames, values, tableName);
-                        }
+                        totalVaccinesToAdd = addToStore(availableCapacity, totalVaccinesToAdd, vaccineID, stores.get(keyJ));
                     }
                 }
             }
         }
+    }
+    
+    private int addToStore(int availableCapacity, int totalVaccinesToAdd, int vaccineID, HashMap<String, Object> store) throws SQLException {
+        int vaccinesToAdd = Math.min(availableCapacity, totalVaccinesToAdd);
+
+        int storeID = Integer.parseInt((String) store.get("Store.storeID"));
+        String expirationDate = getExpirationDate(vaccineID, Integer.parseInt((String) store.get("Store.temperature")));
+
+        String[] columnNames = {"vaccineID", "storeID", "stockLevel", "expirationDate"};
+        String tableName = "VaccineInStorage";
+        String where = "(vaccineID = " + vaccineID + ") AND (storeID = " + storeID + ") AND (expirationDate = '" + expirationDate + "')";
+
+        HashMap<String, HashMap<String, Object>> matchingExistingStock = vaccineSystem.executeSelect4(columnNames, tableName, null, where);
+
+        if (matchingExistingStock.size() > 0) {
+            String existingStockKey = matchingExistingStock.keySet().iterator().next();
+            vaccinesToAdd += Integer.parseInt((String) matchingExistingStock.get(existingStockKey).get("stockLevel"));
+
+        }
+        Object[] values = {vaccineID, store.get("Store.storeID"), vaccinesToAdd, expirationDate};
+        
+        if (matchingExistingStock.size() > 0) {
+            update(columnNames, values, tableName, where);
+        }
+        else {
+            insert(columnNames, values, tableName);
+        }
+        
+        return (totalVaccinesToAdd - vaccinesToAdd);
     }
 
     private String getExpirationDate(int vaccineID, int storageTemperature) {
@@ -125,17 +175,19 @@ public class RunSystem extends Thread {
         return LocalDate.from(currentDate.plusDays(lifespanValue)).toString();
     }
 
+    private void delete(String IDFieldName, String ID, String tableName) throws SQLException {
+        System.out.println("DELETE FROM " + tableName + " WHERE " + IDFieldName + " = " + ID);
+        vaccineSystem.executeUpdate("DELETE FROM " + tableName + " WHERE " + IDFieldName + " = " + ID);
+    }
+
     private void insert(String[] columnNames, Object[] values, String tableName) throws SQLException {
         String columnNamesText = getColumnNamesText(columnNames);
         String valuesText = getValuesText(values);
-        System.out.println("INSERT INTO " + tableName + " (" + columnNamesText + ") VALUES (" + valuesText + ");");
         vaccineSystem.executeUpdate("INSERT INTO " + tableName + " (" + columnNamesText + ") VALUES (" + valuesText + ");");
     }
 
     private void update(String[] columnNames, Object[] values, String tableName, String where) throws SQLException {
-
         String statementText = "UPDATE " + tableName + " SET " + getOnText(columnNames, values) + " WHERE " + where;
-        System.out.println(statementText);
         vaccineSystem.executeUpdate(statementText);
     }
 
@@ -154,7 +206,6 @@ public class RunSystem extends Thread {
     }
 
     private String getColumnNamesText(String[] columnNames) {
-        // Change other ", " to this method?
         String columnNamesText = columnNames[0];
         for (int i = 1; i < columnNames.length; i++) {
             columnNamesText += ", " + columnNames[i];
@@ -163,7 +214,6 @@ public class RunSystem extends Thread {
     }
 
     private String getValuesText(Object[] values) {
-        // Change other ", " to this method?
         String valuesText = "";
         valuesText = addToValues(valuesText, values[0], "");
         for (int i = 1; i < values.length; i++) {
@@ -174,8 +224,7 @@ public class RunSystem extends Thread {
 
     private String addToValues(String valueText, Object value, String separator) {
         try {
-            float temp = Float.parseFloat(value.toString());
-            System.out.println(temp);
+            Float.parseFloat(value.toString());
             valueText += separator + value;
         }
         catch (NumberFormatException e) {
@@ -387,6 +436,11 @@ public class RunSystem extends Thread {
     private HashMap<String, HashMap<String, Object>> getStores(String storageLocationID) throws SQLException {
         String[] columnNames = {"Store.temperature", "Store.capacity", "Store.storeID"};
         return vaccineSystem.executeSelect4(columnNames, "Store", null, "storageLocationID = " + storageLocationID);
+    }
+
+    private HashMap<String, HashMap<String, Object>> getVaccinesInStorage() throws SQLException {
+        String[] columnNames = {"VaccineInStorage.vaccineInStorageID", "VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.expirationDate"};
+        return vaccineSystem.executeSelect4(columnNames, "VaccineInStorage", null, null);
     }
 
     private HashMap<String, HashMap<String, Object>> getVaccinesInStorage(String storeID) throws SQLException {

@@ -76,7 +76,6 @@ public class AddPage extends Page {
                 final String maxID = "MAX(" + IDFieldName + ")";
                 String[] columnNames = new String[]{maxID};
                 ArrayList<HashMap<String, String>> resultSet = vaccineSystem.executeSelect2(columnNames, tableName);
-                System.out.println(resultSet);
                 return Integer.parseInt(resultSet.get(0).get(maxID));
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -86,7 +85,6 @@ public class AddPage extends Page {
     }
 
     protected boolean checkInputConditions() {
-        System.out.println("checkInputConditons()");
         Component previousComponent = new JPanel();
 
         for (Component component : inputGridPanel.getComponents()) {
