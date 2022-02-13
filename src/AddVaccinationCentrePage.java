@@ -3,12 +3,14 @@ import java.awt.event.ActionEvent;
 
 public class AddVaccinationCentrePage extends AddStorageLocationPage {
 
-    JTextField nameTextField;
+    private JTextField nameTextField, vaccinesPerMinTextField;
 
     public AddVaccinationCentrePage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Vaccination Centre:");
         nameTextField = new JTextField();
+        vaccinesPerMinTextField = new JTextField();
         addLabelledComponent(inputGridPanel,"*Name:", nameTextField);
+        addLabelledComponent(inputGridPanel,"-*Vaccines Per Min:", vaccinesPerMinTextField);
         setMaxWidthMinHeight(inputPanel);
     }
 
@@ -16,9 +18,10 @@ public class AddVaccinationCentrePage extends AddStorageLocationPage {
         super.createStatements();
 
         String name = nameTextField.getText();
+        String vaccinesPerMin = vaccinesPerMinTextField.getText();
 
-        values = storageLocationID + ", \"" + name + "\"";
-        statements.add("INSERT INTO VaccinationCentre (storageLocationID, name) VALUES (" + values + ");");
+        values = storageLocationID + ", \"" + name + "\", " + vaccinesPerMin;
+        statements.add("INSERT INTO VaccinationCentre (storageLocationID, name, vaccinesPerMin) VALUES (" + values + ");");
     }
 
     public void actionPerformed(ActionEvent e) {

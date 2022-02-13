@@ -68,6 +68,7 @@ public class VaccineSystem extends JFrame {
     public void executeUpdate(String statementText) throws SQLException {
         Connection connection;
         Statement statement = null;
+        System.out.println(statementText);
         try {
             connection = DriverManager.getConnection(URL, user, password);
             statement = connection.createStatement();

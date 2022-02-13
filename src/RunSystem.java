@@ -91,15 +91,6 @@ public class RunSystem extends Thread {
                 i++;
             }
 
-            List<String> list1 = new ArrayList<String>();
-            Collections.addAll(list1, columnNames);
-            List<String> list2 = new ArrayList<String>();
-            Collections.addAll(list2, values);
-
-            System.out.println("ColumnNames: " + list1);
-            System.out.println("Values: " + list2);
-            System.out.println("Key: " + key);
-
             if (where == "") {
                 insert(columnNames, values, key);
             }
@@ -265,6 +256,7 @@ public class RunSystem extends Thread {
                 int simulationSpeed = vaccineSystem.getSimulationSpeed();
                 int totalVaccinesToAdd = (vaccinesPerMin * updateRate * simulationSpeed) / 60000;
 
+
                 HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) factory.get("stores");
                 for (String keyJ : stores.keySet()) {
                     HashMap<String, Object> store = stores.get(keyJ);
@@ -335,20 +327,20 @@ public class RunSystem extends Thread {
     }
 
     private void delete(String IDFieldName, String ID, String tableName) throws SQLException {
-        System.out.println("DELETE FROM " + tableName + " WHERE " + IDFieldName + " = " + ID);
+//        System.out.println("DELETE FROM " + tableName + " WHERE " + IDFieldName + " = " + ID);
         vaccineSystem.executeUpdate("DELETE FROM " + tableName + " WHERE " + IDFieldName + " = " + ID);
     }
 
     private void insert(String[] columnNames, Object[] values, String tableName) throws SQLException {
         String columnNamesText = getColumnNamesText(columnNames);
         String valuesText = getValuesText(values);
-        System.out.println("INSERT INTO " + tableName + " (" + columnNamesText + ") VALUES (" + valuesText + ");");
+//        System.out.println("INSERT INTO " + tableName + " (" + columnNamesText + ") VALUES (" + valuesText + ");");
         vaccineSystem.executeUpdate("INSERT INTO " + tableName + " (" + columnNamesText + ") VALUES (" + valuesText + ");");
     }
 
     private void update(String[] columnNames, Object[] values, String tableName, String where) throws SQLException {
         String statementText = "UPDATE " + tableName + " SET " + getOnText(columnNames, values) + " WHERE " + where;
-        System.out.println(statementText);
+//        System.out.println(statementText);
         vaccineSystem.executeUpdate(statementText);
     }
 
