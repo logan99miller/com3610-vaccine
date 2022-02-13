@@ -2,6 +2,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class RunSystem extends Thread {
 
@@ -25,6 +26,7 @@ public class RunSystem extends Thread {
             updateData();
             updateFactoryStockLevels();
             orderDistributionCentreStock();
+            writeChanges();
             // Functions to add:
             // - Remove expired stocks
             // - orderVaccinationCentreStock()
@@ -35,6 +37,76 @@ public class RunSystem extends Thread {
         }
         catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void writeChanges() throws SQLException {
+        writeMaps(vaccines);
+        writeMaps(factories);
+        writeMaps(transporterLocations);
+        writeMaps(distributionCentres);
+        writeMaps(vaccinationCentres);
+    }
+
+    private void writeMaps(HashMap<String, HashMap<String, Object>> maps) throws SQLException {
+        for (String key : maps.keySet()) {
+            writeMap(maps.get(key));
+            System.out.println(maps.get(key));
+        }
+    }
+
+    private void writeMap(HashMap<String, Object> map) throws SQLException {
+        HashMap<String, HashMap<String, String>> valuesToInsert = new HashMap<>();
+
+        for (String key : map.keySet()) {
+            try {
+                String value = (String) map.get(key);
+                String[] splitKey = key.split("\\.");
+                String secondaryTableName = splitKey[0];
+                String fieldName = splitKey[1];
+
+                if (valuesToInsert.get(secondaryTableName) == null) {
+                    valuesToInsert.put(secondaryTableName, new HashMap<>());
+                }
+                valuesToInsert.get(secondaryTableName).put(fieldName, value);
+            } catch (ClassCastException e) {
+                HashMap<String, Object> value = (HashMap<String, Object>) map.get(key);
+                writeMap(value);
+            }
+        }
+
+        for (String key : valuesToInsert.keySet()) {
+            HashMap<String, String> valuesMap = valuesToInsert.get(key);
+            String[] columnNames = new String[valuesMap.size()];
+            String[] values = new String[valuesMap.size()];
+            int i = 0;
+            String where = "";
+            for (Map.Entry<String, String> set : valuesMap.entrySet()) {
+                columnNames[i] = set.getKey();
+                values[i] = set.getValue();
+                String potentialTableName = columnNames[i].substring(0, columnNames[i].length() - 2).toLowerCase();
+                if (potentialTableName.equals(key.toLowerCase())) {
+                    where = columnNames[i] + " = " + values[i];
+                }
+                i++;
+            }
+
+            List<String> list1 = new ArrayList<String>();
+            Collections.addAll(list1, columnNames);
+            List<String> list2 = new ArrayList<String>();
+            Collections.addAll(list2, values);
+
+            System.out.println("ColumnNames: " + list1);
+            System.out.println("Values: " + list2);
+            System.out.println("Key: " + key);
+
+            if (where == "") {
+                insert(columnNames, values, key);
+            }
+            else {
+                update(columnNames, values, key, where);
+            }
+
         }
     }
 
@@ -73,6 +145,7 @@ public class RunSystem extends Thread {
             if (expirationDate.isBefore(currentDate)) {
                 String ID = (String) vaccinesInStorage.get(key).get("VaccineInStorage.vaccineInStorageID");
                 delete("vaccineInStorageID", ID, "VaccineInStorage");
+                // In future should also add to activity log
             }
         }
     }
@@ -89,18 +162,94 @@ public class RunSystem extends Thread {
     // Should be modified as a modified trend projection algorithm rather than threshold algorithm
     // Remember to keep original algorithm for comparison
     private void orderDistributionCentreStock() throws SQLException {
-        System.out.println(distributionCentres);
-        for (String keyI : distributionCentres.keySet()) {
-            HashMap<String, Object> distributionCentre = distributionCentres.get(keyI);
 
-            if (isOpen((HashMap<String, HashMap<String, Object>>) distributionCentre.get("openingTimes"))) {
-                int stock = getTotalStock((HashMap<String, Object>) distributionCentre.get("stores"));
+        for (String keyD : distributionCentres.keySet()) {
+
+            int vaccinesNeeded = 100;
+            int minimumOrder = 50;
+
+            if (vaccinesNeeded > minimumOrder) {
+                String[] factoryIDs = new String[factories.size()];
+                double[] distances = new double[factories.size()];
+                int i = 0;
+                for (String keyF : factories.keySet()) {
+                    String factoryID = (String) factories.get(keyF).get("Factory.factoryID");
+                    double distance = getDistance(distributionCentres.get(keyD), factories.get(keyF));
+                    factoryIDs[i] = factoryID;
+                    distances[i] = distance;
+                    i++;
+                }
+                int[] sortedDistancesIndices = getSortedIndices(distances);
+
+                for (int factoryIndex : sortedDistancesIndices) {
+                    String factoryID = factoryIDs[factoryIndex];
+                    HashMap<String, Object> factory = factories.get(factoryID);
+                    if (isOpen((HashMap<String, HashMap<String, Object>>) factory.get("openingTime"))) {
+                        int totalStock = getTotalStock((HashMap<String, Object>) factory.get("stores"));
+                        if (totalStock >= vaccinesNeeded) {
+////                            private void update(String[] columnNames, Object[] values, String tableName, String where) throws SQLException {
+//                            String[] columnNames[]
+//
+////                                    int availableCapacity, int totalVaccinesToAdd, int vaccineID, HashMap<String, Object> store
+//                            addToStore();
+                                break;
+                        }
+                    }
+                }
             }
+
         }
     }
 
+    private int[] getSortedIndices(String[] array) {
+        return IntStream.range(0, array.length)
+                .boxed().sorted(Comparator.comparing(i -> array[i]))
+                .mapToInt(ele -> ele).toArray();
+    }
+
+    private int[] getSortedIndices(double[] array) {
+        return IntStream.range(0, array.length)
+                .boxed().sorted(Comparator.comparing(i -> array[i]))
+                .mapToInt(ele -> ele).toArray();
+    }
+
+    private int[] getDistances(HashMap<String, Object> facilityA, HashMap<String, HashMap<String, Object>> facilitiesB, String IDFieldName) {
+        String[] facilityBIDs = new String[facilitiesB.size()];
+        double[] distances = new double[facilitiesB.size()];
+        int i = 0;
+        for (String keyF : facilitiesB.keySet()) {
+            String factoryID = (String) facilitiesB.get(keyF).get(IDFieldName);
+            double distance = getDistance(facilityA, facilitiesB.get(keyF));
+            facilityBIDs[i] = factoryID;
+            distances[i] = distance;
+            i++;
+        }
+        return getSortedIndices(distances);
+    }
+
+    private double getDistance(HashMap<String, Object> facilityA, HashMap<String, Object> facilityB) {
+        double longitudeA = Double.parseDouble((String) facilityA.get("Location.longitude"));
+        double latitudeA = Double.parseDouble((String) facilityA.get("Location.longitude"));
+        double longitudeB = Double.parseDouble((String) facilityB.get("Location.longitude"));
+        double latitudeB = Double.parseDouble((String) facilityB.get("Location.longitude"));
+
+        double longitudeDistance = longitudeA - longitudeB;
+        double latitudeDistance = latitudeA - latitudeB;
+
+       return Math.sqrt(Math.pow(longitudeDistance, 2) + Math.pow(latitudeDistance, 2));
+    }
+
     private int getTotalStock(HashMap<String, Object> stores) {
-        return 0;
+        int totalStockLevel = 0;
+        for (String keyS : stores.keySet()) {
+            HashMap<String, Object> store = (HashMap<String, Object>) stores.get(keyS);
+            HashMap<String, Object> vaccinesInStorage = (HashMap<String, Object>) store.get("vaccineInStorage");
+            for (String keyV : vaccinesInStorage.keySet()) {
+                HashMap<String, Object> vaccineInStorage = (HashMap<String, Object>) vaccinesInStorage.get(keyV);
+                totalStockLevel += Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
+            }
+        }
+        return totalStockLevel;
     }
 
     // Should be modified to store vaccine in most suitable fridge by sorting lifespans and picking fridge with longest lifespan
@@ -109,7 +258,7 @@ public class RunSystem extends Thread {
         for (String keyI : factories.keySet()) {
             HashMap<String, Object> factory = factories.get(keyI);
 
-            if (isOpen((HashMap<String, HashMap<String, Object>>) factory.get("openingTimes"))) {
+            if (isOpen((HashMap<String, HashMap<String, Object>>) factory.get("openingTime"))) {
                 int vaccinesPerMin = Integer.parseInt((String) factory.get("Factory.vaccinesPerMin"));
 
                 int updateRate = vaccineSystem.getUpdateRate();
@@ -118,45 +267,55 @@ public class RunSystem extends Thread {
 
                 HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) factory.get("stores");
                 for (String keyJ : stores.keySet()) {
+                    HashMap<String, Object> store = stores.get(keyJ);
 
                     int vaccineID = Integer.parseInt((String) factory.get("Manufacturer.vaccineID"));
-                    int availableCapacity = availableCapacity(stores.get(keyJ));
+                    int availableCapacity = availableCapacity(store);
 
                     if ((availableCapacity > 0) && (totalVaccinesToAdd > 0)) {
-                        totalVaccinesToAdd = addToStore(availableCapacity, totalVaccinesToAdd, vaccineID, stores.get(keyJ));
+                        int vaccinesToAdd = Math.min(availableCapacity, totalVaccinesToAdd);
+                        totalVaccinesToAdd -= vaccinesToAdd;
+                        store = addToStore(vaccinesToAdd, vaccineID, store);
+                        stores.put(keyJ, store);
                     }
                 }
+                factory.put("stores", stores);
+                factories.put(keyI, factory);
             }
         }
     }
     
-    private int addToStore(int availableCapacity, int totalVaccinesToAdd, int vaccineID, HashMap<String, Object> store) throws SQLException {
-        int vaccinesToAdd = Math.min(availableCapacity, totalVaccinesToAdd);
+    private HashMap<String, Object> addToStore(int vaccinesToAdd, int vaccineID, HashMap<String, Object> store) {
 
-        int storeID = Integer.parseInt((String) store.get("Store.storeID"));
         String expirationDate = getExpirationDate(vaccineID, Integer.parseInt((String) store.get("Store.temperature")));
 
-        String[] columnNames = {"vaccineID", "storeID", "stockLevel", "expirationDate"};
-        String tableName = "VaccineInStorage";
-        String where = "(vaccineID = " + vaccineID + ") AND (storeID = " + storeID + ") AND (expirationDate = '" + expirationDate + "')";
+        HashMap<String, HashMap<String, String>> vaccinesInStorage = (HashMap<String, HashMap<String, String>>) store.get("vaccineInStorage");
+        HashMap<String, String> vaccineInStorage;
+        boolean addedStocks = false;
+        for (String key : vaccinesInStorage.keySet()) {
+            vaccineInStorage = vaccinesInStorage.get(key);
+            String existingExpirationDate = vaccineInStorage.get("VaccineInStorage.expirationDate").substring(0, 10);
+            int existingVaccineID = Integer.parseInt(vaccineInStorage.get("VaccineInStorage.vaccineID"));
+            if ((existingExpirationDate.equals(expirationDate)) && (existingVaccineID == vaccineID)) {
+                int existingStockLevel = Integer.parseInt(vaccineInStorage.get("VaccineInStorage.stockLevel"));
+                vaccineInStorage.put("VaccineInStorage.stockLevel", Integer.toString(existingStockLevel + vaccinesToAdd));
+                addedStocks = true;
 
-        HashMap<String, HashMap<String, Object>> matchingExistingStock = vaccineSystem.executeSelect4(columnNames, tableName, null, where);
-
-        if (matchingExistingStock.size() > 0) {
-            String existingStockKey = matchingExistingStock.keySet().iterator().next();
-            vaccinesToAdd += Integer.parseInt((String) matchingExistingStock.get(existingStockKey).get("stockLevel"));
-
+                vaccinesInStorage.put(key, vaccineInStorage);
+                store.put("vaccineInStorage", vaccinesInStorage);
+                return store;
+            }
         }
-        Object[] values = {vaccineID, store.get("Store.storeID"), vaccinesToAdd, expirationDate};
-        
-        if (matchingExistingStock.size() > 0) {
-            update(columnNames, values, tableName, where);
+        if (!addedStocks) {
+            vaccineInStorage = new HashMap<>();
+            vaccineInStorage.put("VaccineInStorage.vaccineID", Integer.toString(vaccineID));
+            vaccineInStorage.put("VaccineInStorage.storeID", (String) store.get("Store.storeID"));
+            vaccineInStorage.put("VaccineInStorage.stockLevel", Integer.toString(vaccinesToAdd));
+            vaccineInStorage.put("VaccineInStorage.expirationDate", expirationDate);
+            vaccinesInStorage.put("newID", vaccineInStorage);
         }
-        else {
-            insert(columnNames, values, tableName);
-        }
-        
-        return (totalVaccinesToAdd - vaccinesToAdd);
+        store.put("vaccineInStorage", vaccinesInStorage);
+        return store;
     }
 
     private String getExpirationDate(int vaccineID, int storageTemperature) {
@@ -165,10 +324,10 @@ public class RunSystem extends Thread {
         int lifespanValue = 0;
         for (String key : lifespans.keySet()) {
             HashMap<String, Object> lifespan = lifespans.get(key);
-            int lowestTemperature = Integer.parseInt((String) lifespan.get("lowestTemperature"));
-            int highestTemperature = Integer.parseInt((String) lifespan.get("highestTemperature"));
+            int lowestTemperature = Integer.parseInt((String) lifespan.get("VaccineLifespan.lowestTemperature"));
+            int highestTemperature = Integer.parseInt((String) lifespan.get("VaccineLifespan.highestTemperature"));
             if ((lowestTemperature < storageTemperature) && (highestTemperature > storageTemperature)) {
-                lifespanValue = Integer.parseInt((String) lifespan.get("lifespan"));
+                lifespanValue = Integer.parseInt((String) lifespan.get("VaccineLifespan.lifespan"));
                 break;
             }
         }
@@ -183,11 +342,13 @@ public class RunSystem extends Thread {
     private void insert(String[] columnNames, Object[] values, String tableName) throws SQLException {
         String columnNamesText = getColumnNamesText(columnNames);
         String valuesText = getValuesText(values);
+        System.out.println("INSERT INTO " + tableName + " (" + columnNamesText + ") VALUES (" + valuesText + ");");
         vaccineSystem.executeUpdate("INSERT INTO " + tableName + " (" + columnNamesText + ") VALUES (" + valuesText + ");");
     }
 
     private void update(String[] columnNames, Object[] values, String tableName, String where) throws SQLException {
         String statementText = "UPDATE " + tableName + " SET " + getOnText(columnNames, values) + " WHERE " + where;
+        System.out.println(statementText);
         vaccineSystem.executeUpdate(statementText);
     }
 
@@ -265,7 +426,7 @@ public class RunSystem extends Thread {
         HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccineInStorage");
         if (vaccinesInStorage != null) {
             for (String key : vaccinesInStorage.keySet()) {
-                usedCapacity += Integer.parseInt((String) vaccinesInStorage.get(key).get("Store.stockLevel"));
+                usedCapacity += Integer.parseInt((String) vaccinesInStorage.get(key).get("VaccineInStorage.stockLevel"));
             }
         }
         return (totalCapacity - usedCapacity);
@@ -321,7 +482,7 @@ public class RunSystem extends Thread {
     }
 
     private HashMap<String, HashMap<String, Object>> getVaccineLifespans(String vaccineID) throws SQLException {
-        String[] columnNames = {"lifespan", "lowestTemperature", "highestTemperature"};
+        String[] columnNames = {"VaccineLifespan.vaccineLifespanID", "VaccineLifespan.lifespan", "VaccineLifespan.lowestTemperature", "VaccineLifespan.highestTemperature"};
         return vaccineSystem.executeSelect4(columnNames, "VaccineLifespan", null, "vaccineID = " + vaccineID);
     }
 
@@ -335,7 +496,7 @@ public class RunSystem extends Thread {
     }
 
     private HashMap<String, HashMap<String, Object>> getFactories() throws SQLException {
-        String[] columnNames = {"Factory.factoryID", "Factory.manufacturerID", "Manufacturer.name", "Manufacturer.vaccineID", "Factory.vaccinesPerMin"};
+        String[] columnNames = {"Factory.factoryID", "Factory.manufacturerID", "Manufacturer.manufacturerID", "Manufacturer.name", "Manufacturer.vaccineID", "Factory.vaccinesPerMin"};
 
         HashMap<Object, Object> manufacturerMap = new HashMap<>();
         manufacturerMap.put("foreignKey", "manufacturerID");
@@ -391,8 +552,8 @@ public class RunSystem extends Thread {
         for (String keyI : facilities.keySet()) {
             HashMap<String, HashMap<String, Object>> stores = getStores((String) facilities.get(keyI).get("StorageLocation.storageLocationID"));
             for (String keyJ : stores.keySet()) {
-                HashMap<String, HashMap<String, Object>> vaccinesInStorage = getVaccinesInStorage((String) stores.get(keyJ).get("storeID"));
-                stores.get(keyJ).put("vaccinesInStorage", vaccinesInStorage);
+                HashMap<String, HashMap<String, Object>> vaccinesInStorage = getVaccinesInStorage((String) stores.get(keyJ).get("Store.storeID"));
+                stores.get(keyJ).put("vaccineInStorage", vaccinesInStorage);
             }
             facilities.get(keyI).put("stores", stores);
         }
@@ -412,7 +573,7 @@ public class RunSystem extends Thread {
 
         for (String key : locations.keySet()) {
             HashMap<String, HashMap<String, Object>> openingTimes = getOpeningTimes((String) locations.get(key).get("Location.locationID"));
-            locations.get(key).put("openingTimes", openingTimes);
+            locations.get(key).put("openingTime", openingTimes);
         }
 
         return locations;
@@ -434,7 +595,7 @@ public class RunSystem extends Thread {
     }
 
     private HashMap<String, HashMap<String, Object>> getStores(String storageLocationID) throws SQLException {
-        String[] columnNames = {"Store.temperature", "Store.capacity", "Store.storeID"};
+        String[] columnNames = {"Store.storeID", "Store.storageLocationID", "Store.temperature", "Store.capacity"};
         return vaccineSystem.executeSelect4(columnNames, "Store", null, "storageLocationID = " + storageLocationID);
     }
 
@@ -444,12 +605,12 @@ public class RunSystem extends Thread {
     }
 
     private HashMap<String, HashMap<String, Object>> getVaccinesInStorage(String storeID) throws SQLException {
-        String[] columnNames = {"VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.expirationDate"};
+        String[] columnNames = {"VaccineInStorage.vaccineInStorageID", "VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.expirationDate"};
         return vaccineSystem.executeSelect4(columnNames, "VaccineInStorage", null, "storeID = " + storeID);
     }
 
     private HashMap<String, HashMap<String, Object>> getOpeningTimes(String locationID) throws SQLException {
-        String[] columnNames = {"OpeningTime.day", "OpeningTime.startTime", "OpeningTime.endTime"};
+        String[] columnNames = {"OpeningTime.openingTimeID", "OpeningTime.day", "OpeningTime.startTime", "OpeningTime.endTime"};
         return vaccineSystem.executeSelect4(columnNames, "OpeningTime", null, "locationID = " + locationID);
     }
 }
