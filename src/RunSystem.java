@@ -8,7 +8,7 @@ public class RunSystem extends Thread {
 
     private VaccineSystem vaccineSystem;
     private HashMap<String, String> locationMap, storageLocationMap, medicalConditionMap;
-    private HashMap<String, HashMap<String, Object>> vaccines, factories, transporterLocations, distributionCentres, vaccinationCentres;
+    private HashMap<String, HashMap<String, Object>> vaccines, factories, transporterLocations, distributionCentres, vaccinationCentres, vaccinesInTransit;
     private LocalDate currentDate;
     private LocalTime currentTime;
 
@@ -20,7 +20,6 @@ public class RunSystem extends Thread {
 
     public void run() {
         try {
-            // Do these values also need to update HashMaps? - Probably not
             updateDate();
             removeExpiredStock();
             updateData();
@@ -121,6 +120,7 @@ public class RunSystem extends Thread {
         transporterLocations = getTransporterLocations();
         distributionCentres = getDistributionCentres();
         vaccinationCentres = getVaccinationCentres();
+        vaccinesInTransit = getVaccinesInTransit();
     }
 
     private void updateDate() {
@@ -176,8 +176,10 @@ public class RunSystem extends Thread {
                     String factoryID = factoryIDs[factoryIndex];
                     HashMap<String, Object> factory = factories.get(factoryID);
                     if (isOpen((HashMap<String, HashMap<String, Object>>) factory.get("openingTime"))) {
+                        // Total stock should be for only 1 vaccine type
                         int totalStock = getTotalStock((HashMap<String, Object>) factory.get("stores"));
                         if (totalStock >= vaccinesNeeded) {
+
 ////                            private void update(String[] columnNames, Object[] values, String tableName, String where) throws SQLException {
 //                            String[] columnNames[]
 //
@@ -256,7 +258,6 @@ public class RunSystem extends Thread {
                 int simulationSpeed = vaccineSystem.getSimulationSpeed();
                 int totalVaccinesToAdd = (vaccinesPerMin * updateRate * simulationSpeed) / 60000;
 
-
                 HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) factory.get("stores");
                 for (String keyJ : stores.keySet()) {
                     HashMap<String, Object> store = stores.get(keyJ);
@@ -275,6 +276,54 @@ public class RunSystem extends Thread {
                 factories.put(keyI, factory);
             }
         }
+    }
+
+    private void addVaccinesToTransit(String vaccineID, int amount, String originID, String destinationID, HashMap<String, Object> store) {
+
+        HashMap<String, HashMap<String, String>> originVaccinesInStorage = (HashMap<String, HashMap<String, String>>) store.get("vaccineInStorage");
+        
+        System.out.println("Origin in store: " + store);
+        System.out.println("originVaccinesInStorage: " + originVaccinesInStorage);
+
+        HashMap<String, String> sourceVaccineInStorage;
+        Object[] keys = originVaccinesInStorage.keySet().toArray();
+        int i = 0;
+        while ((amount > 0) && (i < keys.length)) {
+            sourceVaccineInStorage = originVaccinesInStorage.get((String) keys[i]);
+            if (sourceVaccineInStorage.get("VaccineInStorage.vaccineID").equals(vaccineID)) {
+                int stockLevel = Integer.parseInt(sourceVaccineInStorage.get("VaccineInStorage.stockLevel"));
+                int vaccinesToAdd = Math.max(amount, stockLevel);
+                amount -= vaccinesToAdd;
+                sourceVaccineInStorage.put("VaccineInStorage.stockLevel", String.valueOf((stockLevel - vaccinesToAdd)));
+                originVaccinesInStorage.put((String) keys[i], sourceVaccineInStorage);
+                HashMap<String, Object> vaccineInTransit = new HashMap<>();
+                vaccineInTransit.put("VaccineInTransit.vaccineID", vaccineID);
+                vaccineInTransit.put("VaccineInTransit.destinationID", destinationID);
+                vaccineInTransit.put("VaccineInTransit.originID", originID);
+                vaccineInTransit.put("VaccineInTransit.remainingMins", "5");
+                vaccineInTransit.put("VaccineInTransit.expirationDate", sourceVaccineInStorage.get("VaccineInStorage.expirationDate"));
+                vaccineInTransit.put("VaccineInTransit.stockLevel", String.valueOf(vaccinesToAdd));
+                vaccinesInTransit.put("newID", vaccineInTransit);
+            }
+            i++;
+        }
+
+
+    }
+
+    private HashMap<String, HashMap<String, Object>> getVaccinesInStorage(int vaccineID, int amount, HashMap<String, Object> store) {
+
+        return null;
+    }
+
+    private HashMap<String, Object> removeFromStore(int vaccineInStorageID, int amount, HashMap<String, Object> store) {
+        HashMap<String, HashMap<String, String>> vaccinesInStorage = (HashMap<String, HashMap<String, String>>) store.get("vaccineInStorage");
+        System.out.println(vaccinesInStorage);
+        return store;
+    }
+    private HashMap<String, Object> addToStore(HashMap<String, HashMap<String, String>> vaccinesInStorage, HashMap<String, Object> store) {
+
+        return store;
     }
     
     private HashMap<String, Object> addToStore(int vaccinesToAdd, int vaccineID, HashMap<String, Object> store) {
@@ -446,18 +495,6 @@ public class RunSystem extends Thread {
         return LocalTime.of(timeValues[0], timeValues[1], timeValues[2]);
     }
 
-
-    private HashMap<String, Object> getOpeningTime(HashMap<String, HashMap<String, Object>> openingTimes) {
-        for (String key : openingTimes.keySet()) {
-            String currentDay = currentDate.getDayOfWeek().toString().toLowerCase();
-            String openingTimeDay = ((String) openingTimes.get(key).get("OpeningTime.day")).toLowerCase();
-            if (currentDay.equals(openingTimeDay)) {
-                return openingTimes.get(key);
-            }
-        }
-        return null;
-    }
-
     private HashMap<String, HashMap<String, Object>> getVaccines() throws SQLException {
         String[] columnNames = {"Vaccine.vaccineID", "Vaccine.name", "Vaccine.dosesNeeded", "Vaccine.daysBetweenDoses"};
 
@@ -571,19 +608,21 @@ public class RunSystem extends Thread {
         return locations;
     }
 
-    private String[] mergeColumnNames(String[] arrayA, String[] arrayB) {
-        String[] arrayC = new String[arrayA.length + arrayB.length];
-        System.arraycopy(arrayA, 0, arrayC, 0, arrayA.length);
-        System.arraycopy(arrayB, 0, arrayC, arrayA.length, arrayB.length);
-        return arrayC;
+    private HashMap<String, Object> getOpeningTime(HashMap<String, HashMap<String, Object>> openingTimes) {
+        for (String key : openingTimes.keySet()) {
+            String currentDay = currentDate.getDayOfWeek().toString().toLowerCase();
+            String openingTimeDay = ((String) openingTimes.get(key).get("OpeningTime.day")).toLowerCase();
+            if (currentDay.equals(openingTimeDay)) {
+                return openingTimes.get(key);
+            }
+        }
+        return null;
     }
 
-    // Must be separate to mergeColumnNames as casting doesn't work for arrays
-    private HashMap[] mergeInnerJoins(HashMap[] arrayA, HashMap[] arrayB) {
-        HashMap[] arrayC = new HashMap[arrayA.length + arrayB.length];
-        System.arraycopy(arrayA, 0, arrayC, 0, arrayA.length);
-        System.arraycopy(arrayB, 0, arrayC, arrayA.length, arrayB.length);
-        return arrayC;
+    private HashMap<String, HashMap<String, Object>> getVaccinesInTransit() throws SQLException {
+        String[] columnNames = {"VaccineInTransit.vaccineInTransitID", "VaccineInTransit.vaccineID", "VaccineInTransit.destinationID",
+         "VaccineInTransit.originID", "VaccineInTransit.remainingMins", "VaccineInTransit.expirationDate", "VaccineInTransit.stockLevel"};
+        return vaccineSystem.executeSelect4(columnNames, "VaccineInTransit", null, null);
     }
 
     private HashMap<String, HashMap<String, Object>> getStores(String storageLocationID) throws SQLException {
@@ -604,5 +643,20 @@ public class RunSystem extends Thread {
     private HashMap<String, HashMap<String, Object>> getOpeningTimes(String locationID) throws SQLException {
         String[] columnNames = {"OpeningTime.openingTimeID", "OpeningTime.day", "OpeningTime.startTime", "OpeningTime.endTime"};
         return vaccineSystem.executeSelect4(columnNames, "OpeningTime", null, "locationID = " + locationID);
+    }
+
+    private String[] mergeColumnNames(String[] arrayA, String[] arrayB) {
+        String[] arrayC = new String[arrayA.length + arrayB.length];
+        System.arraycopy(arrayA, 0, arrayC, 0, arrayA.length);
+        System.arraycopy(arrayB, 0, arrayC, arrayA.length, arrayB.length);
+        return arrayC;
+    }
+
+    // Must be separate to mergeColumnNames as casting doesn't work for arrays
+    private HashMap[] mergeInnerJoins(HashMap[] arrayA, HashMap[] arrayB) {
+        HashMap[] arrayC = new HashMap[arrayA.length + arrayB.length];
+        System.arraycopy(arrayA, 0, arrayC, 0, arrayA.length);
+        System.arraycopy(arrayB, 0, arrayC, arrayA.length, arrayB.length);
+        return arrayC;
     }
 }

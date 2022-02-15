@@ -3,14 +3,14 @@ import java.awt.event.ActionEvent;
 
 public class AddVaccinationCentrePage extends AddStorageLocationPage {
 
-    private JTextField nameTextField, vaccinesPerMinTextField;
+    private JTextField nameTextField, vaccinesPerHourTextField;
 
     public AddVaccinationCentrePage(VaccineSystem vaccineSystem, MainPage mainPage) {
         super(vaccineSystem, mainPage, "Add Vaccination Centre:");
         nameTextField = new JTextField();
-        vaccinesPerMinTextField = new JTextField();
+        vaccinesPerHourTextField = new JTextField();
         addLabelledComponent(inputGridPanel,"*Name:", nameTextField);
-        addLabelledComponent(inputGridPanel,"-*Vaccines Per Min:", vaccinesPerMinTextField);
+        addLabelledComponent(inputGridPanel,"-*Vaccines Per Hour:", vaccinesPerHourTextField);
         setMaxWidthMinHeight(inputPanel);
     }
 
@@ -18,10 +18,10 @@ public class AddVaccinationCentrePage extends AddStorageLocationPage {
         super.createStatements();
 
         String name = nameTextField.getText();
-        String vaccinesPerMin = vaccinesPerMinTextField.getText();
+        String vaccinesPerHour = vaccinesPerHourTextField.getText();
 
-        values = storageLocationID + ", \"" + name + "\", " + vaccinesPerMin;
-        statements.add("INSERT INTO VaccinationCentre (storageLocationID, name, vaccinesPerMin) VALUES (" + values + ");");
+        values = storageLocationID + ", \"" + name + "\", " + vaccinesPerHour;
+        statements.add("INSERT INTO VaccinationCentre (storageLocationID, name, vaccinesPerHour) VALUES (" + values + ");");
     }
 
     public void actionPerformed(ActionEvent e) {

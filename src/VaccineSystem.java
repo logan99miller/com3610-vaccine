@@ -28,8 +28,9 @@ public class VaccineSystem extends JFrame {
         updateRate = 10000; // in milliseconds
         simulationSpeed = 1;
 
-        RunSystem runSystem = new RunSystem();
-        runSystem.start(this);
+        RunSystem2 runSystem = new RunSystem2();
+        Data data = new Data(this);
+        runSystem.start(data, updateRate, simulationSpeed);
         while (true) {
             runSystem.run();
             try {
