@@ -1,14 +1,18 @@
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Data {
 
+    private LocalDate currentDate;
+    private LocalTime currentTime;
     private final VaccineSystem vaccineSystem;
     private HashMap<String, String> locationMap, storageLocationMap, medicalConditionMap;
     private HashMap<String, HashMap<String, Object>> vaccines, factories, transporterLocations, distributionCentres,
-     vaccinationCentres, vaccinesInTransit, people;
+     vaccinationCentres, vaccinesInTransit, vaccinePriority, people;
 
     public Data(VaccineSystem vaccineSystem) {
         this.vaccineSystem = vaccineSystem;
@@ -18,6 +22,11 @@ public class Data {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateDate() {
+        currentDate = LocalDate.now();
+        currentTime = LocalTime.of(11, 0);
     }
 
     private void setMaps() {
@@ -35,17 +44,21 @@ public class Data {
     }
 
     public void read() throws SQLException {
+        updateDate();
+        removeExpiredStock(currentDate);
+        removePastBookings(currentDate);
+
         vaccines = readVaccines();
         factories = readFactories();
         transporterLocations = readTransporterLocations();
         distributionCentres = readDistributionCentres();
         vaccinationCentres = readVaccinationCentres();
         vaccinesInTransit = readVaccinesInTransit();
-//        bookings = readBookings();
+        vaccinePriority = readVaccinePriorities();
         people = readPeople();
     }
 
-    public void write(LocalDate currentDate) throws SQLException {
+    public void write() throws SQLException {
         writeMaps(vaccines);
         writeMaps(factories);
         writeMaps(transporterLocations);
@@ -54,13 +67,11 @@ public class Data {
         writeMaps(vaccinesInTransit);
 //        writeMaps(bookings);
         writeMaps(people);
-        removeExpiredStock(currentDate);
     }
 
     private void writeMaps(HashMap<String, HashMap<String, Object>> maps) throws SQLException {
         for (String key : maps.keySet()) {
             writeMap(maps.get(key));
-            System.out.println(maps.get(key));
         }
     }
 
@@ -125,6 +136,18 @@ public class Data {
         }
     }
 
+    private void removePastBookings(LocalDate currentDate) throws SQLException {
+        HashMap<String, HashMap<String, Object>> bookings = readBookings();
+
+        for (String key : bookings.keySet()) {
+            LocalDate bookingDate = getLocalDate((String) bookings.get(key).get("Booking.date"));
+            if (bookingDate.isBefore(currentDate)) {
+                String ID = (String) bookings.get(key).get("Booking.bookingID");
+                delete("bookingID", ID, "Booking");
+            }
+        }
+    }
+
     private LocalDate getLocalDate(String databaseDate) {
         String[] dateValues = databaseDate.split("-");
         return LocalDate.of(
@@ -142,10 +165,10 @@ public class Data {
             String vaccineID = (String) vaccines.get(key).get("Vaccine.vaccineID");
             HashMap<String, HashMap<String, Object>> lifespans = readVaccineLifespans(vaccineID);
             HashMap<String, HashMap<String, Object>> exemptions = readVaccineExemptions(vaccineID);
-            HashMap<String, HashMap<String, Object>> priorities = readVaccineExemptions(vaccineID);
+//            HashMap<String, HashMap<String, Object>> priorities = readVaccinePriorities(vaccineID);
             vaccines.get(key).put("lifespans", lifespans);
             vaccines.get(key).put("exemptions", exemptions);
-            vaccines.get(key).put("priorities", priorities);
+//            vaccines.get(key).put("priorities", priorities);
         }
 
         return vaccines;
@@ -164,11 +187,17 @@ public class Data {
         return vaccineSystem.executeSelect4(columnNames, "VaccineExemption", innerJoins, "vaccineID = " + vaccineID);
     }
 
-    private HashMap<String, HashMap<String, Object>> readVaccinePriorities(String vaccineID) throws SQLException {
-        String[] columnNames = {"VaccinePriority.vaccinePriorityID", "VaccinePriority.lowestAge", "VaccinePriority.highestAge",
-         "VaccinePriority.doseNumber", "VaccinePriority.positionInQueue", "VaccinePriority.eligible"};
-        return vaccineSystem.executeSelect4(columnNames, "VaccinePriority", null, "vaccineID = " + vaccineID);
+    private HashMap<String, HashMap<String, Object>> readVaccinePriorities() throws SQLException {
+        String[] columnNames = {"VaccinePriority.vaccinePriorityID", "VaccinePriority.vaccineID", "VaccinePriority.lowestAge",
+         "VaccinePriority.highestAge", "VaccinePriority.doseNumber", "VaccinePriority.positionInQueue", "VaccinePriority.eligible"};
+        return vaccineSystem.executeSelect4(columnNames, "VaccinePriority", null, null);
     }
+
+//    private HashMap<String, HashMap<String, Object>> readVaccinePriorities(String vaccineID) throws SQLException {
+//        String[] columnNames = {"VaccinePriority.vaccinePriorityID", "VaccinePriority.lowestAge", "VaccinePriority.highestAge",
+//         "VaccinePriority.doseNumber", "VaccinePriority.positionInQueue", "VaccinePriority.eligible"};
+//        return vaccineSystem.executeSelect4(columnNames, "VaccinePriority", null, "vaccineID = " + vaccineID);
+//    }
 
     private HashMap<String, HashMap<String, Object>> readFactories() throws SQLException {
         String[] columnNames = {"Factory.factoryID", "Factory.manufacturerID", "Manufacturer.manufacturerID", "Manufacturer.name", "Manufacturer.vaccineID", "Factory.vaccinesPerMin"};
@@ -213,15 +242,14 @@ public class Data {
     }
 
     private HashMap<String, HashMap<String, Object>> readVaccinationCentres() throws SQLException {
-        String[] columnNames = {"VaccinationCentre.vaccinationCentreID", "VaccinationCentre.name"};
+        String[] columnNames = {"VaccinationCentre.vaccinationCentreID", "VaccinationCentre.name", "VaccinationCentre.vaccinesPerHour"};
 
-        storageLocationMap.put("localTableName", "VaccinationCentre" +
-                "");
+        storageLocationMap.put("localTableName", "VaccinationCentre");
         HashMap<String, HashMap<String, Object>> vaccinationCentres = readStorageLocations(columnNames, "VaccinationCentre", new HashMap[] {});
 
         for (String key : vaccinationCentres.keySet()) {
             String vaccinationCentreID = (String) vaccinationCentres.get(key).get("VaccinationCentre.vaccinationCentreID");
-            HashMap<String, HashMap<String, Object>> bookings = readBookings(vaccinationCentreID);
+            HashMap<String, HashMap<String, Object>> bookings = readBookingsFromVaccinationCentreID(vaccinationCentreID);
             vaccinationCentres.get(key).put("booking", bookings);
         }
 
@@ -276,18 +304,21 @@ public class Data {
     }
 
     private HashMap<String, HashMap<String, Object>> readPeople() throws SQLException {
-        String[] columnNames = {"Person.personID", "Person.forename", "Person.surname", "Person.DoB",
-         "PersonMedicalCondition.personMedicalConditionID", "PersonMedicalCondition.medicalConditionID"};
-        HashMap[] innerJoins = new HashMap[] {getPersonMedicalConditionMap()};
-        return vaccineSystem.executeSelect4(columnNames, "Person", innerJoins, null);
-    }
+        String[] columnNames = {"Person.personID", "Person.forename", "Person.surname", "Person.DoB"};
 
-    private HashMap<String, String> getPersonMedicalConditionMap() {
-        HashMap<String, String> map = new HashMap<>();
-        map.put("foreignKey", "personID");
-        map.put("foreignTableName", "PersonMedicalCondition");
-        map.put("localTableName", "Person");
-        return map;
+        HashMap<String, HashMap<String, Object>> people = vaccineSystem.executeSelect4(columnNames, "Person", new HashMap[] {}, null);
+
+        for (String key : people.keySet()) {
+            String personID = (String) people.get(key).get("Person.personID");
+            HashMap<String, HashMap<String, Object>> bookings = readBookingsFromPersonID(personID);
+            HashMap<String, HashMap<String, Object>> medicalConditions = readPersonMedicalConditions(personID);
+            HashMap<String, HashMap<String, Object>> vaccinesReceived = readVaccinesReceived(personID);
+            people.get(key).put("booking", bookings);
+            people.get(key).put("medicalCondition", medicalConditions);
+            people.get(key).put("vaccineReceived", vaccinesReceived);
+        }
+
+        return people;
     }
 
     private HashMap<String, HashMap<String, Object>> readStores(String storageLocationID) throws SQLException {
@@ -310,9 +341,29 @@ public class Data {
         return vaccineSystem.executeSelect4(columnNames, "OpeningTime", null, "locationID = " + locationID);
     }
 
-    private HashMap<String, HashMap<String, Object>> readBookings(String vaccinationCentreID) throws SQLException {
+    private HashMap<String, HashMap<String, Object>> readBookingsFromVaccinationCentreID(String vaccinationCentreID) throws SQLException {
         String[] columnNames = {"Booking.bookingID", "Booking.personID", "Booking.vaccinationCentreID", "Booking.date"};
         return vaccineSystem.executeSelect4(columnNames, "Booking", null, "vaccinationCentreID = " + vaccinationCentreID);
+    }
+
+    private HashMap<String, HashMap<String, Object>> readBookingsFromPersonID(String personID) throws SQLException {
+        String[] columnNames = {"Booking.bookingID", "Booking.personID", "Booking.vaccinationCentreID", "Booking.date"};
+        return vaccineSystem.executeSelect4(columnNames, "Booking", null, "personID = " + personID);
+    }
+
+    private HashMap<String, HashMap<String, Object>> readBookings() throws SQLException {
+        String[] columnNames = {"Booking.bookingID", "Booking.personID", "Booking.vaccinationCentreID", "Booking.date"};
+        return vaccineSystem.executeSelect4(columnNames, "Booking", null, null);
+    }
+
+    private HashMap<String, HashMap<String, Object>> readPersonMedicalConditions(String personID) throws SQLException {
+        String[] columnNames = {"PersonMedicalCondition.personMedicalConditionID", "PersonMedicalCondition.personID", "PersonMedicalCondition.medicalConditionID"};
+        return vaccineSystem.executeSelect4(columnNames, "PersonMedicalCondition", null, "personID = " + personID);
+    }
+
+    private HashMap<String, HashMap<String, Object>> readVaccinesReceived(String personID) throws SQLException {
+        String[] columnNames = {"VaccineReceived.vaccineReceivedID", "VaccineReceived.personID", "VaccineReceived.vaccineID", "VaccineReceived.date"};
+        return vaccineSystem.executeSelect4(columnNames, "VaccineReceived", null, "personID = " + personID);
     }
 
     private String[] mergeColumnNames(String[] arrayA, String[] arrayB) {
@@ -390,6 +441,44 @@ public class Data {
         return columnNamesText;
     }
 
+    public static ArrayList<Integer> sortMaps(HashMap<String, HashMap<String, Object>> map, String sortKey) {
+        ArrayList<Integer> IDs = new ArrayList<>();
+        ArrayList<Integer> values = new ArrayList<>();
+
+        for (String key : map.keySet()) {
+            IDs.add(Integer.parseInt(key));
+            values.add(Integer.parseInt((String) map.get(key).get(sortKey)));
+        }
+
+        // Replace with better sorting algorithm
+        for (int i = 0; i < values.size() - 1; i++) {
+            for (int j = 0; j < values.size() - i - 1; j++) {
+                if (values.get(j) > values.get(j + 1)) {
+                    int tempID = IDs.get(j);
+                    int tempValue = values.get(j);
+                    IDs.set(j, IDs.get(j + 1));
+                    IDs.set(j + 1, tempID);
+                    values.set(j, values.get(j + 1));
+                    values.set(j + 1, tempValue);
+                }
+            }
+        }
+        return IDs;
+    }
+
+    // Expects dates in the format YYYY:MM:DD, where : is the splitter value given
+    public static LocalDate getDateFromString(String string, String splitter) {
+        String[] subString = string.split(splitter);
+        if (subString.length == 3) {
+            int year = Integer.parseInt(subString[0]);
+            int hour = Integer.parseInt(subString[1]);
+            int minute = Integer.parseInt(subString[2]);
+            LocalDate date = LocalDate.of(year, hour, minute);
+            return date;
+        }
+        return null;
+    }
+
     public HashMap<String, HashMap<String, Object>> getVaccines() {
         return vaccines;
     }
@@ -436,5 +525,37 @@ public class Data {
 
     public void setVaccinesInTransit(HashMap<String, HashMap<String, Object>> vaccinesInTransit) {
         this.vaccinesInTransit = vaccinesInTransit;
+    }
+
+    public HashMap<String, HashMap<String, Object>> getVaccinePriority() {
+        return vaccinePriority;
+    }
+
+    public void setVaccinePriority(HashMap<String, HashMap<String, Object>> vaccinePriority) {
+        this.vaccinePriority = vaccinePriority;
+    }
+
+    public HashMap<String, HashMap<String, Object>> getPeople() {
+        return people;
+    }
+
+    public void setPeople(HashMap<String, HashMap<String, Object>> people) {
+        this.people = people;
+    }
+
+    public LocalDate getCurrentDate() {
+        return currentDate;
+    }
+
+    public void setCurrentDate(LocalDate currentDate) {
+        this.currentDate = currentDate;
+    }
+
+    public LocalTime getCurrentTime() {
+        return currentTime;
+    }
+
+    public void setCurrentTime(LocalTime currentTime) {
+        this.currentTime = currentTime;
     }
 }

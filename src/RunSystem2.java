@@ -6,8 +6,6 @@ import java.util.HashMap;
 public class RunSystem2 {
 
     private Data data;
-    private LocalDate currentDate;
-    private LocalTime currentTime;
     private int updateRate;
     private int simulationSpeed;
 
@@ -15,7 +13,6 @@ public class RunSystem2 {
         this.data = data;
         this.updateRate = updateRate;
         this.simulationSpeed = simulationSpeed;
-
         try {
             data.read();
         }
@@ -25,21 +22,16 @@ public class RunSystem2 {
     }
 
     public void run() {
-        updateDate();
         updateFactoryStockLevels();
+        Booking.simulateBookings(data);
 
-        System.out.println(data.getVaccines());
         try {
-            data.write(currentDate);
+            data.write();
+            data.read();
         }
         catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    private void updateDate() {
-        currentDate = LocalDate.now();
-        currentTime = LocalTime.of(11, 0);
     }
 
     // Should be modified to store vaccine in most suitable fridge by sorting lifespans and picking fridge with longest lifespan
@@ -133,6 +125,7 @@ public class RunSystem2 {
                 break;
             }
         }
+        LocalDate currentDate = data.getCurrentDate();
         return LocalDate.from(currentDate.plusDays(lifespanValue)).toString();
     }
 
@@ -141,6 +134,7 @@ public class RunSystem2 {
         LocalTime startTime = getLocalTime((String) openingTime.get("OpeningTime.startTime"));
         LocalTime endTime = getLocalTime((String) openingTime.get("OpeningTime.endTime"));
 
+        LocalTime currentTime = data.getCurrentTime();
         if ((currentTime.isAfter(startTime)) && (currentTime.isBefore(endTime))) {
             return true;
         }
@@ -151,6 +145,7 @@ public class RunSystem2 {
 
     private HashMap<String, Object> getOpeningTime(HashMap<String, HashMap<String, Object>> openingTimes) {
         for (String key : openingTimes.keySet()) {
+            LocalDate currentDate = data.getCurrentDate();
             String currentDay = currentDate.getDayOfWeek().toString().toLowerCase();
             String openingTimeDay = ((String) openingTimes.get(key).get("OpeningTime.day")).toLowerCase();
             if (currentDay.equals(openingTimeDay)) {
