@@ -1,47 +1,17 @@
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashMap;
 
-public class RunSystem2 {
-
-    private Data data;
-    private int updateRate;
-    private int simulationSpeed;
-
-    public void start(Data data, int updateRate, int simulationSpeed) {
-        this.data = data;
-        this.updateRate = updateRate;
-        this.simulationSpeed = simulationSpeed;
-        try {
-            data.read();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void run() {
-        updateFactoryStockLevels();
-        Booking.simulateBookings(data);
-
-        try {
-            data.write();
-            data.read();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+public class StockLevel {
 
     // Should be modified to store vaccine in most suitable fridge by sorting lifespans and picking fridge with longest lifespan
     // Remember to keep original algorithm for comparison
-    private void updateFactoryStockLevels() {
+    public static void updateFactoryStockLevels(Data data, int updateRate, int simulationSpeed) {
         HashMap<String, HashMap<String, Object>> factories = data.getFactories();
         for (String keyI : factories.keySet()) {
             HashMap<String, Object> factory = factories.get(keyI);
 
-            if (isOpen((HashMap<String, HashMap<String, Object>>) factory.get("openingTime"))) {
+            if (isOpen(data, (HashMap<String, HashMap<String, Object>>) factory.get("openingTimes"))) {
                 int vaccinesPerMin = Integer.parseInt((String) factory.get("Factory.vaccinesPerMin"));
 
                 int totalVaccinesToAdd = (vaccinesPerMin * updateRate * simulationSpeed) / 60000;
@@ -56,7 +26,7 @@ public class RunSystem2 {
                     if ((availableCapacity > 0) && (totalVaccinesToAdd > 0)) {
                         int vaccinesToAdd = Math.min(availableCapacity, totalVaccinesToAdd);
                         totalVaccinesToAdd -= vaccinesToAdd;
-                        store = addToStore(vaccinesToAdd, vaccineID, store);
+                        store = addToStore(data, vaccinesToAdd, vaccineID, store);
                         stores.put(keyJ, store);
                     }
                 }
@@ -67,7 +37,7 @@ public class RunSystem2 {
         data.setFactories(factories);
     }
 
-    private int availableCapacity(HashMap<String, Object> store) {
+    private static int availableCapacity(HashMap<String, Object> store) {
         int usedCapacity = 0;
         int totalCapacity = Integer.parseInt((String) store.get("Store.capacity"));
         HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccineInStorage");
@@ -79,13 +49,12 @@ public class RunSystem2 {
         return (totalCapacity - usedCapacity);
     }
 
-    private HashMap<String, Object> addToStore(int vaccinesToAdd, int vaccineID, HashMap<String, Object> store) {
+    private static HashMap<String, Object> addToStore(Data data, int vaccinesToAdd, int vaccineID, HashMap<String, Object> store) {
 
-        String expirationDate = getExpirationDate(vaccineID, Integer.parseInt((String) store.get("Store.temperature")));
+        String expirationDate = getExpirationDate(data, vaccineID, Integer.parseInt((String) store.get("Store.temperature")));
 
         HashMap<String, HashMap<String, String>> vaccinesInStorage = (HashMap<String, HashMap<String, String>>) store.get("vaccineInStorage");
         HashMap<String, String> vaccineInStorage;
-        boolean addedStocks = false;
         for (String key : vaccinesInStorage.keySet()) {
             vaccineInStorage = vaccinesInStorage.get(key);
             String existingExpirationDate = vaccineInStorage.get("VaccineInStorage.expirationDate").substring(0, 10);
@@ -104,7 +73,7 @@ public class RunSystem2 {
         return addVaccineInStorage(store, "newID", vaccinesInStorage, vaccineInStorage);
     }
 
-    private HashMap<String, Object> addVaccineInStorage(HashMap<String, Object> store, String key,
+    private static HashMap<String, Object> addVaccineInStorage(HashMap<String, Object> store, String key,
      HashMap<String, HashMap<String, String>> vaccinesInStorage, HashMap<String, String> vaccineInStorage) {
         vaccineInStorage.put("VaccineInStorage.change", "change");
         vaccinesInStorage.put(key, vaccineInStorage);
@@ -112,7 +81,7 @@ public class RunSystem2 {
         return store;
     }
 
-    private String getExpirationDate(int vaccineID, int storageTemperature) {
+    private static String getExpirationDate(Data data, int vaccineID, int storageTemperature) {
         HashMap<String, Object> vaccine = data.getVaccines().get(Integer.toString(vaccineID));
         HashMap<String, HashMap<String, Object>> lifespans = (HashMap<String, HashMap<String, Object>>) vaccine.get("lifespans");
         int lifespanValue = 0;
@@ -129,8 +98,8 @@ public class RunSystem2 {
         return LocalDate.from(currentDate.plusDays(lifespanValue)).toString();
     }
 
-    private boolean isOpen(HashMap<String, HashMap<String, Object>> openingTimes) {
-        HashMap<String, Object> openingTime = getOpeningTime(openingTimes);
+    private static boolean isOpen(Data data, HashMap<String, HashMap<String, Object>> openingTimes) {
+        HashMap<String, Object> openingTime = getOpeningTime(data, openingTimes);
         LocalTime startTime = getLocalTime((String) openingTime.get("OpeningTime.startTime"));
         LocalTime endTime = getLocalTime((String) openingTime.get("OpeningTime.endTime"));
 
@@ -143,7 +112,7 @@ public class RunSystem2 {
         }
     }
 
-    private HashMap<String, Object> getOpeningTime(HashMap<String, HashMap<String, Object>> openingTimes) {
+    private static HashMap<String, Object> getOpeningTime(Data data, HashMap<String, HashMap<String, Object>> openingTimes) {
         for (String key : openingTimes.keySet()) {
             LocalDate currentDate = data.getCurrentDate();
             String currentDay = currentDate.getDayOfWeek().toString().toLowerCase();
@@ -155,7 +124,7 @@ public class RunSystem2 {
         return null;
     }
 
-    private LocalTime getLocalTime(String time) {
+    private static LocalTime getLocalTime(String time) {
         String[] stringTimeValues = time.split(":");
         int[] timeValues = new int[stringTimeValues.length];
         for (int i = 0; i < timeValues.length; i++) {
@@ -163,4 +132,5 @@ public class RunSystem2 {
         }
         return LocalTime.of(timeValues[0], timeValues[1], timeValues[2]);
     }
+
 }

@@ -116,7 +116,7 @@ public class ViewPage extends Page {
 
         if ((linkerTable != null) && (linkerIDFieldName != null)) {
             try {
-                ArrayList<ArrayList<String>> records = vaccineSystem.executeSelect(new String[]{linkerIDFieldName}, linkerTable, where);
+                ArrayList<ArrayList<String>> records = vaccineSystem.executeSelect1(new String[]{linkerIDFieldName}, linkerTable, where);
                 return "(" + reference.get("linkerIDFieldName") + " = " + records.get(0).get(0) + ")";
             }
             catch (SQLException ignored) {}
@@ -253,10 +253,10 @@ public class ViewPage extends Page {
         ArrayList<ArrayList<String>> tableContents = new ArrayList<>();
         try {
             if (where == null) {
-                tableContents = vaccineSystem.executeSelect(columnNames, tableName);
+                tableContents = vaccineSystem.executeSelect1(columnNames, tableName);
             }
             else {
-                tableContents = vaccineSystem.executeSelect(columnNames, tableName, where);
+                tableContents = vaccineSystem.executeSelect1(columnNames, tableName, where);
             }
         } catch (SQLException e) {}
         return tableContents;

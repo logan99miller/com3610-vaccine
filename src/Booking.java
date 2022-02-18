@@ -24,7 +24,7 @@ public class Booking {
                 int lowestAge = Integer.parseInt((String) vaccinePriority.get("VaccinePriority.lowestAge"));
                 int highestAge = Integer.parseInt((String) vaccinePriority.get("VaccinePriority.highestAge"));
                 int doseNumber = Integer.parseInt((String) vaccinePriority.get("VaccinePriority.doseNumber"));
-                int dosesReceived = ((HashMap<String, Object>) person.get("vaccineReceived")).size();
+                int dosesReceived = ((HashMap<String, Object>) person.get("vaccinesReceived")).size();
 
                 if ((age >= lowestAge) && (age < highestAge) && (doseNumber - 1 == dosesReceived)) {
                     String personID = (String) person.get("Person.personID");
@@ -41,7 +41,7 @@ public class Booking {
 
         for (String key : people.keySet()) {
             HashMap<String, Object> person = people.get(key);
-            HashMap<String, Object> bookings = (HashMap<String, Object>) person.get("booking");
+            HashMap<String, Object> bookings = (HashMap<String, Object>) person.get("bookings");
             if (bookings.size() == 0) {
                 unbookedPeople.put(key, person);
             }
@@ -55,7 +55,7 @@ public class Booking {
         HashMap<String, Integer> modifiedSlots = slots;
         HashMap<String, HashMap<String, Object>> vaccinationCentres = data.getVaccinationCentres();
         HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(vaccinationCentreID);
-        HashMap<String, HashMap<String, String>> bookings = (HashMap<String, HashMap<String, String>>) vaccinationCentre.get("booking");
+        HashMap<String, HashMap<String, String>> bookings = (HashMap<String, HashMap<String, String>>) vaccinationCentre.get("bookings");
         int vaccinesPerHour = Integer.parseInt((String) vaccinationCentre.get("VaccinationCentre.vaccinesPerHour"));
 
         for (String date : slots.keySet()) {
@@ -76,7 +76,7 @@ public class Booking {
                 bookings.put("newID" + personID, booking);
             }
         }
-        vaccinationCentre.put("booking", bookings);
+        vaccinationCentre.put("bookings", bookings);
         vaccinationCentres.put(vaccinationCentreID, vaccinationCentre);
         data.setVaccinationCentres(vaccinationCentres);
         availability.put(vaccinationCentreID, slots);
@@ -104,7 +104,7 @@ public class Booking {
     }
 
     private static HashMap<String, Integer> getSlots(HashMap<String, Object> vaccinationCentre, HashMap<String, LocalDate> week) {
-        HashMap<String, HashMap<String, String>> bookings = (HashMap<String, HashMap<String, String>>) vaccinationCentre.get("booking");
+        HashMap<String, HashMap<String, String>> bookings = (HashMap<String, HashMap<String, String>>) vaccinationCentre.get("bookings");
         HashMap<String, Integer> slots = generateSlots(vaccinationCentre, week);
         int vaccinesPerHour = Integer.parseInt((String) vaccinationCentre.get("VaccinationCentre.vaccinesPerHour"));
         slots = addCurrentSlots(slots, bookings);
@@ -114,7 +114,7 @@ public class Booking {
 
     private static HashMap<String, Integer> generateSlots(HashMap<String, Object> vaccinationCentre, HashMap<String, LocalDate> week) {
         HashMap<String, Integer> slots = new HashMap<>();
-        HashMap<String, HashMap<String, String>> openingTimes = (HashMap<String, HashMap<String, String>>) vaccinationCentre.get("openingTime");
+        HashMap<String, HashMap<String, String>> openingTimes = (HashMap<String, HashMap<String, String>>) vaccinationCentre.get("openingTimes");
         for (String key : openingTimes.keySet()) {
             HashMap<String, String> openingTime = openingTimes.get(key);
             String day = openingTime.get("OpeningTime.day").toLowerCase();
