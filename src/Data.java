@@ -12,7 +12,7 @@ public class Data {
     private final VaccineSystem vaccineSystem;
     private HashMap<String, String> locationMap, storageLocationMap, medicalConditionMap;
     private HashMap<String, HashMap<String, Object>> vaccines, factories, transporterLocations, distributionCentres,
-     vaccinationCentres, vaccinesInTransit, vaccinePriority, people;
+     vaccinationCentres, vaccinePriority, people;
 
     public Data(VaccineSystem vaccineSystem) {
         this.vaccineSystem = vaccineSystem;
@@ -56,7 +56,6 @@ public class Data {
         transporterLocations = readTransporterLocations();
         distributionCentres = readDistributionCentres();
         vaccinationCentres = readVaccinationCentres();
-        vaccinesInTransit = readVaccinesInTransit();
         vaccinePriority = readVaccinePriorities();
         people = readPeople();
     }
@@ -67,7 +66,6 @@ public class Data {
         writeMaps(transporterLocations);
         writeMaps(distributionCentres);
         writeMaps(vaccinationCentres);
-        writeMaps(vaccinesInTransit);
         writeMaps(people);
     }
 
@@ -220,8 +218,7 @@ public class Data {
     }
 
     private HashMap<String, HashMap<String, Object>> readTransporterLocations() throws SQLException {
-        String[] columnNames = {"TransporterLocation.transporterLocationID", "TransporterLocation.transporterID",
-         "TransporterLocation.availableCapacity", "TransporterLocation.totalCapacity", "Transporter.name"};
+        String[] columnNames = {"TransporterLocation.transporterLocationID", "TransporterLocation.transporterID", "Transporter.name"};
 
         locationMap.put("localTableName", "TransporterLocation");
 
@@ -300,11 +297,11 @@ public class Data {
         return locations;
     }
 
-    private HashMap<String, HashMap<String, Object>> readVaccinesInTransit() throws SQLException {
-        String[] columnNames = {"VaccineInTransit.vaccineInTransitID", "VaccineInTransit.vaccineID", "VaccineInTransit.destinationID",
-         "VaccineInTransit.originID", "VaccineInTransit.remainingMins", "VaccineInTransit.expirationDate", "VaccineInTransit.stockLevel"};
-        return vaccineSystem.executeSelect(columnNames, "VaccineInTransit");
-    }
+//    private HashMap<String, HashMap<String, Object>> readVaccinesInTransit() throws SQLException {
+//        String[] columnNames = {"VaccineInTransit.vaccineInTransitID", "VaccineInTransit.vaccineID", "VaccineInTransit.destinationID",
+//         "VaccineInTransit.originID", "VaccineInTransit.remainingMins", "VaccineInTransit.expirationDate", "VaccineInTransit.stockLevel"};
+//        return vaccineSystem.executeSelect(columnNames, "VaccineInTransit");
+//    }
 
     private HashMap<String, HashMap<String, Object>> readPeople() throws SQLException {
         String[] columnNames = {"Person.personID", "Person.forename", "Person.surname", "Person.DoB"};
@@ -460,14 +457,6 @@ public class Data {
 
     public void setVaccinationCentres(HashMap<String, HashMap<String, Object>> vaccinationCentres) {
         this.vaccinationCentres = vaccinationCentres;
-    }
-
-    public HashMap<String, HashMap<String, Object>> getVaccinesInTransit() {
-        return vaccinesInTransit;
-    }
-
-    public void setVaccinesInTransit(HashMap<String, HashMap<String, Object>> vaccinesInTransit) {
-        this.vaccinesInTransit = vaccinesInTransit;
     }
 
     public HashMap<String, HashMap<String, Object>> getVaccinePriority() {
