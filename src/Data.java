@@ -12,7 +12,7 @@ public class Data {
     private final VaccineSystem vaccineSystem;
     private HashMap<String, String> locationMap, storageLocationMap, medicalConditionMap;
     private HashMap<String, HashMap<String, Object>> vaccines, factories, transporterLocations, distributionCentres,
-     vaccinationCentres, vaccinePriority, people;
+     vaccinationCentres, vaccinePriority, people, vans;
 
     public Data(VaccineSystem vaccineSystem) {
         this.vaccineSystem = vaccineSystem;
@@ -58,15 +58,25 @@ public class Data {
         vaccinationCentres = readVaccinationCentres();
         vaccinePriority = readVaccinePriorities();
         people = readPeople();
+        vans = readVans();
     }
 
     public void write() throws SQLException {
+        System.out.println("Writing vaccines");
         writeMaps(vaccines);
+        System.out.println("Writing factories");
         writeMaps(factories);
+        System.out.println("Writing transporterLocations");
         writeMaps(transporterLocations);
+        System.out.println("Writing distributionCentres");
+        System.out.println("distributionCentres: " + distributionCentres);
         writeMaps(distributionCentres);
+        System.out.println("Writing vaccinationCentres");
         writeMaps(vaccinationCentres);
+        System.out.println("Writing people");
         writeMaps(people);
+        System.out.println("Writing vans");
+        writeMaps(vans);
     }
 
     private void writeMaps(HashMap<String, HashMap<String, Object>> maps) throws SQLException {
@@ -81,6 +91,7 @@ public class Data {
         for (String key : valuesToWrite.keySet()) {
             HashMap<String, String> valuesMap = valuesToWrite.get(key);
             if (valuesMap.get("change") != null) {
+                System.out.println("Map: " + key + ", " + valuesMap);
                 writeValues(valuesMap, key);
             }
         }
@@ -92,6 +103,7 @@ public class Data {
         for (String key : map.keySet()) {
             try {
                 String value = (String) map.get(key);
+                System.out.println("Value: " + key + ", " + value);
                 String[] splitKey = key.split("\\.");
                 String secondaryTableName = splitKey[0];
                 String fieldName = splitKey[1];
@@ -101,6 +113,7 @@ public class Data {
                 }
                 valuesToWrite.get(secondaryTableName).put(fieldName, value);
             } catch (ClassCastException e) {
+                System.out.println("Map.get(key): " + key + ", " + map.get(key));
                 HashMap<String, Object> value = (HashMap<String, Object>) map.get(key);
                 writeMap(value);
             }
@@ -109,6 +122,7 @@ public class Data {
     }
 
     private void writeValues(HashMap<String, String> valuesMap, String key) throws SQLException {
+        System.out.println("Writing: " + key + ", " + valuesMap);
         valuesMap.remove("change");
         String[] columnNames = new String[valuesMap.size()];
         String[] values = new String[valuesMap.size()];
@@ -124,6 +138,15 @@ public class Data {
             i++;
         }
 
+        System.out.println("ColumnNames: " + columnNames);
+        System.out.println("Column names length: " + columnNames.length);
+        System.out.println("Values length: " + values.length);
+        for (String cn : columnNames) {
+            System.out.println("CN" + cn);
+        }
+        for (String v : values) {
+            System.out.println("V: " + v);
+        }
         if (where.equals("")) {
             vaccineSystem.insert(columnNames, values, key);
         }
@@ -271,7 +294,7 @@ public class Data {
             HashMap<String, HashMap<String, Object>> stores = readStores((String) facilities.get(keyI).get("StorageLocation.storageLocationID"));
             for (String keyJ : stores.keySet()) {
                 HashMap<String, HashMap<String, Object>> vaccinesInStorage = readVaccinesInStorage((String) stores.get(keyJ).get("Store.storeID"));
-                stores.get(keyJ).put("vaccineInStorage", vaccinesInStorage);
+                stores.get(keyJ).put("vaccinesInStorage", vaccinesInStorage);
             }
             facilities.get(keyI).put("stores", stores);
         }
@@ -297,12 +320,6 @@ public class Data {
         return locations;
     }
 
-//    private HashMap<String, HashMap<String, Object>> readVaccinesInTransit() throws SQLException {
-//        String[] columnNames = {"VaccineInTransit.vaccineInTransitID", "VaccineInTransit.vaccineID", "VaccineInTransit.destinationID",
-//         "VaccineInTransit.originID", "VaccineInTransit.remainingMins", "VaccineInTransit.expirationDate", "VaccineInTransit.stockLevel"};
-//        return vaccineSystem.executeSelect(columnNames, "VaccineInTransit");
-//    }
-
     private HashMap<String, HashMap<String, Object>> readPeople() throws SQLException {
         String[] columnNames = {"Person.personID", "Person.forename", "Person.surname", "Person.DoB"};
 
@@ -319,6 +336,16 @@ public class Data {
         }
 
         return people;
+    }
+
+    private HashMap<String, HashMap<String, Object>> readVans() throws SQLException {
+        String[] columnNames = {"Van.vanID", "Van.deliveryStage", "Van.remainingTime", "Van.storageLocationID", "Van.originID",
+         "Van.destinationID", "Van.transporterLocationID"};
+
+        storageLocationMap.put("localTableName", "Van");
+        HashMap<String, HashMap<String, Object>> vans = readStorageLocations(columnNames, "Van", new HashMap[] {});
+
+        return vans;
     }
 
     private HashMap<String, HashMap<String, Object>> readStores(String storageLocationID) throws SQLException {
@@ -489,5 +516,13 @@ public class Data {
 
     public void setCurrentTime(LocalTime currentTime) {
         this.currentTime = currentTime;
+    }
+
+    public HashMap<String, HashMap<String, Object>> getVans() {
+        return vans;
+    }
+
+    public void setVans(HashMap<String, HashMap<String, Object>> vans) {
+        this.vans = vans;
     }
 }

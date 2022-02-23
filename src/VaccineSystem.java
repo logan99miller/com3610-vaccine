@@ -28,19 +28,6 @@ public class VaccineSystem extends JFrame {
         updateRate = 10000; // in milliseconds
         simulationSpeed = 1;
 
-        HashMap<String, Object> locationA = new HashMap<String, Object>();
-        HashMap<String, Object> locationB = new HashMap<String, Object>();
-        locationA.put("Location.longitude", "53.3850074");
-        locationA.put("Location.latitude", "-1.494030");
-        locationB.put("Location.longitude", "51.926503");
-        locationB.put("Location.latitude", "-0.658489");
-        System.out.println(StockLevel.getDistance(locationA, locationB));
-        locationA.put("Location.longitude", "53.395014");
-        locationA.put("Location.latitude", "-1.486901");
-        locationB.put("Location.longitude", "53.372177");
-        locationB.put("Location.latitude", "-1.475705");
-        System.out.println(StockLevel.getDistance(locationA, locationB));
-
         RunSystem runSystem = new RunSystem();
         Data data = new Data(this);
         runSystem.start(data, updateRate, simulationSpeed);
@@ -181,7 +168,6 @@ public class VaccineSystem extends JFrame {
         if (where != null) {
             statementText += " WHERE " + where;
         }
-
         try {
             connection = DriverManager.getConnection(URL, user, password);
             statement = connection.createStatement();

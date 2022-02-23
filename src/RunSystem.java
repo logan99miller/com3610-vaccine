@@ -13,6 +13,8 @@ public class RunSystem {
 
     public void run() {
         StockLevel.updateFactoryStockLevels(data, updateRate, simulationSpeed);
+        StockLevel.updateDeliveries(data, updateRate, simulationSpeed);
+        StockLevel.orderVaccines(data);
         Booking.simulateBookings(data);
 
         try {
