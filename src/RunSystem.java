@@ -12,10 +12,11 @@ public class RunSystem {
     }
 
     public void run() {
-        StockLevel.updateFactoryStockLevels(data, updateRate, simulationSpeed);
-        StockLevel.updateDeliveries(data, updateRate, simulationSpeed);
-        StockLevel.orderVaccines(data);
+        Factory.updateStockLevels(data, updateRate, simulationSpeed);
+        VaccinationCentre.orderVaccines(data);
+        DistributionCentre.orderVaccines(data);
         Booking.simulateBookings(data);
+        Delivery.update(data, updateRate, simulationSpeed);
 
         try {
             data.update();

@@ -109,6 +109,10 @@ public class VaccineSystem extends JFrame {
             Float.parseFloat(value.toString());
             valueText += separator + value;
         }
+        catch (NullPointerException e) {
+            valueText = separator + "null";
+
+        }
         catch (NumberFormatException e) {
             valueText += separator + "'" + value + "'";
         }
@@ -223,7 +227,6 @@ public class VaccineSystem extends JFrame {
             statementText.append(" WHERE ").append(where);
         }
 
-//        System.out.println(statementText);
         try {
             connection = DriverManager.getConnection(URL, user, password);
             statement = connection.createStatement();
@@ -271,7 +274,6 @@ public class VaccineSystem extends JFrame {
             statementText.append(" WHERE ").append(where);
         }
 
-//        System.out.println(statementText);
         try {
             connection = DriverManager.getConnection(URL, user, password);
             statement = connection.createStatement();

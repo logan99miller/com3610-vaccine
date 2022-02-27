@@ -62,20 +62,12 @@ public class Data {
     }
 
     public void write() throws SQLException {
-        System.out.println("Writing vaccines");
         writeMaps(vaccines);
-        System.out.println("Writing factories");
         writeMaps(factories);
-        System.out.println("Writing transporterLocations");
         writeMaps(transporterLocations);
-        System.out.println("Writing distributionCentres");
-        System.out.println("distributionCentres: " + distributionCentres);
         writeMaps(distributionCentres);
-        System.out.println("Writing vaccinationCentres");
         writeMaps(vaccinationCentres);
-        System.out.println("Writing people");
         writeMaps(people);
-        System.out.println("Writing vans");
         writeMaps(vans);
     }
 
@@ -91,7 +83,6 @@ public class Data {
         for (String key : valuesToWrite.keySet()) {
             HashMap<String, String> valuesMap = valuesToWrite.get(key);
             if (valuesMap.get("change") != null) {
-                System.out.println("Map: " + key + ", " + valuesMap);
                 writeValues(valuesMap, key);
             }
         }
@@ -103,7 +94,6 @@ public class Data {
         for (String key : map.keySet()) {
             try {
                 String value = (String) map.get(key);
-                System.out.println("Value: " + key + ", " + value);
                 String[] splitKey = key.split("\\.");
                 String secondaryTableName = splitKey[0];
                 String fieldName = splitKey[1];
@@ -113,7 +103,7 @@ public class Data {
                 }
                 valuesToWrite.get(secondaryTableName).put(fieldName, value);
             } catch (ClassCastException e) {
-                System.out.println("Map.get(key): " + key + ", " + map.get(key));
+
                 HashMap<String, Object> value = (HashMap<String, Object>) map.get(key);
                 writeMap(value);
             }
@@ -122,7 +112,6 @@ public class Data {
     }
 
     private void writeValues(HashMap<String, String> valuesMap, String key) throws SQLException {
-        System.out.println("Writing: " + key + ", " + valuesMap);
         valuesMap.remove("change");
         String[] columnNames = new String[valuesMap.size()];
         String[] values = new String[valuesMap.size()];
@@ -136,16 +125,6 @@ public class Data {
                 where = columnNames[i] + " = " + values[i];
             }
             i++;
-        }
-
-        System.out.println("ColumnNames: " + columnNames);
-        System.out.println("Column names length: " + columnNames.length);
-        System.out.println("Values length: " + values.length);
-        for (String cn : columnNames) {
-            System.out.println("CN" + cn);
-        }
-        for (String v : values) {
-            System.out.println("V: " + v);
         }
         if (where.equals("")) {
             vaccineSystem.insert(columnNames, values, key);
@@ -433,7 +412,17 @@ public class Data {
         return IDs;
     }
 
-    // Expects dates in the format YYYY:MM:DD, where : is the splitter value given
+    public static HashMap<String, Object> findMap(HashMap<String, HashMap<String, Object>> maps, String fieldName, String fieldValue) {
+        for (String key : maps.keySet()) {
+            HashMap<String, Object> map = maps.get(key);
+            if ((map.get(fieldName)).equals(fieldValue)) {
+                return map;
+            }
+        }
+        return null;
+    }
+
+    // Method expects dates in the format YYYY:MM:DD, where : is the splitter value given
     public static LocalDate getDateFromString(String string, String splitter) {
         String[] subString = string.split(splitter);
         if (subString.length == 3) {
@@ -444,6 +433,16 @@ public class Data {
             return date;
         }
         return null;
+    }
+
+    // Converts the time stored in this class and the database into LocalTime type
+    public static LocalTime getLocalTime(String time) {
+        String[] stringTimeValues = time.split(":");
+        int[] timeValues = new int[stringTimeValues.length];
+        for (int i = 0; i < timeValues.length; i++) {
+            timeValues[i] = Integer.parseInt(stringTimeValues[i]);
+        }
+        return LocalTime.of(timeValues[0], timeValues[1], timeValues[2]);
     }
 
     public HashMap<String, HashMap<String, Object>> getVaccines() {

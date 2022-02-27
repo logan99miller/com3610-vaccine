@@ -47,7 +47,7 @@ public class AddTransporterLocationPage extends AddLocationPage {
 
         int numberOfVans = Integer.parseInt(numberOfVansTextField.getText());
         String vanCapacity = vanCapacityTextField.getText();
-        String vanTemperature = vanCapacityTextField.getText();
+        String vanTemperature = vanTemperatureTextField.getText();
         String transporter = (String) transportersComboBox.getSelectedItem();
 
         int transporterID = Integer.parseInt(transporter.split(":")[0]);
@@ -62,9 +62,7 @@ public class AddTransporterLocationPage extends AddLocationPage {
             String[] columnNames = {"locationID", "longitude", "latitude"};
             String where = "locationID = " + locationID;
             HashMap<String, HashMap<String, Object>> locations = vaccineSystem.executeSelect(columnNames, "Location", where);
-            System.out.println("Locations: " + locations);
             HashMap<String, Object> location = locations.get(String.valueOf(locationID));
-            System.out.println("Location: " + location);
             longitude = (String) location.get("longitude");
             latitude = (String) location.get("longitude");
         }
