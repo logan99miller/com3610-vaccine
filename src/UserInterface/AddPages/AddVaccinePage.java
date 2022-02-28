@@ -95,7 +95,7 @@ public class AddVaccinePage extends AddPage {
     }
 
     private void createStatements() {
-        statements = new ArrayList<>();
+        inserts = new ArrayList<>();
 
         String name = nameTextField.getText();
         int dosesNeeded = (int) dosesNeededSpinner.getValue();
@@ -103,14 +103,16 @@ public class AddVaccinePage extends AddPage {
         String minimumAge = minimumAgeTextField.getText();
         String maximumAge = maximumAgeTextField.getText();
 
-        String values = "\"" + name + "\", " + dosesNeeded + ", " + daysBetweenDoses + ", " + minimumAge + ", " + maximumAge;
-        String statement = "INSERT INTO Vaccine (name, dosesNeeded, daysBetweenDoses, minimumAge, maximumAge) VALUES (" + values + ");";
-        int vaccineID = insertAndGetID(statement, "vaccineID", "Vaccine");
+        String[] columnNames = new String[] {"name", "dosesNeeded", "daysBetweenDoses", "minimumAge", "maximumAge"};
+        Object[] values = new Object[] {name, dosesNeeded, daysBetweenDoses, minimumAge, maximumAge};
+        int vaccineID = insertAndGetID(columnNames, values, "Vaccine", "vaccineID");
 
         for (String medicalCondition : medicalConditionsList.getSelectedValuesList()) {
             int medicalConditionID = Integer.parseInt( medicalCondition.split(":")[0]);
-            values = vaccineID + "," + medicalConditionID;
-            statements.add("INSERT INTO VaccineExemption (vaccineID, medicalConditionID) VALUES (" + values + ");");
+
+            columnNames = new String[] {"vaccineID", "medicalConditionID"};
+            values = new Object[] {vaccineID, medicalConditionID};
+            inserts.add(new Insert(columnNames, values, "VaccineExemption"));
         }
 
         for (AddVaccineLifespan addLifespan : addLifespans) {
@@ -118,8 +120,9 @@ public class AddVaccinePage extends AddPage {
             int lowestTemperature = (int) addLifespan.getMinimumTemperature();
             int highestTemperature = (int) addLifespan.getMaximumTemperature();
 
-            values = vaccineID + ", " + lifespan + ", " + lowestTemperature + ", " + highestTemperature;
-            statements.add("INSERT INTO VaccineLifespan (vaccineID, lifespan, lowestTemperature, highestTemperature) VALUES (" + values + ");");
+            columnNames = new String[] {"vaccineID", "lifespan", "lowestTemperature", "highestTemperature"};
+            values = new Object[] {vaccineID, lifespan, lowestTemperature, highestTemperature};
+            inserts.add(new Insert(columnNames, values, "VaccineLifespan"));
         }
     }
 

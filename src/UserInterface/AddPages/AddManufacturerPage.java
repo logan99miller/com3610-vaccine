@@ -27,14 +27,14 @@ public class AddManufacturerPage extends AddPage {
     }
 
     private void createStatements() {
-        statements = new ArrayList<>();
+        inserts = new ArrayList<>();
 
         String vaccine = (String) vaccineComboBox.getSelectedItem();
         int vaccineID = Integer.parseInt(vaccine.split(":")[0]);
 
-        String values = "\"" + nameTextField.getText() + "\", " + vaccineID;
-
-        statements.add("INSERT INTO Manufacturer (name, vaccineID) VALUES (" + values + ");");
+        String[] columnNames = new String[] {"name", "vaccineID"};
+        Object[] values = new Object[] {nameTextField.getText(), vaccineID};
+        inserts.add(new Insert(columnNames, values, "Manufacturer"));
     }
 
     public void actionPerformed(ActionEvent e) {

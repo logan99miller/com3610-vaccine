@@ -19,10 +19,11 @@ public class AddTransporterPage extends AddPage {
     }
 
     private void createStatements() {
-        statements = new ArrayList<>();
+        inserts = new ArrayList<>();
 
-        String values = "\"" + nameTextField.getText() + "\"";
-        statements.add("INSERT INTO Transporter (name) VALUES (" + values + ");");
+        String[] columnNames = {"name"};
+        Object[] values = {nameTextField.getText()};
+        inserts.add(new Insert(columnNames, values, "Transporter"));
     }
 
     public void actionPerformed(ActionEvent e) {

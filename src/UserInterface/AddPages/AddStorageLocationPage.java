@@ -46,15 +46,17 @@ public class AddStorageLocationPage extends AddLocationPage {
     protected void createStatements() {
         super.createStatements();
 
-        String statement = "INSERT INTO StorageLocation (locationID) VALUES (" + locationID + ");";
-        storageLocationID = insertAndGetID(statement, "storageLocationID", "StorageLocation");
+        String[] columnNames = new String[] {"locationID"};
+        Object[] values = new Object[] {locationID};
+        storageLocationID = insertAndGetID(columnNames, values, "StorageLocation", "storageLocationID");
 
         for (AddStore addStore : addStores) {
             int temperature = (int) addStore.getTemperature();
             String capacity = addStore.getCapacity();
 
-            values = storageLocationID + ", " + temperature + ", " + capacity;
-            statements.add("INSERT INTO Store (storageLocationID, temperature, capacity) VALUES (" + values + ");");
+            columnNames = new String[] {"storageLocationID", "temperature", "capacity"};
+            values = new Object[] {storageLocationID, temperature, capacity};
+            inserts.add(new Insert(columnNames, values, "Store"));
         }
     }
 

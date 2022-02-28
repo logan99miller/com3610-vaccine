@@ -13,7 +13,9 @@ public class AddDistributionCentrePage extends AddStorageLocationPage {
 
     protected void createStatements() {
         super.createStatements();
-        statements.add("INSERT INTO DistributionCentre (storageLocationID) VALUES (" + storageLocationID + ");");
+        String[] columnNames = new String[] {"storageLocationID"};
+        Object[] values = new Object[] {storageLocationID};
+        inserts.add(new Insert(columnNames, values, "DistributionCentre"));
     }
 
     public void actionPerformed(ActionEvent e) {

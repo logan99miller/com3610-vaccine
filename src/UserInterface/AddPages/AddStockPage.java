@@ -15,6 +15,7 @@ public class AddStockPage extends AddPage {
     final private String FACTORY_PREFIX = "(Factory)    ";
 
     private JComboBox facilityComboBox, vaccineComboBox;
+    private JTextField creationDateTextField;
     private JTextField expirationDateTextField;
     private JButton stockLevelButton;
     private ArrayList<HashMap<String, Object>> stockLevels;
@@ -44,11 +45,13 @@ public class AddStockPage extends AddPage {
 
         facilityComboBox = new JComboBox(facilities.toArray());
         vaccineComboBox = new JComboBox(getFormattedSelect(vaccineColumnNames, "Vaccine").toArray());
+        creationDateTextField = new JTextField();
         expirationDateTextField = new JTextField();
         stockLevelButton = new JButton("Continue");
 
         addLabelledComponent(inputGridPanel, "Facility:", facilityComboBox);
         addLabelledComponent(inputGridPanel, "Vaccine:", vaccineComboBox);
+        addLabelledComponent(inputGridPanel, "Creation Date (YYYY-MM-DD):", creationDateTextField);
         addLabelledComponent(inputGridPanel, "Expiration Date (YYYY-MM-DD):", expirationDateTextField);
         addLabelledComponent(inputGridPanel, "Stock Levels:", stockLevelButton);
 
@@ -85,14 +88,16 @@ public class AddStockPage extends AddPage {
         String vaccine = (String) vaccineComboBox.getSelectedItem();
 
         String vaccineID = vaccine.split(":")[0];
+        String creationDate = creationDateTextField.getText();
         String expirationDate = expirationDateTextField.getText();
 
         for (HashMap<String, Object> stockLevelMap : stockLevels) {
             String storeID = (String) stockLevelMap.get("storeID");
             String stockLevel = ((JTextField) stockLevelMap.get("textField")).getText();
 
-            String values = vaccineID + ", " + storeID + ", " + stockLevel + ", '" + expirationDate + "'";
-            statements.add("INSERT INTO VaccineInStorage (vaccineID, storeID, stockLevel, expirationDate) VALUES (" + values + ");");
+            String[] columnNames = new String[] {"vaccineID", "storeID", "stockLevel", "creationDate", "expirationDate"};
+            Object[] values = new Object[] {vaccineID, storeID, stockLevel, creationDate, expirationDate};
+            inserts.add(new Insert(columnNames, values, "VaccineInStorage"));
         }
     }
 

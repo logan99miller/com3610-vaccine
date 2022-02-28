@@ -36,20 +36,22 @@ public class AddPersonPage extends AddPage {
     }
 
     private void createStatements() {
-        statements = new ArrayList<>();
+        inserts = new ArrayList<>();
 
         String forename = forenameTextField.getText();
         String surname = surnameTextField.getText();
         String DoB = DoBTextField.getText();
 
-        values = "\"" + forename + "\", \"" + surname + "\", '" + DoB + "'";
-        String statement = "INSERT INTO Person (forename, surname, DoB) VALUES (" + values + ");";
-        int personID = insertAndGetID(statement, "personID", "Person");
+        String[] columnNames = new String[] {"forename", "surname", "DoB"};
+        Object[] values = new Object[] {forename, surname, DoB};
+        int personID = insertAndGetID(columnNames, values, "Person", "personID");
 
         for (String medicalCondition : medicalConditionsList.getSelectedValuesList()) {
             int medicalConditionID = Integer.parseInt( medicalCondition.split(":")[0]);
-            values = personID + "," + medicalConditionID;
-            statements.add("INSERT INTO PersonMedicalCondition (personID, medicalConditionID) VALUES (" + values + ");");
+
+            columnNames = new String[] {"personID", "medicalConditionID"};
+            values = new Object[] {personID, medicalConditionID};
+            inserts.add(new Insert(columnNames, values, "PersonMedicalCondition"));
         }
     }
 

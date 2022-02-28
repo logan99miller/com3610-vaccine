@@ -24,8 +24,9 @@ public class AddVaccinationCentrePage extends AddStorageLocationPage {
         String name = nameTextField.getText();
         String vaccinesPerHour = vaccinesPerHourTextField.getText();
 
-        values = storageLocationID + ", \"" + name + "\", " + vaccinesPerHour;
-        statements.add("INSERT INTO VaccinationCentre (storageLocationID, name, vaccinesPerHour) VALUES (" + values + ");");
+        String[] columnNames = new String[] {"storageLocationID", "name", "vaccinesPerHour"};
+        Object[] values = new Object[]  {storageLocationID, name, vaccinesPerHour};
+        inserts.add(new Insert(columnNames, values, "VaccinationCentre"));
     }
 
     public void actionPerformed(ActionEvent e) {

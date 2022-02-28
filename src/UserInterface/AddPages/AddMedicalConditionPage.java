@@ -34,16 +34,18 @@ public class AddMedicalConditionPage extends AddPage {
     }
 
     private void createStatements() {
-        statements = new ArrayList<>();
+        inserts = new ArrayList<>();
 
-        String values = "\"" + nameTextField.getText() + "\", \"" + vulnerabilityLevelSpinner.getValue() + "\"";
-        String statement = "INSERT INTO MedicalCondition (name, vulnerabilityLevel) VALUES (" + values + ");";
-        int medicalConditionID = insertAndGetID(statement, "medicalConditionID", "MedicalCondition");
+        String[] columnNames = new String[] {"name", "vulnerabilityLevel"};
+        Object[] values = new Object[] {nameTextField.getText(), vulnerabilityLevelSpinner.getValue()};
+        int medicalConditionID = insertAndGetID(columnNames, values, "MedicalCondition", "medicalConditionID");
 
         for (String vaccine : vaccinesList.getSelectedValuesList()) {
             int vaccineID = Integer.parseInt(vaccine.split(":")[0]);
-            values = vaccineID + "," + medicalConditionID;
-            statements.add("INSERT INTO VaccineExemption (vaccineID, medicalConditionID) VALUES (" + values + ");");
+
+            columnNames = new String[] {"vaccineID", "medicalConditionID"};
+            values = new Object[] {vaccineID, medicalConditionID};
+            inserts.add(new Insert(columnNames, values, "VaccineExemption"));
         }
     }
 

@@ -51,17 +51,18 @@ public class AddLocationPage extends AddPage {
     }
 
     protected void createStatements() {
-        String values = longitudeTextField.getText() + ", " + latitudeTextField.getText();
-        String statement = "INSERT INTO Location (longitude, latitude) VALUES (" + values + ");";
-        locationID = insertAndGetID(statement, "locationID", "Location");
+        String[] columnNames = new String[] {"longitude", "latitude"};
+        Object[] values = new Object[] {longitudeTextField.getText(), latitudeTextField.getText()};
+        locationID = insertAndGetID(columnNames, values, "Location", "locationID");
 
         for (AddOpeningTime addOpeningTime : addOpeningTimes) {
             String day = addOpeningTime.getDay();
             LocalTime startTime = addOpeningTime.getStartTime();
             LocalTime endTime = addOpeningTime.getEndTime();
 
-            values = locationID + ", \"" + day + "\", '" + startTime + "', '" + endTime + "'";
-            statements.add("INSERT INTO OpeningTime (locationID, day, startTime, endTime) VALUES (" + values + ");");
+            columnNames = new String[] {"locationID", "day", "startTime", "endTime"};
+            values = new Object[] {locationID, day, startTime, endTime};
+            inserts.add(new Insert(columnNames, values, "OpeningTime"));
         }
     }
 

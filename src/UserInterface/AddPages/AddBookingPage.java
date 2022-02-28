@@ -6,6 +6,7 @@ import UserInterface.Page;
 import Core.VaccineSystem;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class AddBookingPage extends AddPage {
@@ -35,18 +36,22 @@ public class AddBookingPage extends AddPage {
     }
 
     private void createStatements() {
-        statements = new ArrayList<>();
+        inserts = new ArrayList<>();
 
         String person = (String) personComboBox.getSelectedItem();
-
         String vaccinationCentre = (String) vaccinationCentreComboBox.getSelectedItem();
 
         int personID = Integer.parseInt(person.split(":")[0]);
         int vaccinationCentreID = Integer.parseInt(vaccinationCentre.split(":")[0]);
         String date = dateTextField.getText() + " " + hourSpinner.getValue() + ":" + minuteSpinner.getValue();
 
-        values = personID + ", " + vaccinationCentreID + ", '" + date + "'";
-        statements.add("INSERT INTO Booking (personID, vaccinationCentreID, date) VALUES (" + values + ")");
+        String[] columnNames = new String[] {"personID", "vaccinationCentreID", "date"};
+        Object[] values = new Object[] {personID, vaccinationCentreID, date};
+        try {
+            vaccineSystem.insert(columnNames, values, "Booking");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void actionPerformed(ActionEvent e) {

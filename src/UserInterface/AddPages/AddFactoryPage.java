@@ -32,8 +32,9 @@ public class AddFactoryPage extends AddStorageLocationPage {
 
         int manufacturerID = Integer.parseInt(manufacturer.split(":")[0]);
 
-        values = storageLocationID + ", " + manufacturerID + ", " + vaccinesPerMin;
-        statements.add("INSERT INTO Factory (storageLocationID, manufacturerID, vaccinesPerMin) VALUES (" + values + ");");
+        String[] columnNames = new String[] {"storageLocationID", "manufacturerID", "vaccinesPerMin"};
+        Object[] values = new Object[] {storageLocationID, manufacturerID, vaccinesPerMin};
+        inserts.add(new Insert(columnNames, values, "Factory"));
     }
 
     public void actionPerformed(ActionEvent e) {

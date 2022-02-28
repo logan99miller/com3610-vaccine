@@ -51,17 +51,23 @@ public class AddStockLevelPage extends AddPage {
         String[] columnNames = new String[] {"storageLocationID"};
 
         try {
+            HashMap<String, HashMap<String, Object>> facilities = new HashMap<>();
             if (facility.startsWith(VACCINATION_CENTRE_PREFIX)) {
                 String where = "vaccinationCentreID = " + prefixAndID.replace(VACCINATION_CENTRE_PREFIX, "");
-                storageLocationID = vaccineSystem.executeSelect2(columnNames, "vaccinationCentre", where).get(0).get("storageLocationID");
-            } else if (facility.startsWith(DISTRIBUTION_CENTRE_PREFIX)) {
-                String where = "distributionCentreID = " + prefixAndID.replace(DISTRIBUTION_CENTRE_PREFIX, "");
-                storageLocationID = vaccineSystem.executeSelect2(columnNames, "distributionCentre", where).get(0).get("storageLocationID");
-            } else if (facility.startsWith(FACTORY_PREFIX)) {
-                String where = "factoryID = " + prefixAndID.replace(FACTORY_PREFIX, "");
-                storageLocationID = vaccineSystem.executeSelect2(columnNames, "factory", where).get(0).get("storageLocationID");
+                facilities = vaccineSystem.executeSelect(columnNames, "vaccinationCentre", where);
             }
-        } catch (SQLException ignored) {}
+            else if (facility.startsWith(DISTRIBUTION_CENTRE_PREFIX)) {
+                String where = "distributionCentreID = " + prefixAndID.replace(DISTRIBUTION_CENTRE_PREFIX, "");
+                facilities = vaccineSystem.executeSelect(columnNames, "distributionCentre", where);
+            }
+            else if (facility.startsWith(FACTORY_PREFIX)) {
+                String where = "factoryID = " + prefixAndID.replace(FACTORY_PREFIX, "");
+                facilities = vaccineSystem.executeSelect(columnNames, "factory", where);
+            }
+            String key = facilities.keySet().iterator().next();
+            storageLocationID = (String) facilities.get(key).get("storageLocationID");
+        }
+        catch (SQLException ignored) {}
 
         columnNames = new String[] {"storeID", "capacity", "temperature"};
         String where = "storageLocationID = " + storageLocationID;

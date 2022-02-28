@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import Core.VaccineSystem;
+import UserInterface.AddPages.Insert;
 
 public class AddPage extends Page {
 
@@ -15,14 +16,14 @@ public class AddPage extends Page {
     private JButton backButton;
     protected JPanel inputPanel, inputGridPanel;
     protected JButton submitButton;
-    protected ArrayList<String> statements;
+    protected ArrayList<Insert> inserts;
     protected String values;
 
     public AddPage(VaccineSystem vaccineSystem, MainPage mainPage, String title) {
         super(vaccineSystem);
         this.mainPage = mainPage;
 
-        statements = new ArrayList<>();
+        inserts = new ArrayList<>();
 
         createBackButton();
         createPageTitle(title);
@@ -65,19 +66,18 @@ public class AddPage extends Page {
     }
 
     protected void returnToSelectPage() {
-        statements = new ArrayList<>();
+        inserts = new ArrayList<>();
         mainPage.setPageName("add");
         mainPage.updatePage();
     }
 
-    protected int insertAndGetID(String statement, String IDFieldName, String tableName) {
+    protected int insertAndGetID(String[] columnNames, Object[] values, String tableName, String IDFieldName) {
 
         if (checkInputConditions()) {
             try {
-                vaccineSystem.executeUpdate(statement);
+                vaccineSystem.insert(columnNames, values, tableName);
                 final String maxID = "MAX(" + IDFieldName + ")";
-                String[] columnNames = new String[]{maxID};
-                ArrayList<HashMap<String, String>> resultSet = vaccineSystem.executeSelect2(columnNames, tableName);
+                ArrayList<HashMap<String, String>> resultSet = vaccineSystem.executeSelect2(new String[]{maxID}, tableName);
                 return Integer.parseInt(resultSet.get(0).get(maxID));
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -153,9 +153,10 @@ public class AddPage extends Page {
     }
 
     protected void performStatements() {
+
         try {
-            for (String statement : statements) {
-                vaccineSystem.executeUpdate(statement);
+            for (Insert insert : inserts) {
+                vaccineSystem.insert(insert.getColumnNames(), insert.getValues(), insert.getTableName());
             }
             returnToSelectPage();
         }

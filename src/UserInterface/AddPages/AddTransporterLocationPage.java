@@ -58,12 +58,15 @@ public class AddTransporterLocationPage extends AddLocationPage {
 
         String transporterLocationValues = transporterID + ", " + locationID;
         String statement = "INSERT INTO TransporterLocation (transporterID, locationID) VALUES (" + transporterLocationValues + ");";
-        int transporterLocationID = insertAndGetID(statement, "transporterLocationID", "TransporterLocation");
+
+        String[] columnNames = new String[] {"transporterID", "locationID"};
+        Object[] values = new Object[] {transporterID, locationID};
+        int transporterLocationID = insertAndGetID(columnNames, values, "TransporterLocation", "transporterLocationID");
 
         String longitude = "";
         String latitude = "";
         try {
-            String[] columnNames = {"locationID", "longitude", "latitude"};
+            columnNames = new String[] {"locationID", "longitude", "latitude"};
             String where = "locationID = " + locationID;
             HashMap<String, HashMap<String, Object>> locations = vaccineSystem.executeSelect(columnNames, "Location", where);
             HashMap<String, Object> location = locations.get(String.valueOf(locationID));
@@ -75,18 +78,21 @@ public class AddTransporterLocationPage extends AddLocationPage {
         }
 
         for (int i = 0; i < numberOfVans; i++) {
-            String locationValues = longitude + ", " + latitude;
-            statement = "INSERT INTO Location (longitude, latitude) VALUES (" + locationValues + ");";
-            locationID = insertAndGetID(statement, "locationID", "Location");
+            columnNames = new String[] {"longitude", "latitude"};
+            values = new Object[] {longitude, latitude};
+            locationID = insertAndGetID(columnNames, values, "Location", "locationID");
 
-            statement = "INSERT INTO StorageLocation (locationID) VALUES (" + locationID + ");";
-            int storageLocationID = insertAndGetID(statement, "storageLocationID", "StorageLocation");
+            columnNames = new String[] {"locationID"};
+            values = new Object[] {locationID};
+            int storageLocationID = insertAndGetID(columnNames, values, "StorageLocation", "storageLocationID");
 
-            String storeValues = storageLocationID + ", " + vanTemperature + ", " + vanCapacity;
-            statements.add("INSERT INTO Store (storageLocationID, temperature, capacity) VALUES (" + storeValues + ");");
+            columnNames = new String[] {"storageLocationID", "temperature", "capacity"};
+            values = new Object[]  {storageLocationID, vanTemperature, vanCapacity};
+            inserts.add(new Insert(columnNames, values, "Store"));
 
-            String vanValues = "'waiting', 0, " + storageLocationID + ", null, null, " + transporterLocationID;
-            statements.add("INSERT INTO Van (deliveryStage, remainingTime, storageLocationID, originID, destinationID, transporterLocationID) VALUES (" + vanValues+ ");");
+            columnNames = new String[] {"deliveryStage", "remainingTime", "storageLocationID", "originID", "destinationID", "transporterLocationID"};
+            values = new Object[] {"waiting", 0, storageLocationID, null, null, transporterLocationID};
+            inserts.add(new Insert(columnNames, values, "Van"));
         }
     }
 

@@ -31,7 +31,7 @@ public class AddVaccinationPage extends AddPage {
     }
 
     private void createStatements() {
-        statements = new ArrayList<>();
+        inserts = new ArrayList<>();
 
         String person = (String) personComboBox.getSelectedItem();
         String vaccine = (String) vaccineComboBox.getSelectedItem();
@@ -39,8 +39,9 @@ public class AddVaccinationPage extends AddPage {
         int personID = Integer.parseInt(person.split(":")[0]);
         int vaccineID = Integer.parseInt(vaccine.split(":")[0]);
 
-        String values = personID + ", " + vaccineID + ", '" + dateTextField.getText() + "'";
-        statements.add("INSERT INTO VaccineReceived (personID, vaccineID, date) VALUES (" + values + ");");
+        String[] columnNames = new String[] {"personID", "vaccineID", "date"};
+        Object[] values = new Object[]  {personID, vaccineID, dateTextField.getText()};
+        inserts.add(new Insert(columnNames, values, "VaccineReceived"));
     }
 
     public void actionPerformed(ActionEvent e) {

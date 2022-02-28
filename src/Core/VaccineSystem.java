@@ -32,17 +32,17 @@ public class VaccineSystem extends JFrame {
         updateRate = 10000; // in milliseconds
         simulationSpeed = 1;
 
-        AutomateSystem runSystem = new AutomateSystem();
+        AutomateSystem automateSystem = new AutomateSystem();
         Data data = new Data(this);
-        runSystem.start(data, updateRate, simulationSpeed);
-        while (true) {
-            runSystem.run();
-            try {
-                Thread.sleep(updateRate);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+//        automateSystem.start(data, updateRate, simulationSpeed);
+//        while (true) {
+//            automateSystem.run();
+//            try {
+//                Thread.sleep(updateRate);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     private void configureWindow() {
@@ -114,8 +114,7 @@ public class VaccineSystem extends JFrame {
             valueText += separator + value;
         }
         catch (NullPointerException e) {
-            valueText = separator + "null";
-
+            valueText += separator + "null";
         }
         catch (NumberFormatException e) {
             valueText += separator + "'" + value + "'";
