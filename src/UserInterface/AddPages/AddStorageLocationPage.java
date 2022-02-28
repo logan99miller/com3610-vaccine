@@ -12,7 +12,7 @@ public class AddStorageLocationPage extends AddLocationPage {
     private JComboBox numStoreComboBox;
     private JButton storeButton;
     private ArrayList<AddStore> addStores;
-    protected int storageLocationID;
+    protected String storageLocationID;
 
     public AddStorageLocationPage(VaccineSystem vaccineSystem, MainPage mainPage, String title) {
         super(vaccineSystem, mainPage, title);

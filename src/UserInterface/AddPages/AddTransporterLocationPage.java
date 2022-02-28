@@ -56,12 +56,9 @@ public class AddTransporterLocationPage extends AddLocationPage {
 
         int transporterID = Integer.parseInt(transporter.split(":")[0]);
 
-        String transporterLocationValues = transporterID + ", " + locationID;
-        String statement = "INSERT INTO TransporterLocation (transporterID, locationID) VALUES (" + transporterLocationValues + ");";
-
         String[] columnNames = new String[] {"transporterID", "locationID"};
         Object[] values = new Object[] {transporterID, locationID};
-        int transporterLocationID = insertAndGetID(columnNames, values, "TransporterLocation", "transporterLocationID");
+        String transporterLocationID = insertAndGetID(columnNames, values, "TransporterLocation", "transporterLocationID");
 
         String longitude = "";
         String latitude = "";
@@ -84,7 +81,7 @@ public class AddTransporterLocationPage extends AddLocationPage {
 
             columnNames = new String[] {"locationID"};
             values = new Object[] {locationID};
-            int storageLocationID = insertAndGetID(columnNames, values, "StorageLocation", "storageLocationID");
+            String storageLocationID = insertAndGetID(columnNames, values, "StorageLocation", "storageLocationID");
 
             columnNames = new String[] {"storageLocationID", "temperature", "capacity"};
             values = new Object[]  {storageLocationID, vanTemperature, vanCapacity};

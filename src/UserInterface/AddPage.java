@@ -71,19 +71,21 @@ public class AddPage extends Page {
         mainPage.updatePage();
     }
 
-    protected int insertAndGetID(String[] columnNames, Object[] values, String tableName, String IDFieldName) {
+    protected String insertAndGetID(String[] columnNames, Object[] values, String tableName, String IDFieldName) {
 
         if (checkInputConditions()) {
             try {
                 vaccineSystem.insert(columnNames, values, tableName);
                 final String maxID = "MAX(" + IDFieldName + ")";
-                ArrayList<HashMap<String, String>> resultSet = vaccineSystem.executeSelect2(new String[]{maxID}, tableName);
-                return Integer.parseInt(resultSet.get(0).get(maxID));
+                HashMap<String, HashMap<String, Object>> resultSet = vaccineSystem.executeSelect(new String[]{maxID}, tableName);
+                String key = resultSet.keySet().iterator().next();
+
+                return (String) resultSet.get(key).get(maxID);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        return 0;
+        return "";
     }
 
     protected boolean checkInputConditions() {

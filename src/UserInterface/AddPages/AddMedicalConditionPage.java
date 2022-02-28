@@ -38,7 +38,7 @@ public class AddMedicalConditionPage extends AddPage {
 
         String[] columnNames = new String[] {"name", "vulnerabilityLevel"};
         Object[] values = new Object[] {nameTextField.getText(), vulnerabilityLevelSpinner.getValue()};
-        int medicalConditionID = insertAndGetID(columnNames, values, "MedicalCondition", "medicalConditionID");
+        String medicalConditionID = insertAndGetID(columnNames, values, "MedicalCondition", "medicalConditionID");
 
         for (String vaccine : vaccinesList.getSelectedValuesList()) {
             int vaccineID = Integer.parseInt(vaccine.split(":")[0]);

@@ -13,7 +13,7 @@ public class AddLocationPage extends AddPage {
 
     private JTextField longitudeTextField, latitudeTextField;
     private ArrayList<AddOpeningTime> addOpeningTimes;
-    protected int locationID;
+    protected String locationID;
 
     public AddLocationPage(VaccineSystem vaccineSystem, MainPage mainPage, String title) {
         super(vaccineSystem, mainPage, title);

@@ -44,7 +44,7 @@ public class AddPersonPage extends AddPage {
 
         String[] columnNames = new String[] {"forename", "surname", "DoB"};
         Object[] values = new Object[] {forename, surname, DoB};
-        int personID = insertAndGetID(columnNames, values, "Person", "personID");
+        String personID = insertAndGetID(columnNames, values, "Person", "personID");
 
         for (String medicalCondition : medicalConditionsList.getSelectedValuesList()) {
             int medicalConditionID = Integer.parseInt( medicalCondition.split(":")[0]);

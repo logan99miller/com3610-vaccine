@@ -105,7 +105,7 @@ public class AddVaccinePage extends AddPage {
 
         String[] columnNames = new String[] {"name", "dosesNeeded", "daysBetweenDoses", "minimumAge", "maximumAge"};
         Object[] values = new Object[] {name, dosesNeeded, daysBetweenDoses, minimumAge, maximumAge};
-        int vaccineID = insertAndGetID(columnNames, values, "Vaccine", "vaccineID");
+        String vaccineID = insertAndGetID(columnNames, values, "Vaccine", "vaccineID");
 
         for (String medicalCondition : medicalConditionsList.getSelectedValuesList()) {
             int medicalConditionID = Integer.parseInt( medicalCondition.split(":")[0]);
