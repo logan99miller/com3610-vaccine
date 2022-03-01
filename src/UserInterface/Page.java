@@ -28,6 +28,12 @@ public class Page implements ActionListener {
         JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
+    protected void errorMessage(String message, boolean displayError) {
+        if (displayError) {
+            errorMessage(message);
+        }
+    }
+
     protected JPanel addLabelledComponent(JPanel panel, String label, JComponent component) {
         panel.add(new JLabel(label));
         panel.add(component);

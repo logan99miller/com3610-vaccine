@@ -62,6 +62,10 @@ public class AddStorageLocationPage extends AddLocationPage {
 
     private boolean checkCapacitiesCondition() {
         try {
+            if (addStores.size() == 0) {
+                return false;
+            }
+
             for (AddStore addStore : addStores) {
                 int capacity = Integer.parseInt(addStore.getCapacity());
                 if (capacity < 1) {
@@ -74,6 +78,20 @@ public class AddStorageLocationPage extends AddLocationPage {
         return true;
     }
 
+    protected boolean checkInputConditions(boolean displayError) {
+        if (super.checkInputConditions(displayError)) {
+            if (checkCapacitiesCondition()) {
+                return true;
+            }
+            else {
+                if (displayError) {
+                    errorMessage("Capacities must be an integer greater than 0", displayError);
+                }
+                return false;
+            }
+        }
+        return false;
+    }
 
     private void createStoreFrame() {
         final int FRAME_WIDTH = 400;
@@ -92,11 +110,8 @@ public class AddStorageLocationPage extends AddLocationPage {
             createStoreFrame();
         }
         else if (e.getSource() == submitButton) {
-            if (checkCapacitiesCondition()) {
+            if (checkInputConditions(true)) {
                 super.actionPerformed(e);
-            }
-            else {
-                errorMessage("Capacities must be an integer greater than 0");
             }
         }
         else {

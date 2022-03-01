@@ -101,14 +101,50 @@ public class AddStockPage extends AddPage {
         }
     }
 
+    private boolean checkStockLevelsConditions() {
+        try {
+            if (stockLevels.size() == 0) {
+                return false;
+            }
+
+            for (HashMap<String, Object> stockLevelMap : stockLevels) {
+                int stockLevel = Integer.parseInt(((JTextField) stockLevelMap.get("textField")).getText());
+                if (stockLevel < 1) {
+                    return false;
+                }
+            }
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
+
+    protected boolean checkInputConditions(boolean displayError) {
+        if (super.checkInputConditions(displayError)) {
+            if (checkStockLevelsConditions()) {
+                return true;
+            }
+            else {
+                errorMessage("Stock levels must be integers greater than 0", displayError);
+                return false;
+            }
+        }
+        return false;
+    }
+
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == stockLevelButton) {
             createStockLevelFrame();
         }
         else if (e.getSource() == submitButton) {
-            createStatements();
+            if (checkInputConditions(true)) {
+                createStatements();
+                super.actionPerformed(e);
+            }
         }
-        super.actionPerformed(e);
+        else {
+            super.actionPerformed(e);
+        }
     }
 
     public String getVACCINATION_CENTRE_PREFIX() {

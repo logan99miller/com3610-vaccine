@@ -14,7 +14,7 @@ public class AddVaccinationCentrePage extends AddStorageLocationPage {
         nameTextField = new JTextField();
         vaccinesPerHourTextField = new JTextField();
         addLabelledComponent(inputGridPanel,"*Name:", nameTextField);
-        addLabelledComponent(inputGridPanel,"-*Vaccines Per Hour:", vaccinesPerHourTextField);
+        addLabelledComponent(inputGridPanel,"#*Vaccines Per Hour:", vaccinesPerHourTextField);
         setMaxWidthMinHeight(inputPanel);
     }
 

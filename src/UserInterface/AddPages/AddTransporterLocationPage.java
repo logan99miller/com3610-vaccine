@@ -12,7 +12,6 @@ public class AddTransporterLocationPage extends AddLocationPage {
 
     private JTextField numberOfVansTextField;
     private JTextField vanCapacityTextField;
-    private JTextField vanTemperatureTextField;
     private JComboBox transportersComboBox;
 
     public AddTransporterLocationPage(VaccineSystem vaccineSystem, MainPage mainPage) {
@@ -26,22 +25,13 @@ public class AddTransporterLocationPage extends AddLocationPage {
 
         numberOfVansTextField = new JTextField();
         vanCapacityTextField = new JTextField();
-        vanTemperatureTextField = new JTextField();
 
         String[] columnNames = {"transporterID", "name"};
         transportersComboBox = new JComboBox(getFormattedSelect(columnNames, "Transporter").toArray());
 
-        inputFieldsGridPanel.add(new JLabel("-*Number of vans:"));
-        inputFieldsGridPanel.add(numberOfVansTextField);
-
-        inputFieldsGridPanel.add(new JLabel("-*Van capacity:"));
-        inputFieldsGridPanel.add(vanCapacityTextField);
-
-        inputFieldsGridPanel.add(new JLabel("-*Van Temperature (degrees C):"));
-        inputFieldsGridPanel.add(vanTemperatureTextField);
-
-        inputFieldsGridPanel.add(new JLabel("Transporter:"));
-        inputFieldsGridPanel.add(transportersComboBox);
+        addLabelledComponent(inputGridPanel, "#*Number of vans:", numberOfVansTextField);
+        addLabelledComponent(inputGridPanel, "#*Van capacity:", vanCapacityTextField);
+        addLabelledComponent(inputGridPanel, "#*Transporter:", transportersComboBox);
 
         inputPanel.add(inputFieldsGridPanel);
     }
@@ -51,7 +41,6 @@ public class AddTransporterLocationPage extends AddLocationPage {
 
         int numberOfVans = Integer.parseInt(numberOfVansTextField.getText());
         String vanCapacity = vanCapacityTextField.getText();
-        String vanTemperature = vanTemperatureTextField.getText();
         String transporter = (String) transportersComboBox.getSelectedItem();
 
         int transporterID = Integer.parseInt(transporter.split(":")[0]);
@@ -84,7 +73,7 @@ public class AddTransporterLocationPage extends AddLocationPage {
             String storageLocationID = insertAndGetID(columnNames, values, "StorageLocation", "storageLocationID");
 
             columnNames = new String[] {"storageLocationID", "temperature", "capacity"};
-            values = new Object[]  {storageLocationID, vanTemperature, vanCapacity};
+            values = new Object[]  {storageLocationID, 0, vanCapacity};
             inserts.add(new Insert(columnNames, values, "Store"));
 
             columnNames = new String[] {"deliveryStage", "remainingTime", "storageLocationID", "originID", "destinationID", "transporterLocationID"};
@@ -95,7 +84,9 @@ public class AddTransporterLocationPage extends AddLocationPage {
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == submitButton) {
-            createStatements();
+            if (checkInputConditions(false)) {
+                createStatements();
+            }
         }
         super.actionPerformed(e);
     }

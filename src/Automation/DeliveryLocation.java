@@ -154,7 +154,6 @@ public class DeliveryLocation extends StorageLocation {
 
     // Method Currently only gets 1st suitable stock, but in future should get stock that will expire first
     private static HashMap<String, HashMap<String, Object>> getVaccinesInStorage(HashMap<String, HashMap<String, Object>> stores, int vaccinesNeeded, String vanStoreID) {
-        System.out.println("getVaccinesInStorage(): ");
         HashMap<String, HashMap<String, Object>> newVaccinesInStorage = new HashMap<>();
         for (String keyI : stores.keySet()) {
             HashMap<String, Object> store = stores.get(keyI);

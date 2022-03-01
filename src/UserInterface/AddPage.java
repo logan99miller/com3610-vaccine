@@ -62,6 +62,7 @@ public class AddPage extends Page {
 
     private void createFieldExplanations() {
         mainPanel.add(new JLabel("Fields marked with a * are required"));
+        mainPanel.add(new JLabel("Fields marked with a # require an integer input"));
         mainPanel.add(new JLabel("Fields marked with a - require a numeric input"));
     }
 
@@ -73,7 +74,7 @@ public class AddPage extends Page {
 
     protected String insertAndGetID(String[] columnNames, Object[] values, String tableName, String IDFieldName) {
 
-        if (checkInputConditions()) {
+        if (checkInputConditions(false)) {
             try {
                 vaccineSystem.insert(columnNames, values, tableName);
                 final String maxID = "MAX(" + IDFieldName + ")";
@@ -88,11 +89,10 @@ public class AddPage extends Page {
         return "";
     }
 
-    protected boolean checkInputConditions() {
+    protected boolean checkInputConditions(boolean displayError) {
         Component previousComponent = new JPanel();
 
         for (Component component : inputGridPanel.getComponents()) {
-
             if (previousComponent instanceof JLabel) {
 
                 String label = ((JLabel) previousComponent).getText().toLowerCase();
@@ -100,22 +100,32 @@ public class AddPage extends Page {
                 if (component instanceof JTextField) {
                     String text = ((JTextField) component).getText();
                     if (!checkRequiredInput(label, text)) {
-                        errorMessage("Fields marked with a * must be filled");
+                        errorMessage("Fields marked with a * must be filled", displayError);
                         return false;
                     }
                     else if (!checkNumericInput(label, text)) {
-                        errorMessage("Fields marked with a - must have a numeric value");
+                        errorMessage("Fields marked with a - must have a numeric value", displayError);
+                        return false;
+                    }
+                    else if (!checkIntegerInput(label, text)) {
+                        errorMessage("Fields marked with a # must have an integer value", displayError);
                         return false;
                     }
                     else if (!checkDateInput(label, text)) {
-                        errorMessage("Dates must be input in the format YYYY-MM-DD");
+                        errorMessage("Dates must be input in the format YYYY-MM-DD", displayError);
+                        return false;
+                    }
+                }
+                else if (component instanceof JComboBox) {
+                    JComboBox comboBox = (JComboBox) component;
+                    if (comboBox.getSelectedItem() == null) {
+                        errorMessage("Combo box is empty", displayError);
                         return false;
                     }
                 }
             }
             previousComponent = component;
         }
-
         return true;
     }
 
@@ -131,6 +141,18 @@ public class AddPage extends Page {
             try {
                 Float.parseFloat(text);
             } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkIntegerInput(String label, String text) {
+        if (label.startsWith("#")) {
+            try {
+                Integer.parseInt(text);
+            }
+            catch (NumberFormatException e) {
                 return false;
             }
         }
@@ -172,7 +194,7 @@ public class AddPage extends Page {
             returnToSelectPage();
         }
         else if (e.getSource() == submitButton) {
-            if (checkInputConditions()) {
+            if (checkInputConditions(true)) {
                 performStatements();
             }
         }

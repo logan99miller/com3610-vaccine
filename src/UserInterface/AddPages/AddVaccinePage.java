@@ -3,6 +3,8 @@ package UserInterface.AddPages;
 import UserInterface.AddPage;
 import Core.VaccineSystem;
 import UserInterface.MainPage;
+import UserInterface.Page;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -40,9 +42,9 @@ public class AddVaccinePage extends AddPage {
 
         addLabelledComponent(inputGridPanel, "Name:", nameTextField);
         addLabelledComponent(inputGridPanel, "Doses Needed:", dosesNeededSpinner);
-        addLabelledComponent(inputGridPanel, "-Days Between Doses:", daysBetweenDosesTextField);
-        addLabelledComponent(inputGridPanel, "-*Minimum age:", minimumAgeTextField);
-        addLabelledComponent(inputGridPanel, "-*Maximum age:", maximumAgeTextField);
+        addLabelledComponent(inputGridPanel, "#*Days Between Doses:", daysBetweenDosesTextField);
+        addLabelledComponent(inputGridPanel, "#*Minimum age:", minimumAgeTextField);
+        addLabelledComponent(inputGridPanel, "#*Maximum age:", maximumAgeTextField);
         addLabelledComponent(lifespanPanel, "Number of lifespan temperature variations:", createLifespanPanel(10));
         addLabelledComponent(exemptionsPanel, "Medical Conditions:", medicalConditionsList);
 
@@ -71,6 +73,10 @@ public class AddVaccinePage extends AddPage {
 
     private boolean checkLifespanConditions() {
         try {
+            if (addLifespans.size() == 0) {
+                return false;
+            }
+
             for (AddVaccineLifespan addLifespan : addLifespans) {
                 int lifespan = Integer.parseInt(addLifespan.getLifespan());
                 if (lifespan < 1) {
@@ -92,6 +98,15 @@ public class AddVaccinePage extends AddPage {
             }
         }
         return true;
+    }
+
+    private boolean checkAgeConditions() {
+        int minimumAge = Integer.parseInt(minimumAgeTextField.getText());
+        int maximumAge = Integer.parseInt(maximumAgeTextField.getText());
+        if (maximumAge - minimumAge >= 0) {
+            return true;
+        }
+        return false;
     }
 
     private void createStatements() {
@@ -138,18 +153,31 @@ public class AddVaccinePage extends AddPage {
         createPopupFrame(addLifespanFrame, addLifespanPage.getPanel(), FRAME_WIDTH, 500);
     }
 
+    protected boolean checkInputConditions(boolean displayError) {
+        if (super.checkInputConditions(displayError)) {
+            if (!checkLifespanConditions()) {
+                errorMessage("Lifespans must be an integer greater than 0", displayError);
+                return false;
+            }
+            else if (!checkTemperatureConditions()) {
+                errorMessage("Minimum temperature cannot be greater than maximum temperature", displayError);
+                return false;
+            }
+            else if (!checkAgeConditions()) {
+                errorMessage("Minimum age cannot be greater than maximum age", displayError);
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == lifespanButton) {
             createLifespanFrame();
         }
         else if (e.getSource() == submitButton) {
-            if (!checkLifespanConditions()) {
-                errorMessage("Lifespans must be an integer greater than 0");
-            }
-            else if (!checkTemperatureConditions()) {
-                errorMessage("Minimum temperature cannot be greater than maximum temperature");
-            }
-            else {
+            if (checkInputConditions(true)) {
                 createStatements();
                 super.actionPerformed(e);
             }

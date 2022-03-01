@@ -80,8 +80,8 @@ public class AddLocationPage extends AddPage {
         return true;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == submitButton) {
+    protected boolean checkInputConditions(boolean displayError) {
+        if (super.checkInputConditions(displayError)) {
             Component previousComponent = new JPanel();
 
             for (Component component : inputGridPanel.getComponents()) {
@@ -90,14 +90,25 @@ public class AddLocationPage extends AddPage {
                     if (component instanceof JTextField) {
                         String text = ((JTextField) component).getText();
                         if (!checkCoordinates(label, text)) {
-                            errorMessage("Coordinates values must be between -90 and 90");
-                            break;
+                            errorMessage("Coordinates values must be between -90 and 90", displayError);
+                            return false;
                         }
                     }
                 }
                 previousComponent = component;
             }
-            super.actionPerformed(e);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == submitButton) {
+            if (checkInputConditions(true)) {
+                super.actionPerformed(e);
+            }
         }
         else {
             super.actionPerformed(e);
