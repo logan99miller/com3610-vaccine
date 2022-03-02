@@ -14,7 +14,7 @@ public class Data {
     private final VaccineSystem vaccineSystem;
     private HashMap<String, String> locationMap, storageLocationMap, medicalConditionMap;
     private HashMap<String, HashMap<String, Object>> vaccines, factories, transporterLocations, distributionCentres,
-     vaccinationCentres, people, vans;
+            vaccinationCentres, people, vans;
 
     public Data(VaccineSystem vaccineSystem) {
         this.vaccineSystem = vaccineSystem;
@@ -314,7 +314,7 @@ public class Data {
 
     private HashMap<String, HashMap<String, Object>> readVans() throws SQLException {
         String[] columnNames = {"Van.vanID", "Van.deliveryStage", "Van.remainingTime", "Van.storageLocationID", "Van.originID",
-         "Van.destinationID", "Van.transporterLocationID"};
+                "Van.destinationID", "Van.transporterLocationID"};
 
         storageLocationMap.put("localTableName", "Van");
         HashMap<String, HashMap<String, Object>> vans = readStorageLocations(columnNames, "Van", new HashMap[] {});
@@ -328,12 +328,12 @@ public class Data {
     }
 
     private HashMap<String, HashMap<String, Object>> readVaccinesInStorage() throws SQLException {
-        String[] columnNames = {"VaccineInStorage.vaccineInStorageID", "VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.expirationDate"};
+        String[] columnNames = {"VaccineInStorage.vaccineInStorageID", "VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.creationDate", "VaccineInStorage.expirationDate"};
         return vaccineSystem.executeSelect(columnNames, "VaccineInStorage");
     }
 
     private HashMap<String, HashMap<String, Object>> readVaccinesInStorage(String storeID) throws SQLException {
-        String[] columnNames = {"VaccineInStorage.vaccineInStorageID", "VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.expirationDate"};
+        String[] columnNames = {"VaccineInStorage.vaccineInStorageID", "VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.creationDate", "VaccineInStorage.expirationDate"};
         return vaccineSystem.executeSelect(columnNames, "VaccineInStorage", "storeID = " + storeID);
     }
 

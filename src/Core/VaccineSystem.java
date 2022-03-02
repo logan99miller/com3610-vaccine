@@ -30,19 +30,19 @@ public class VaccineSystem extends JFrame {
         createInterface();
 
         updateRate = 10000; // in milliseconds
-        simulationSpeed = 1;
+        simulationSpeed = 10;
 
         AutomateSystem automateSystem = new AutomateSystem();
         Data data = new Data(this);
-//        automateSystem.start(data, updateRate, simulationSpeed);
-//        while (true) {
-//            automateSystem.run();
-//            try {
-//                Thread.sleep(updateRate);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        automateSystem.start(data, updateRate, simulationSpeed);
+        while (true) {
+            automateSystem.run();
+            try {
+                Thread.sleep(updateRate);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void configureWindow() {

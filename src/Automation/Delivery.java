@@ -24,7 +24,8 @@ public class Delivery {
 
         HashMap<String, Object> destination = getDestination(data, van);
 
-        if (remainingTime < updateRate) {
+        System.out.println("updateStockAndDeliveryStage(), remainingTime: " + remainingTime + ", updateRate (s): " + (updateRate / 1000) + ", van: " + van);
+        if (remainingTime < (updateRate / 1000)) {
             String deliveryStage = (String) van.get("Van.deliveryStage");
 
             if (deliveryStage.equals("toOrigin")) {
@@ -115,8 +116,8 @@ public class Delivery {
                 HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(keyJ);
                 int amount = Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
                 String vaccineID = (String) vaccineInStorage.get("VaccineInStorage.vaccineID");
-                String expirationDate = (String) vaccineInStorage.get("VaccineInStorage.expirationDate");
-                destinationStores = StorageLocation.addToStores(data, destinationStores, amount, vaccineID, expirationDate);
+                String creationDate = (String) vaccineInStorage.get("VaccineInStorage.creationDate");
+                destinationStores = StorageLocation.addToStores(data, destinationStores, amount, vaccineID, creationDate);
             }
         }
         destination.put("stores", destinationStores);

@@ -11,7 +11,7 @@ public class StorageLocation extends Location{
     // add vaccines to the first store with capacity, but future versions will be more selective in which store to put it
     // in (e.g. one which will give it the best shelf life)
     protected static HashMap<String, HashMap<String, Object>> addToStores(Data data, HashMap<String, HashMap<String, Object>> stores,
-                                                                          int totalAmount, String vaccineID, String expirationDate) {
+    int totalAmount, String vaccineID, String creationDate, String expirationDate) {
         for (String key : stores.keySet()) {
             if (totalAmount > 0) {
                 HashMap<String, Object> store = stores.get(key);
@@ -19,23 +19,35 @@ public class StorageLocation extends Location{
                 if (availableCapacity > 0) {
                     int amount = Math.min(availableCapacity, totalAmount);
                     totalAmount -= amount;
-                    store = addToStore(data, store, amount, vaccineID, expirationDate);
+                    store = addToStore(data, store, amount, vaccineID, creationDate, expirationDate);
                 }
                 stores.put(key, store);
             }
+        }
+        if (totalAmount > 0) {
+            System.out.println(totalAmount + " vaccines couldn't be added to store");
         }
         return stores;
     }
 
     protected static HashMap<String, HashMap<String, Object>> addToStores(Data data, HashMap<String, HashMap<String, Object>> stores,
+    int totalAmount, String vaccineID, String creationDate) {
+        return addToStores(data, stores, totalAmount, vaccineID, creationDate, null);
+    }
+    protected static HashMap<String, HashMap<String, Object>> addToStores(Data data, HashMap<String, HashMap<String, Object>> stores,
     int totalAmount, String vaccineID) {
-        return addToStores(data, stores, totalAmount, vaccineID, null);
+        return addToStores(data, stores, totalAmount, vaccineID, null, null);
     }
 
-    private static HashMap<String, Object> addToStore(Data data, HashMap<String, Object> store, int amount, String vaccineID, String expirationDate) {
-    HashMap<String, HashMap<String, String>> vaccinesInStorage = (HashMap<String, HashMap<String, String>>) store.get("vaccinesInStorage");
+    private static HashMap<String, Object> addToStore(Data data, HashMap<String, Object> store, int amount, String vaccineID,
+    String creationDate, String expirationDate) {
+
+        HashMap<String, HashMap<String, String>> vaccinesInStorage = (HashMap<String, HashMap<String, String>>) store.get("vaccinesInStorage");
 
         boolean foundMatchingVaccineInStorage = false;
+        if (creationDate == null) {
+            creationDate = data.getCurrentDate().toString();
+        }
         if (expirationDate == null) {
             int storageTemperature = Integer.parseInt((String) store.get("Store.temperature"));
             expirationDate = getExpirationDate(data, vaccineID, storageTemperature);
@@ -45,9 +57,11 @@ public class StorageLocation extends Location{
             String existingVaccineID = vaccineInStorage.get("VaccineInStorage.vaccineID");
 
             // Substring removes time value (e.g. 09:00 that is extracted form database but not used)
+            String existingCreationDate = vaccineInStorage.get("VaccineInStorage.creationDate").substring(0, 10);
             String existingExpirationDate = vaccineInStorage.get("VaccineInStorage.expirationDate").substring(0, 10);
+            creationDate = creationDate.substring(0, 10);
 
-            if (existingVaccineID.equals(vaccineID) && (existingExpirationDate.equals(expirationDate))) {
+            if (existingVaccineID.equals(vaccineID) && (existingExpirationDate.equals(expirationDate)) && (existingCreationDate.equals(creationDate))) {
                 int stockLevel = Integer.parseInt(vaccineInStorage.get("VaccineInStorage.stockLevel"));
                 vaccineInStorage.put("VaccineInStorage.stockLevel", Integer.toString(stockLevel + amount));
                 vaccineInStorage.put("VaccineInStorage.change", "change");
@@ -60,6 +74,7 @@ public class StorageLocation extends Location{
             vaccineInStorage.put("VaccineInStorage.stockLevel", String.valueOf(amount));
             vaccineInStorage.put("VaccineInStorage.vaccineID", vaccineID);
             vaccineInStorage.put("VaccineInStorage.storeID", (String) store.get("Store.storeID"));
+            vaccineInStorage.put("VaccineInStorage.creationDate", creationDate);
             vaccineInStorage.put("VaccineInStorage.expirationDate", expirationDate);
             vaccineInStorage.put("VaccineInStorage.change", "change");
             vaccinesInStorage.put("newID", vaccineInStorage);
@@ -68,7 +83,7 @@ public class StorageLocation extends Location{
         return store;
     }
 
-    private static String getExpirationDate(Data data, String vaccineID, int storageTemperature) {
+    public static String getExpirationDate(Data data, String vaccineID, int storageTemperature) {
         HashMap<String, Object> vaccine = data.getVaccines().get(vaccineID);
         HashMap<String, HashMap<String, Object>> lifespans = (HashMap<String, HashMap<String, Object>>) vaccine.get("lifespans");
         int lifespanValue = 0;

@@ -21,6 +21,7 @@ public class DeliveryLocation extends StorageLocation {
             HashMap<String, HashMap<String, Object>> vaccinesInStorage = getVaccinesInStorage(originStores, amount, vanStoreID);
             vanStore.put("vaccinesInStorage", vaccinesInStorage);
             vanStores.put(vanStoreKey, vanStore);
+            System.out.println("Ordered vaccines from " + van);
             van.put("stores", vanStores);
             van.put("Van.deliveryStage", "toOrigin");
             van.put("Van.originID", origin.get("Location.locationID"));
@@ -37,11 +38,11 @@ public class DeliveryLocation extends StorageLocation {
         HashMap<String, HashMap<String, Object>> availableOrigins = getAvailableOrigins(origins, vans, amount, vaccineID);
         HashMap<String, HashMap<String, Object>> availableVans = getAvailableVans(vans); // SHOULD ALSO CONSIDER VAN CAPACITY
         if (availableOrigins.size() == 0) {
-            System.out.println("Not enough origins");
+            System.out.println("Not enough origins available");
             return null;
         }
         else if (availableVans.size() == 0) {
-            System.out.println("Not enough vans");
+            System.out.println("Not enough vans available");
             return null;
         }
         double shortestDistance = 1000000;

@@ -3,6 +3,8 @@ package Automation;
 import java.util.HashMap;
 
 public class Distance {
+
+    // In seconds
     public static int getTravelTime(double distance) {
         final float SPEED_KMPH = 55;
         final float SPEED_KMPS = SPEED_KMPH / (60 * 60);

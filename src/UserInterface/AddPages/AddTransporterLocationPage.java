@@ -57,7 +57,7 @@ public class AddTransporterLocationPage extends AddLocationPage {
             HashMap<String, HashMap<String, Object>> locations = vaccineSystem.executeSelect(columnNames, "Location", where);
             HashMap<String, Object> location = locations.get(String.valueOf(locationID));
             longitude = (String) location.get("longitude");
-            latitude = (String) location.get("longitude");
+            latitude = (String) location.get("latitude");
         }
         catch (SQLException e) {
             e.printStackTrace();

@@ -23,7 +23,7 @@ public class AddVaccineLifespan {
         JPanel panel = new JPanel();
 
         panel.add(lifespanTextField);
-        panel.add(new JLabel(" minutes at, Min Temperature:"));
+        panel.add(new JLabel(" days at, Min Temperature:"));
         panel.add(minTempSpinner);
         panel.add(new JLabel("Max Temperature:"));
         panel.add(maxTempSpinner);

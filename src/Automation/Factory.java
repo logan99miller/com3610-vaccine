@@ -23,7 +23,6 @@ public class Factory extends StorageLocation {
     // Increases the stock levels of the given factory based on its rate of production and the systems updateRate and simulation speed
     private static HashMap<String, Object> updateStockLevel(Data data, HashMap<String, Object> factory, int updateRate, int simulationSpeed) {
         int vaccinesPerMin = Integer.parseInt((String) factory.get("Factory.vaccinesPerMin"));
-
         HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) factory.get("stores");
         int vaccinesToAdd = (vaccinesPerMin * updateRate * simulationSpeed) / 60000;
         String vaccineID = (String) factory.get("Manufacturer.vaccineID");

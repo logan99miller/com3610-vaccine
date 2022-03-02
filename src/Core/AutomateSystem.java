@@ -16,6 +16,7 @@ public class AutomateSystem {
     }
 
     public void run() {
+        System.out.println("---------");
         Factory.updateStockLevels(data, updateRate, simulationSpeed);
         VaccinationCentre.orderVaccines(data);
         DistributionCentre.orderVaccines(data);
