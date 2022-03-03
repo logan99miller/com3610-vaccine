@@ -66,8 +66,8 @@ public class Delivery {
     private static HashMap<String, Object> getOrigin(Data data, HashMap<String, Object> van) {
         String originID = (String) van.get("Van.originID");
         HashMap<String, HashMap<String, Object>> origins = new HashMap<>();
-        origins = mergeMaps(origins, data.getFactories(), "f");
-        origins = mergeMaps(origins, data.getDistributionCentres(), "d");
+        origins = Data.mergeMaps(origins, data.getFactories(), "f");
+        origins = Data.mergeMaps(origins, data.getDistributionCentres(), "d");
         HashMap<String, Object> origin = Data.findMap(origins, "Location.locationID", originID);
         return origin;
     }
@@ -75,18 +75,10 @@ public class Delivery {
     private static HashMap<String, Object> getDestination(Data data, HashMap<String, Object> van) {
         String originID = (String) van.get("Van.destinationID");
         HashMap<String, HashMap<String, Object>> destinations = new HashMap<>();
-        destinations = mergeMaps(destinations, data.getVaccinationCentres(), "v");
-        destinations = mergeMaps(destinations, data.getDistributionCentres(), "d");
+        destinations = Data.mergeMaps(destinations, data.getVaccinationCentres(), "v");
+        destinations = Data.mergeMaps(destinations, data.getDistributionCentres(), "d");
         HashMap<String, Object> destination = Data.findMap(destinations, "Location.locationID", originID);
         return destination;
-    }
-
-    private static HashMap<String, HashMap<String, Object>> mergeMaps(HashMap<String, HashMap<String, Object>> primaryMap,
-    HashMap<String, HashMap<String, Object>> secondaryMap, String keyAddition) {
-        for (String key : secondaryMap.keySet()) {
-            primaryMap.put(key + keyAddition, secondaryMap.get(key));
-        }
-        return primaryMap;
     }
 
     private static HashMap<String, HashMap<String, Object>> updateRemainingTime(HashMap<String, HashMap<String, Object>> vans,

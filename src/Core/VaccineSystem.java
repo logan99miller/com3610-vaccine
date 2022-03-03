@@ -15,6 +15,7 @@ public class VaccineSystem extends JFrame {
     private CardLayout cardLayout;
     private JPanel cards;
     private int updateRate, simulationSpeed;
+    private Data data;
 
     public static void main(String[] args) {
         new VaccineSystem("Vaccine System");
@@ -26,6 +27,8 @@ public class VaccineSystem extends JFrame {
         user = "root";
         password = "artstowerhas20";
 
+        data = new Data(this);
+
         configureWindow();
         createInterface();
 
@@ -33,10 +36,9 @@ public class VaccineSystem extends JFrame {
         simulationSpeed = 10;
 
         AutomateSystem automateSystem = new AutomateSystem();
-        Data data = new Data(this);
         automateSystem.start(data, updateRate, simulationSpeed);
         while (true) {
-            automateSystem.run();
+//            automateSystem.run();
             try {
                 Thread.sleep(updateRate);
             } catch (InterruptedException e) {
@@ -332,5 +334,9 @@ public class VaccineSystem extends JFrame {
 
     public int getSimulationSpeed() {
         return simulationSpeed;
+    }
+
+    public Data getData() {
+        return data;
     }
 }

@@ -440,6 +440,14 @@ public class Data {
         return LocalTime.of(timeValues[0], timeValues[1], timeValues[2]);
     }
 
+    public static HashMap<String, HashMap<String, Object>> mergeMaps(HashMap<String, HashMap<String, Object>> primaryMap,
+    HashMap<String, HashMap<String, Object>> secondaryMap, String keyAddition) {
+        for (String key : secondaryMap.keySet()) {
+            primaryMap.put(key + keyAddition, secondaryMap.get(key));
+        }
+        return primaryMap;
+    }
+
     public HashMap<String, HashMap<String, Object>> getVaccines() {
         return vaccines;
     }
