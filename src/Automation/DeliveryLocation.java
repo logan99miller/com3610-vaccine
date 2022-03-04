@@ -9,6 +9,8 @@ public class DeliveryLocation extends StorageLocation {
         HashMap<String, Object> res = getOriginAndVanWithShortestDistance(origins, destination, vans, amount, vaccineID);
         if (res != null) {
             double distance = (double) res.get("distance");
+            String travelTime = String.valueOf(Distance.getTravelTime(distance));
+
             HashMap<String, Object> origin = (HashMap<String, Object>) res.get("origin");
             HashMap<String, Object> van = (HashMap<String, Object>) res.get("van");
 
@@ -18,15 +20,19 @@ public class DeliveryLocation extends StorageLocation {
             String vanStoreKey = vanStores.keySet().iterator().next();
             HashMap<String, Object> vanStore = vanStores.get(vanStoreKey);
             String vanStoreID = (String) vanStore.get("Store.storeID");
+
             HashMap<String, HashMap<String, Object>> vaccinesInStorage = getVaccinesInStorage(originStores, amount, vanStoreID);
             vanStore.put("vaccinesInStorage", vaccinesInStorage);
             vanStores.put(vanStoreKey, vanStore);
+
             System.out.println("Ordered vaccines from " + van);
+
             van.put("stores", vanStores);
             van.put("Van.deliveryStage", "toOrigin");
             van.put("Van.originID", origin.get("Location.locationID"));
             van.put("Van.destinationID", destination.get("Location.locationID"));
-            van.put("Van.remainingTime", String.valueOf(Distance.getTravelTime(distance)));
+            van.put("Van.totalTime", travelTime);
+            van.put("Van.remainingTime", travelTime);
             van.put("Van.change", "change");
             vans.put((String) van.get("Van.vanID"), van);
         }

@@ -38,7 +38,7 @@ public class VaccineSystem extends JFrame {
         AutomateSystem automateSystem = new AutomateSystem();
         automateSystem.start(data, updateRate, simulationSpeed);
         while (true) {
-//            automateSystem.run();
+            automateSystem.run();
             try {
                 Thread.sleep(updateRate);
             } catch (InterruptedException e) {

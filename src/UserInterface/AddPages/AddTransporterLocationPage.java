@@ -76,8 +76,8 @@ public class AddTransporterLocationPage extends AddLocationPage {
             values = new Object[]  {storageLocationID, 0, vanCapacity};
             inserts.add(new Insert(columnNames, values, "Store"));
 
-            columnNames = new String[] {"deliveryStage", "remainingTime", "storageLocationID", "originID", "destinationID", "transporterLocationID"};
-            values = new Object[] {"waiting", 0, storageLocationID, null, null, transporterLocationID};
+            columnNames = new String[] {"deliveryStage", "totalTime", "remainingTime", "storageLocationID", "originID", "destinationID", "transporterLocationID"};
+            values = new Object[] {"waiting", 0, 0, storageLocationID, null, null, transporterLocationID};
             inserts.add(new Insert(columnNames, values, "Van"));
         }
     }

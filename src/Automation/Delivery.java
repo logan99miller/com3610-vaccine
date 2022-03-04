@@ -24,7 +24,6 @@ public class Delivery {
 
         HashMap<String, Object> destination = getDestination(data, van);
 
-        System.out.println("updateStockAndDeliveryStage(), remainingTime: " + remainingTime + ", updateRate (s): " + (updateRate / 1000) + ", van: " + van);
         if (remainingTime < (updateRate / 1000)) {
             String deliveryStage = (String) van.get("Van.deliveryStage");
 

@@ -313,8 +313,8 @@ public class Data {
     }
 
     private HashMap<String, HashMap<String, Object>> readVans() throws SQLException {
-        String[] columnNames = {"Van.vanID", "Van.deliveryStage", "Van.remainingTime", "Van.storageLocationID", "Van.originID",
-                "Van.destinationID", "Van.transporterLocationID"};
+        String[] columnNames = {"Van.vanID", "Van.deliveryStage", "Van.totalTime", "Van.remainingTime", "Van.storageLocationID",
+        "Van.originID", "Van.destinationID", "Van.transporterLocationID"};
 
         storageLocationMap.put("localTableName", "Van");
         HashMap<String, HashMap<String, Object>> vans = readStorageLocations(columnNames, "Van", new HashMap[] {});

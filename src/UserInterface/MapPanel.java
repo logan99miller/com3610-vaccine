@@ -135,12 +135,13 @@ public class MapPanel extends JPanel {
             String deliveryStage = (String) van.get("Van.deliveryStage");
             String originID = (String) van.get("Van.originID");
             String destinationID = (String) van.get("Van.destinationID");
-            String transporterLocationID = (String) van.get("Van.transporterLocationID");
+            String vansTransporterLocationID = (String) van.get("Van.transporterLocationID");
 
             for (String keyJ : allLocations.keySet()) {
 
                 HashMap<String, Object> location = allLocations.get(keyJ);
                 String locationID = (String) location.get("Location.locationID");
+                String locationsTransporterLocationID = (String) location.get("TransporterLocation.transporterLocationID");
 
                 if (originID.equals(locationID)) {
                     origin = location;
@@ -148,35 +149,50 @@ public class MapPanel extends JPanel {
                 else if (destinationID.equals(locationID)) {
                     destination = location;
                 }
-                else if (transporterLocationID.equals(locationID)) {
+                if (vansTransporterLocationID.equals(locationsTransporterLocationID)) {
                     transporterLocation = location;
                 }
             }
 
             if (deliveryStage.equals("toOrigin")) {
-                drawDeliveryLine(g, transporterLocation, origin);
+                drawDeliveryLine(g, transporterLocation, origin, getProgress(van));
             }
             else if (deliveryStage.equals("toDestination")) {
-                drawDeliveryLine(g, origin, destination);
+                drawDeliveryLine(g, origin, destination, getProgress(van));
             }
         }
     }
+    
+    private float getProgress(HashMap<String, Object> van) {
+        float totalTime = Float.valueOf((String) van.get("Van.totalTime"));
+        float remainingTime = Float.valueOf((String) van.get("Van.remainingTime"));
+        System.out.println("total Time: " + totalTime + ", remaining time: " + remainingTime);
+        return remainingTime / totalTime;
+    }
 
-    private void drawDeliveryLine(Graphics g, HashMap<String, Object> locationA, HashMap<String, Object> locationB) {
+    // Progress is a percentage from 0 to 1
+    private void drawDeliveryLine(Graphics g, HashMap<String, Object> locationA, HashMap<String, Object> locationB, float progress) {
         int aX = getX(locationA);
         int aY = getY(locationA);
         int bX = getX(locationB);
         int bY = getY(locationB);
 
         g.drawLine(aX, aY, bX, bY);
+
+        g.setColor(Color.MAGENTA);
+        progress = 0.3F;
+        int midX = Math.round((aX * (1 - progress)) + (bX * progress));
+        int midY = Math.round((aY * (1 - progress)) + (bY * progress));
+        g.drawLine(aX, aY, midX, midY);
+        System.out.println("Progress: " + progress + ", a: (" + aX + ", " + aY + "), b: (" + bX + ", " + bY + "), mid: (" + midX + ", " + midY + ")");
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        drawDeliveries(g);
         drawFacilities(g, factories, "factory");
         drawFacilities(g, transporterLocations, "transporterLocation");
         drawFacilities(g, distributionCentres, "distributionCentre");
         drawFacilities(g, vaccinationCentres, "vaccinationCentre");
-        drawDeliveries(g);
     }
 }
