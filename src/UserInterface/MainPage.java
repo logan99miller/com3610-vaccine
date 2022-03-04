@@ -54,7 +54,7 @@ public class MainPage extends Page {
         SelectAddPage selectAddPage = new SelectAddPage(vaccineSystem, this);
         SelectViewPage selectViewPage = new SelectViewPage(vaccineSystem, this);
         Page logPage = new Page(vaccineSystem);
-        Page mapPage = new MapPage(vaccineSystem, this);
+        Page mapPage = new MapPage(vaccineSystem);
 
         JPanel addPanel = selectAddPage.getPanel();
         JPanel viewPanel = selectViewPage.getPanel();

@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public class MapPanel extends JPanel {
 
-    private HashMap<String, HashMap<String, Object>> factories, transporterLocations, distributionCentres, vaccinationCentres;
+    private HashMap<String, HashMap<String, Object>> allLocations, factories, transporterLocations, distributionCentres, vaccinationCentres, vans;
     private float xMin, yMin, xScale, yScale;
     private final int HALF_ICON_SIZE = 5;
     private final int ICON_SIZE = 2 * HALF_ICON_SIZE;
@@ -25,13 +25,14 @@ public class MapPanel extends JPanel {
         transporterLocations = data.getTransporterLocations();
         distributionCentres = data.getDistributionCentres();
         vaccinationCentres = data.getVaccinationCentres();
+        vans = data.getVans();
 
         setScaleAndOffset();
     }
 
     // The longitude / latitude distance of one pixel
     private void setScaleAndOffset() {
-        HashMap<String, HashMap<String, Object>> allLocations = getAllLocations();
+        HashMap<String, HashMap<String, Object>> allLocations = setAllLocations();
 
         ArrayList<Float> longitudes = new ArrayList<>();
         ArrayList<Float> latitudes = new ArrayList<>();
@@ -50,13 +51,10 @@ public class MapPanel extends JPanel {
 
         xScale = (this.getPreferredSize().width - (ICON_SIZE * 2)) / longitudeRange;
         yScale = (this.getPreferredSize().height - (ICON_SIZE * 2)) / latitudeRange;
-
-        System.out.println("xMin, xScale, longitudeRange: " + xMin + ", " + xScale + ", " + longitudeRange);
-        System.out.println("yMin, yScale, latitudeRange: " + yMin + ", " + yScale + ", " + latitudeRange);
     }
 
-    private HashMap<String, HashMap<String, Object>> getAllLocations() {
-        HashMap<String, HashMap<String, Object>> allLocations = new HashMap<>();
+    private HashMap<String, HashMap<String, Object>> setAllLocations() {
+        allLocations = new HashMap<>();
         Data.mergeMaps(allLocations, factories, "f");
         Data.mergeMaps(allLocations, transporterLocations, "t");
         Data.mergeMaps(allLocations, distributionCentres, "d");
@@ -74,11 +72,8 @@ public class MapPanel extends JPanel {
     private void drawFacility(Graphics g, HashMap<String, Object> facility, String facilityType) {
         g.setColor(Color.BLACK);
 
-        float longitude = Float.parseFloat((String) facility.get("Location.longitude"));
-        float latitude = Float.parseFloat((String) facility.get("Location.latitude"));
-
-        int x = HALF_ICON_SIZE + Math.round((longitude - xMin) * xScale);
-        int y = HALF_ICON_SIZE + Math.round((latitude - yMin) * yScale);
+        int x = getX(facility);
+        int y = getY(facility);
 
         switch(facilityType) {
             case "factory":
@@ -96,15 +91,25 @@ public class MapPanel extends JPanel {
         }
     }
 
+    private int getX(HashMap<String, Object> facility) {
+        float longitude = Float.parseFloat((String) facility.get("Location.longitude"));
+        return HALF_ICON_SIZE + Math.round((longitude - xMin) * xScale);
+    }
+
+    private int getY(HashMap<String, Object> facility) {
+        float latitude = Float.parseFloat((String) facility.get("Location.latitude"));
+        return HALF_ICON_SIZE + Math.round((latitude - yMin) * yScale);
+    }
+
     private void drawFactory(Graphics g, int x, int y) {
-        x += HALF_ICON_SIZE;
-        y += HALF_ICON_SIZE;
+        x -= HALF_ICON_SIZE;
+        y -= HALF_ICON_SIZE;
         g.fillOval(x, y, ICON_SIZE, ICON_SIZE);
     }
 
     private void drawTransporterLocation(Graphics g, int x, int y) {
-        x += HALF_ICON_SIZE;
-        y += HALF_ICON_SIZE;
+        x -= HALF_ICON_SIZE;
+        y -= HALF_ICON_SIZE;
         g.fillRect(x, y, ICON_SIZE, ICON_SIZE);
     }
 
@@ -120,14 +125,58 @@ public class MapPanel extends JPanel {
         g.fillPolygon(xPoints, yPoints, 4);
     }
 
+    private void drawDeliveries(Graphics g) {
+        HashMap<String, Object> origin = new HashMap<>();
+        HashMap<String, Object> destination = new HashMap<>();
+        HashMap<String, Object> transporterLocation = new HashMap<>();
+
+        for (String keyI : vans.keySet()) {
+            HashMap<String, Object> van = vans.get(keyI);
+            String deliveryStage = (String) van.get("Van.deliveryStage");
+            String originID = (String) van.get("Van.originID");
+            String destinationID = (String) van.get("Van.destinationID");
+            String transporterLocationID = (String) van.get("Van.transporterLocationID");
+
+            for (String keyJ : allLocations.keySet()) {
+
+                HashMap<String, Object> location = allLocations.get(keyJ);
+                String locationID = (String) location.get("Location.locationID");
+
+                if (originID.equals(locationID)) {
+                    origin = location;
+                }
+                else if (destinationID.equals(locationID)) {
+                    destination = location;
+                }
+                else if (transporterLocationID.equals(locationID)) {
+                    transporterLocation = location;
+                }
+            }
+
+            if (deliveryStage.equals("toOrigin")) {
+                drawDeliveryLine(g, transporterLocation, origin);
+            }
+            else if (deliveryStage.equals("toDestination")) {
+                drawDeliveryLine(g, origin, destination);
+            }
+        }
+    }
+
+    private void drawDeliveryLine(Graphics g, HashMap<String, Object> locationA, HashMap<String, Object> locationB) {
+        int aX = getX(locationA);
+        int aY = getY(locationA);
+        int bX = getX(locationB);
+        int bY = getY(locationB);
+
+        g.drawLine(aX, aY, bX, bY);
+    }
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        System.out.println("Paint component");
         drawFacilities(g, factories, "factory");
         drawFacilities(g, transporterLocations, "transporterLocation");
         drawFacilities(g, distributionCentres, "distributionCentre");
         drawFacilities(g, vaccinationCentres, "vaccinationCentre");
+        drawDeliveries(g);
     }
-
-
 }

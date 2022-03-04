@@ -1,30 +1,52 @@
 package UserInterface;
 
-import Core.Data;
 import Core.VaccineSystem;
-
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.awt.event.ActionEvent;
 
 public class MapPage extends Page {
 
-    public MapPage(VaccineSystem vaccineSystem, MainPage mainPage) {
+    private JButton refreshButton;
+    private MapPanel mapPanel;
+    private int panelWidth, panelHeight;
+
+    public MapPage(VaccineSystem vaccineSystem) {
         super(vaccineSystem);
+
         mainPanel = new JPanel();
 
+        refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(this);
+        mainPanel.add(refreshButton);
+
         final int BORDER = 10;
-        final int NAV_PANEL_HEIGHT = mainPage.getNavPanel().getMinimumSize().height; // Nav height not accurate so just multiplied by 2 in PANEL_HEIGHT
-        final int PANEL_WIDTH = vaccineSystem.getWidth() - (BORDER * 2);
-        final int PANEL_HEIGHT = vaccineSystem.getHeight() - (NAV_PANEL_HEIGHT * 2) - (BORDER * 2);
+        final int HEADER_HEIGHT = 100;
 
-        System.out.println("PANEL DIMENSIONS: " + PANEL_WIDTH + ", " + PANEL_HEIGHT);
-        MapPanel mapPanel = new MapPanel(vaccineSystem, PANEL_WIDTH, PANEL_HEIGHT);
+        panelWidth = vaccineSystem.getWidth() - (BORDER * 2);
+        panelHeight = vaccineSystem.getHeight() - HEADER_HEIGHT - (BORDER * 2);
+
+        createMapPanel();
+    }
+
+    private void createMapPanel() {
+        mapPanel = new MapPanel(vaccineSystem, panelWidth, panelHeight);
         mainPanel.add(mapPanel, BorderLayout.CENTER);
+    }
 
-        mapPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+    private void refreshPage() {
+        mainPanel.remove(mapPanel);
+        createMapPanel();
+
+        vaccineSystem.invalidate();
+        vaccineSystem.validate();
+        vaccineSystem.repaint();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == refreshButton) {
+            refreshPage();
+        }
     }
 
 }
