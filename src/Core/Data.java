@@ -48,6 +48,7 @@ public class Data {
 
     public void update() throws SQLException {
         updateDate();
+        removeInvalidVanReferences();
         removeExpiredStock(currentDate);
         removePastBookings(currentDate);
     }
@@ -166,6 +167,40 @@ public class Data {
                 Integer.parseInt(dateValues[0]),
                 Integer.parseInt(dateValues[1]),
                 Integer.parseInt(dateValues[2].substring(0, 2)));
+    }
+
+    private void removeInvalidVanReferences() throws SQLException {
+        vans = readVans();
+
+        HashMap<String, HashMap<String, Object>> allStorageFacilities = new HashMap<>();
+        allStorageFacilities.putAll(readFactories());
+        allStorageFacilities.putAll(readDistributionCentres());
+        allStorageFacilities.putAll(readVaccinationCentres());
+
+        boolean originExists = false;
+        boolean destinationExists = false;
+
+        for (String keyI : vans.keySet()) {
+            HashMap<String, Object> van = vans.get(keyI);
+            String originID = (String) van.get("Van.originID");
+            String destinationID = (String) van.get("Van.destinationID");
+            for (String keyJ : allStorageFacilities.keySet()) {
+                HashMap<String, Object> facility = allStorageFacilities.get(keyJ);
+                String storageLocationID = (String) facility.get("StorageLocation.storageLocationID");
+                if (storageLocationID.equals(originID)) {
+                    originExists = true;
+                }
+                if (storageLocationID.equals(destinationID)) {
+                    destinationExists = true;
+                }
+            }
+
+            if ((!originExists) || (!destinationExists)) {
+                van.put("Van.deliveryStage", "waiting");
+                van.put("Van.change", "change");
+                writeMap(van);
+            }
+        }
     }
 
     private HashMap<String, HashMap<String, Object>> readVaccines() throws SQLException {

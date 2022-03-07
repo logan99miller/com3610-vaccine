@@ -166,7 +166,6 @@ public class MapPanel extends JPanel {
     private float getProgress(HashMap<String, Object> van) {
         float totalTime = Float.valueOf((String) van.get("Van.totalTime"));
         float remainingTime = Float.valueOf((String) van.get("Van.remainingTime"));
-        System.out.println("total Time: " + totalTime + ", remaining time: " + remainingTime);
         return remainingTime / totalTime;
     }
 
@@ -184,7 +183,6 @@ public class MapPanel extends JPanel {
         int midX = Math.round((aX * (1 - progress)) + (bX * progress));
         int midY = Math.round((aY * (1 - progress)) + (bY * progress));
         g.drawLine(aX, aY, midX, midY);
-        System.out.println("Progress: " + progress + ", a: (" + aX + ", " + aY + "), b: (" + bX + ", " + bY + "), mid: (" + midX + ", " + midY + ")");
     }
 
     public void paintComponent(Graphics g) {

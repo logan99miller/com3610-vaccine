@@ -16,6 +16,7 @@ public class VaccineSystem extends JFrame {
     private JPanel cards;
     private int updateRate, simulationSpeed;
     private Data data;
+    private AutomateSystem automateSystem;
 
     public static void main(String[] args) {
         new VaccineSystem("Vaccine System");
@@ -35,10 +36,10 @@ public class VaccineSystem extends JFrame {
         updateRate = 10000; // in milliseconds
         simulationSpeed = 10;
 
-        AutomateSystem automateSystem = new AutomateSystem();
+        automateSystem = new AutomateSystem();
         automateSystem.start(data, updateRate, simulationSpeed);
         while (true) {
-            automateSystem.run();
+//            automateSystem.run();
             try {
                 Thread.sleep(updateRate);
             } catch (InterruptedException e) {
@@ -48,7 +49,7 @@ public class VaccineSystem extends JFrame {
     }
 
     private void configureWindow() {
-        this.setSize(1000, 700);
+        this.setSize(1200, 700);
         this.setLocationRelativeTo(null); // Sets window to centre of screen
         this.setVisible(true);
         this.setResizable(true);

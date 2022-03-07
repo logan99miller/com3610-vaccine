@@ -2,6 +2,7 @@ package UserInterface;
 
 import Core.VaccineSystem;
 import UserInterface.SelectPages.SelectAddPage;
+import UserInterface.SelectPages.OldSelectViewPage;
 import UserInterface.SelectPages.SelectViewPage;
 
 import javax.swing.*;
@@ -66,7 +67,7 @@ public class MainPage extends Page {
         cards.add(logPanel, getSanitizedButtonText(logPageButton));
         cards.add(mapPanel, getSanitizedButtonText(mapPageButton));
 
-        cardLayout.show(cards, "mapview");
+        cardLayout.show(cards, "view");
 
         return cards;
     }

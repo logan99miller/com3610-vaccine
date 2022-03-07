@@ -1,51 +1,102 @@
 package UserInterface;
 
+import Core.Data;
 import Core.VaccineSystem;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
+import java.util.List;
 
 public class ViewPage extends Page {
 
     private MainPage mainPage;
     private JButton backButton, refreshButton;
-    private String[]  originalHeadings, headings, columnNames;
-    private Object[] references;
-    private String tableName, where;
-    private boolean deleteOption;
+    private JScrollPane tableScrollPane;
+    private HashMap<String, HashMap<String, Object>> maps;
+    private String mapKey;
+    private List<String> keys;
+    private List<String> headings;
     private JFrame frame;
-    private JScrollPane tablePanel;
+    private Data data;
 
-    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
-                    Object[] references, String tableName, boolean deleteOption, String where, JFrame frame) {
+    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String mapKey, List<String> keys, List<String> headings) {
         super(vaccineSystem);
 
         this.mainPage = mainPage;
+        this.mapKey = mapKey;
+        this.keys = keys;
         this.headings = headings;
-        this.originalHeadings = headings;
-        this.columnNames = columnNames;
-        this.references = references;
-        this.tableName = tableName;
-        this.deleteOption = deleteOption;
-        this.where = where;
-        this.frame = frame;
 
-        tablePanel = createTableScrollPane();
+        data = vaccineSystem.getData();
+        HashMap<String, HashMap<String, HashMap<String, Object>>> allMaps = getAllMaps();
+        maps = allMaps.get(mapKey);
 
-        mainPanel.add(new JLabel(title));
         mainPanel.add(createButtonPanel());
-        mainPanel.add(tablePanel);
-
-        setMaxWidthMinHeight(mainPanel);
+        if (maps.isEmpty()) {
+            mainPanel.add(new JLabel("No data"));
+        }
+        else {
+            tableScrollPane = createTableScrollPane();
+            mainPanel.add(tableScrollPane);
+        }
     }
 
-    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String title, String[] headings, String[] columnNames,
-        Object[] references, String tableName, boolean deleteOption) {
-        this(vaccineSystem, mainPage, title, headings, columnNames, references, tableName, deleteOption, null, null);
+    public ViewPage(VaccineSystem vaccineSystem, HashMap<String, HashMap<String, Object>> maps, String mapKey, JFrame frame) {
+        super(vaccineSystem);
+
+        this.maps = maps;
+        this.frame = frame;
+        keys = getSubKeys(mapKey);
+        headings = getSubHeadings(mapKey);
+
+        if (maps.isEmpty()) {
+            mainPanel.add(new JLabel("No data"));
+        }
+        else {
+            tableScrollPane = createTableScrollPane();
+            mainPanel.add(tableScrollPane);
+        }
+    }
+
+    private HashMap<String, HashMap<String, HashMap<String, Object>>> getAllMaps() {
+        HashMap<String, HashMap<String, HashMap<String, Object>>> allMaps = new HashMap<>();
+        allMaps.put("Factories", data.getFactories());
+        allMaps.put("Transporter Locations", data.getTransporterLocations());
+        allMaps.put("Distribution Centres", data.getDistributionCentres());
+        allMaps.put("Vaccination Centres", data.getVaccinationCentres());
+        allMaps.put("Vaccines", data.getVaccines());
+        allMaps.put("People", data.getPeople());
+        allMaps.put("Vans", data.getVans());
+        return allMaps;
+    }
+
+    private List<String> getSubKeys(String key) {
+        HashMap<String, List<String>> subKeys = new HashMap<>();
+        subKeys.put("stores", Arrays.asList("Store.temperature", "Store.capacity"));
+        subKeys.put("vaccinesInStorage", Arrays.asList("VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.creationDate", "VaccineInStorage.expirationDate"));
+        subKeys.put("openingTimes", Arrays.asList("OpeningTime.day", "OpeningTime.startTime", "OpeningTime.endTime"));
+        subKeys.put("lifespans", Arrays.asList("VaccineLifespan.lifespan", "VaccineLifespan.lowestTemperature", "VaccineLifespan.highestTemperature"));
+        subKeys.put("exemptions", Arrays.asList("VaccineExemption.medicalConditionID", "MedicalCondition.name", "MedicalCondition.vulnerabilityLevel"));
+        subKeys.put("bookings", Arrays.asList("Booking.bookingID", "Booking.personID", "Booking.vaccinationCentreID", "Booking.date"));
+        subKeys.put("medicalConditions", Arrays.asList("PersonMedicalCondition.medicalConditionID"));
+        subKeys.put("vaccinesReceived", Arrays.asList("VaccineReceived.vaccineID", "VaccineReceived.date"));
+        return(subKeys.get(key));
+    }
+
+    private List<String> getSubHeadings(String key) {
+        HashMap<String, List<String>> subHeadings = new HashMap<>();
+        subHeadings.put("stores", Arrays.asList("Temperature", "Capacity"));
+        subHeadings.put("vaccinesInStorage", Arrays.asList("Vaccine ID", "Stock Level", "Creation Date", "Expiration Date"));
+        subHeadings.put("openingTimes", Arrays.asList("Day", "Start Time", "End Time"));
+        subHeadings.put("lifespans", Arrays.asList("Lifespan", "Lowest Temperature", "Highest Temperature"));
+        subHeadings.put("exemptions", Arrays.asList("Medical Condition ID", "Medical Condition Name", "Vulnerability Level"));
+        subHeadings.put("bookings", Arrays.asList("Booking ID", "Person ID", "Vaccination Centre ID", "Date"));
+        subHeadings.put("medicalConditions", Arrays.asList("Medical Condition ID"));
+        subHeadings.put("vaccinesReceived", Arrays.asList("Vaccine ID", "Date"));
+        return subHeadings.get(key);
     }
 
     private JPanel createButtonPanel() {
@@ -62,26 +113,9 @@ public class ViewPage extends Page {
         return buttonPanel;
     }
 
-    private void refreshPage() {
-        mainPanel.remove(tablePanel);
-        tablePanel = createTableScrollPane();
-        mainPanel.add(tablePanel);
-
-        vaccineSystem.invalidate();
-        vaccineSystem.validate();
-        vaccineSystem.repaint();
-    }
-
     private JScrollPane createTableScrollPane() {
-        JPanel tablePanel = new JPanel();
-        setTableLayout(tablePanel);
-        addHeadings(tablePanel);
-        addReferenceColumnNumbers();
-        addTableContents(getTableContents(), tablePanel);
-
-        setMaxWidthMinHeight(tablePanel);
-
         JPanel scrollPanel = new JPanel();
+        JPanel tablePanel = createTablePanel();
         scrollPanel.add(tablePanel);
 
         JScrollPane scrollPane = new JScrollPane(scrollPanel);
@@ -90,152 +124,117 @@ public class ViewPage extends Page {
         return scrollPane;
     }
 
-    private String[] addElement(String element, String[] array) {
-        String[] newArray = new String[array.length + 1];
-        for (int i = 0; i < array.length; i++) {
-            newArray[i] = array[i];
+    private boolean addDeleteButtons() {
+        String IDFieldName = getIDFieldName(keys);
+        if (IDFieldName == "") {
+            return false;
         }
-        newArray[array.length] = element;
-        return newArray;
+        return true;
     }
 
-    private void addHeadings(JPanel tablePanel) {
-        headings = originalHeadings;
-        if (deleteOption) {
-            headings = addElement("Delete", headings);
+    private JPanel createTablePanel() {
+        boolean addDeleteButtons = addDeleteButtons();
+
+        JPanel tablePanel = new JPanel();
+
+        int columns = headings.size();
+        if (addDeleteButtons) {
+            columns += 1;
         }
+
+        tablePanel.setLayout(new GridLayout(0, columns));
 
         for (String heading : headings) {
-            JLabel header = new JLabel(heading);
-            header.setFont(header.getFont().deriveFont(Font.BOLD));
-            tablePanel.add(header);
+            tablePanel.add(new JLabel(heading));
         }
+
+        if (addDeleteButtons) {
+            tablePanel.add(new JLabel("Delete"));
+        }
+
+        for (String keyI : maps.keySet()) {
+            HashMap<String, Object> map = maps.get(keyI);
+            for (String keyJ : keys) {
+                try {
+                    String value = (String) map.get(keyJ);
+                    tablePanel.add(new JLabel(value));
+                } catch (ClassCastException e) {
+                    JButton button = new JButton("View");
+
+                    button.addActionListener(e1 -> {
+                        JFrame frame = new JFrame();
+                        frame.setResizable(false);
+
+                        HashMap<String, HashMap<String, Object>> subMaps = (HashMap<String, HashMap<String, Object>>) map.get(keyJ);
+
+//                        ViewPage viewPage = new ViewPage(vaccineSystem, subMaps, keyJ, frame);
+                        ViewPage viewPage = new ViewPage(vaccineSystem, subMaps, keyJ, frame);
+                        frame.add(viewPage.getPanel());
+                        createPopupFrame(frame, viewPage.getPanel(), 800, 500);
+                    });
+
+                    tablePanel.add(button);
+                }
+            }
+
+            if (addDeleteButtons) {
+                JButton deleteButton = new JButton("Delete");
+                deleteButton.addActionListener(e -> {
+
+                    String IDFieldName = getIDFieldName(keys);
+                    String tableName = IDFieldName.substring(0, IDFieldName.length() - 2);
+                    String ID = (String) map.get(IDFieldName + "." + tableName);
+
+                    try {
+                        vaccineSystem.delete(IDFieldName, ID, tableName);
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                });
+                tablePanel.add(deleteButton);
+            }
+        }
+        setMaxWidthMinHeight(tablePanel);
+
+        return tablePanel;
     }
 
-    private String createWhere(HashMap<String, Object> reference, String id) {
-        String where = "(" + reference.get("IDFieldName") + " = " + id + ")";
-
-        String linkerTable = (String) reference.get("linkerTableName");
-        String linkerIDFieldName = (String) reference.get("linkerIDFieldName");
-
-        if ((linkerTable != null) && (linkerIDFieldName != null)) {
+    private String getIDFieldName(List<String> keys) {
+        for (String key : keys) {
+            String[] splitKey = key.split("\\.");
             try {
-                ArrayList<ArrayList<String>> records = vaccineSystem.executeSelect1(new String[]{linkerIDFieldName}, linkerTable, where);
-                return "(" + reference.get("linkerIDFieldName") + " = " + records.get(0).get(0) + ")";
+                String tableName = splitKey[0];
+                String fieldName = splitKey[1];
+                if (tableName.equalsIgnoreCase(fieldName.substring(0, fieldName.length() - 2))) {
+                    return fieldName;
+                }
             }
-            catch (SQLException ignored) {}
+            catch (ArrayIndexOutOfBoundsException e1) {}
         }
-        return where;
+        return "";
     }
 
-    private JButton setReferenceButtonText(HashMap<String, Object> reference, JButton button, String id) {
-        if (reference.containsKey("buttonText")) {
-            button.setText((String) reference.get("buttonText"));
-        }
-        else {
-            button.setText(id);
-        }
-        return button;
-    }
-
-    private void addReferenceButtonActionListener(HashMap<String, Object> reference, String where) {
-        if (!reference.containsKey("references")) {
-            reference.put("references", null);
-        }
-
-        JFrame frame = new JFrame();
-        frame.setResizable(false);
-
-        ViewPage viewPage = new ViewPage(
-                vaccineSystem, mainPage,
-                (String) reference.get("title"),
-                (String[]) reference.get("headings"),
-                (String[]) reference.get("columnNames"),
-                (Object[]) reference.get("references"),
-                (String) reference.get("tableName"),
-                false, where, frame);
-
-        frame.add(viewPage.getPanel());
-
-        createPopupFrame(frame, viewPage.getPanel(), 800, 500);
-    }
-
-    private void addReferenceButton(HashMap<String, Object> reference, String id, JPanel tablePanel) {
-        JButton button = new JButton();
-        button = setReferenceButtonText(reference, button, id);
-        String where = createWhere(reference, id);
-
-        button.addActionListener(e -> { addReferenceButtonActionListener(reference, where);});
-
-        tablePanel.add(button);
-    }
-
-    private void deleteRow(String tableName, String IDFieldName, String ID) {
+    private void refreshPage() {
+        // need to update map info, solution:
+        //  pass through all maps, keys & headings with key and key to get new maps
         try {
-            String statementText = "DELETE FROM " + tableName + " WHERE " + IDFieldName +" = " + ID;
-            vaccineSystem.executeUpdate(statementText);
+            data.read();
         }
-        catch (Exception ignored) {}
-    }
-
-    private void addTableContents(ArrayList<ArrayList<String>> contents, JPanel tablePanel) {
-        for (ArrayList<String> row : contents) {
-            for (int i = 0; i < row.size() + 1; i ++) {
-
-                if (i > row.size() - 1) {
-                    if (deleteOption) {
-                        JButton button = new JButton("X");
-                        button.addActionListener(e -> {
-                            deleteRow(tableName, columnNames[0], row.get(0));
-                            refreshPage();
-                        });
-                        tablePanel.add(button);
-                    }
-                }
-                else {
-                    boolean isReference = false;
-
-                    if (references != null) {
-                        for (Object referenceObject : references) {
-                            HashMap<String, Object> reference = (HashMap<String, Object>) referenceObject;
-
-                            if (reference.get("columnNumber").equals(i)) {
-                                addReferenceButton(reference, row.get(i), tablePanel);
-                                isReference = true;
-                            }
-                        }
-                    }
-                    if (!isReference) {
-                        tablePanel.add(new JLabel(row.get(i)));
-                    }
-                }
-            }
+        catch (SQLException e) {
+            e.printStackTrace();
         }
-    }
 
-    // Add an extra column to the table's grid layout if a delete column is required
-    private void setTableLayout(JPanel tablePanel) {
-        if (deleteOption) {
-            tablePanel.setLayout(new GridLayout(0, columnNames.length + 1));
-        }
-        else {
-            tablePanel.setLayout(new GridLayout(0, columnNames.length));
-        }
-    }
+        data = vaccineSystem.getData();
+        HashMap<String, HashMap<String, HashMap<String, Object>>> allMaps = getAllMaps();
+        maps = allMaps.get(mapKey);
 
-    // Add column number of table for when a button to a reference will be needed
-    private void addReferenceColumnNumbers() {
-        for (int i = 0; i < columnNames.length; i++) {
-            if (references != null) {
-                for (Object referenceObject : references) {
-                    HashMap<String, Object> reference = (HashMap<String, Object>) referenceObject;
+        mainPanel.remove(tableScrollPane);
+        tableScrollPane = createTableScrollPane();
+        mainPanel.add(tableScrollPane);
 
-                    if (reference.get("heading").equals(headings[i])) {
-                        reference.put("columnNumber", i);
-                    }
-                }
-            }
-        }
+        vaccineSystem.invalidate();
+        vaccineSystem.validate();
+        vaccineSystem.repaint();
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -251,18 +250,5 @@ public class ViewPage extends Page {
                 frame.setVisible(false);
             }
         }
-    }
-
-    private ArrayList<ArrayList<String>> getTableContents() {
-        ArrayList<ArrayList<String>> tableContents = new ArrayList<>();
-        try {
-            if (where == null) {
-                tableContents = vaccineSystem.executeSelect1(columnNames, tableName);
-            }
-            else {
-                tableContents = vaccineSystem.executeSelect1(columnNames, tableName, where);
-            }
-        } catch (SQLException e) {}
-        return tableContents;
     }
 }
