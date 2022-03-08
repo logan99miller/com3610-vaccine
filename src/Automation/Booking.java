@@ -5,6 +5,8 @@ import Core.Data;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -14,11 +16,19 @@ public class Booking {
         HashMap<String, HashMap<String, Integer>> availability = getAvailability(data);
 
 //        HashMap<String, HashMap<String, Object>> vaccinePriorities = data.getVaccinePriority();
-//        ArrayList<Integer> sortedIndices = Data.sortMaps(vaccinePriorities, "VaccinePriority.positionInQueue");
+//        ArrayList<Integer> sortedKeys = Data.sortMaps(vaccinePriorities, "VaccinePriority.positionInQueue");
 
         HashMap<String, HashMap<String, Object>> unbookedPeople = getUnbookedPeople(data);
+        ArrayList<Integer> sortedKeys = Data.sortMaps(unbookedPeople, "Person.age");
+        Collections.reverse(sortedKeys);
 
-//        for (int index : sortedIndices) {
+        for (Integer key : sortedKeys) {
+            HashMap<String, Object> person = unbookedPeople.get(key);
+            System.out.println("Person: " + person);
+        }
+
+
+//        for (int index : sortedKeys) {
 //            HashMap<String, Object> vaccinePriority = vaccinePriorities.get(String.valueOf(index));
 //            for (String key : unbookedPeople.keySet()) {
 //                HashMap<String, Object> person = unbookedPeople.get(key);

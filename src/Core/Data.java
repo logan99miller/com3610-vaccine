@@ -418,11 +418,11 @@ public class Data {
     }
 
     public static ArrayList<Integer> sortMaps(HashMap<String, HashMap<String, Object>> map, String sortKey) {
-        ArrayList<Integer> IDs = new ArrayList<>();
+        ArrayList<Integer> keys = new ArrayList<>();
         ArrayList<Integer> values = new ArrayList<>();
 
         for (String key : map.keySet()) {
-            IDs.add(Integer.parseInt(key));
+            keys.add(Integer.parseInt(key));
             values.add(Integer.parseInt((String) map.get(key).get(sortKey)));
         }
 
@@ -430,16 +430,16 @@ public class Data {
         for (int i = 0; i < values.size() - 1; i++) {
             for (int j = 0; j < values.size() - i - 1; j++) {
                 if (values.get(j) > values.get(j + 1)) {
-                    int tempID = IDs.get(j);
+                    int tempID = keys.get(j);
                     int tempValue = values.get(j);
-                    IDs.set(j, IDs.get(j + 1));
-                    IDs.set(j + 1, tempID);
+                    keys.set(j, keys.get(j + 1));
+                    keys.set(j + 1, tempID);
                     values.set(j, values.get(j + 1));
                     values.set(j + 1, tempValue);
                 }
             }
         }
-        return IDs;
+        return keys;
     }
 
     public static HashMap<String, Object> findMap(HashMap<String, HashMap<String, Object>> maps, String fieldName, String fieldValue) {

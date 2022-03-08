@@ -15,6 +15,7 @@ public class ViewPage extends Page {
     private MainPage mainPage;
     private JButton backButton, refreshButton;
     private JScrollPane tableScrollPane;
+    private JLabel noDataLabel;
     private HashMap<String, HashMap<String, Object>> maps;
     private String mapKey;
     private List<String> keys;
@@ -35,8 +36,10 @@ public class ViewPage extends Page {
         maps = allMaps.get(mapKey);
 
         mainPanel.add(createButtonPanel());
+
         if (maps.isEmpty()) {
-            mainPanel.add(new JLabel("No data"));
+            noDataLabel = new JLabel("No data");
+            mainPanel.add(noDataLabel);
         }
         else {
             tableScrollPane = createTableScrollPane();
@@ -144,6 +147,15 @@ public class ViewPage extends Page {
 
         tablePanel.setLayout(new GridLayout(0, columns));
 
+        tablePanel = addHeadings(tablePanel, addDeleteButtons);
+        tablePanel = addContent(tablePanel, addDeleteButtons);
+
+        setMaxWidthMinHeight(tablePanel);
+
+        return tablePanel;
+    }
+
+    private JPanel addHeadings(JPanel tablePanel, boolean addDeleteButtons) {
         for (String heading : headings) {
             tablePanel.add(new JLabel(heading));
         }
@@ -152,6 +164,10 @@ public class ViewPage extends Page {
             tablePanel.add(new JLabel("Delete"));
         }
 
+        return tablePanel;
+    }
+
+    private JPanel addContent(JPanel tablePanel, boolean addDeleteButtons) {
         for (String keyI : maps.keySet()) {
             HashMap<String, Object> map = maps.get(keyI);
             for (String keyJ : keys) {
@@ -159,44 +175,51 @@ public class ViewPage extends Page {
                     String value = (String) map.get(keyJ);
                     tablePanel.add(new JLabel(value));
                 } catch (ClassCastException e) {
-                    JButton button = new JButton("View");
-
-                    button.addActionListener(e1 -> {
-                        JFrame frame = new JFrame();
-                        frame.setResizable(false);
-
-                        HashMap<String, HashMap<String, Object>> subMaps = (HashMap<String, HashMap<String, Object>>) map.get(keyJ);
-
-//                        ViewPage viewPage = new ViewPage(vaccineSystem, subMaps, keyJ, frame);
-                        ViewPage viewPage = new ViewPage(vaccineSystem, subMaps, keyJ, frame);
-                        frame.add(viewPage.getPanel());
-                        createPopupFrame(frame, viewPage.getPanel(), 800, 500);
-                    });
-
-                    tablePanel.add(button);
+                    tablePanel.add(createViewButton(map, keyJ));
                 }
             }
 
             if (addDeleteButtons) {
-                JButton deleteButton = new JButton("Delete");
-                deleteButton.addActionListener(e -> {
-
-                    String IDFieldName = getIDFieldName(keys);
-                    String tableName = IDFieldName.substring(0, IDFieldName.length() - 2);
-                    String ID = (String) map.get(IDFieldName + "." + tableName);
-
-                    try {
-                        vaccineSystem.delete(IDFieldName, ID, tableName);
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                    }
-                });
-                tablePanel.add(deleteButton);
+                tablePanel.add(createDeleteButton(map));
             }
         }
-        setMaxWidthMinHeight(tablePanel);
-
         return tablePanel;
+    }
+
+    private JButton createViewButton(HashMap<String, Object> map, String mapKey) {
+        JButton button = new JButton("View");
+
+        button.addActionListener(e1 -> {
+            JFrame frame = new JFrame();
+            frame.setResizable(false);
+
+            HashMap<String, HashMap<String, Object>> subMaps = (HashMap<String, HashMap<String, Object>>) map.get(mapKey);
+
+            ViewPage viewPage = new ViewPage(vaccineSystem, subMaps, mapKey, frame);
+            frame.add(viewPage.getPanel());
+            createPopupFrame(frame, viewPage.getPanel(), 800, 500);
+        });
+        return button;
+    }
+
+    private JButton createDeleteButton(HashMap<String, Object> map) {
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.addActionListener(e -> {
+
+            String IDFieldName = getIDFieldName(keys);
+            String tableName = IDFieldName.substring(0, IDFieldName.length() - 2);
+            tableName = capitalizeFirstLetter(tableName);
+
+            String ID = (String) map.get(tableName + "." + IDFieldName);
+
+            try {
+                vaccineSystem.delete(IDFieldName, ID, tableName);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            refreshPage();
+        });
+        return deleteButton;
     }
 
     private String getIDFieldName(List<String> keys) {
@@ -214,9 +237,14 @@ public class ViewPage extends Page {
         return "";
     }
 
+    private String capitalizeFirstLetter(String string) {
+        String firstLetter = string.substring(0, 1);
+        String remainingLetters = string.substring(1);
+        firstLetter = firstLetter.toUpperCase();
+        return firstLetter + remainingLetters;
+    }
+
     private void refreshPage() {
-        // need to update map info, solution:
-        //  pass through all maps, keys & headings with key and key to get new maps
         try {
             data.read();
         }
@@ -228,7 +256,13 @@ public class ViewPage extends Page {
         HashMap<String, HashMap<String, HashMap<String, Object>>> allMaps = getAllMaps();
         maps = allMaps.get(mapKey);
 
-        mainPanel.remove(tableScrollPane);
+        if (tableScrollPane != null) {
+            mainPanel.remove(tableScrollPane);
+        }
+        else if (noDataLabel != null) {
+            mainPanel.remove(noDataLabel);
+        }
+
         tableScrollPane = createTableScrollPane();
         mainPanel.add(tableScrollPane);
 

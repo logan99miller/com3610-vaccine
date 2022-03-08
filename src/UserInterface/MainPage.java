@@ -2,7 +2,6 @@ package UserInterface;
 
 import Core.VaccineSystem;
 import UserInterface.SelectPages.SelectAddPage;
-import UserInterface.SelectPages.OldSelectViewPage;
 import UserInterface.SelectPages.SelectViewPage;
 
 import javax.swing.*;
