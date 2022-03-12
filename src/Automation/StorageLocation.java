@@ -100,7 +100,7 @@ public class StorageLocation extends Location{
         return LocalDate.from(currentDate.plusDays(lifespanValue)).toString();
     }
 
-    private static int getAvailableCapacity(HashMap<String, Object> store) {
+    protected static int getAvailableCapacity(HashMap<String, Object> store) {
         int totalCapacity = Integer.parseInt((String) store.get("Store.capacity"));
         int usedCapacity = getTotalStock(store);
         return (totalCapacity - usedCapacity);

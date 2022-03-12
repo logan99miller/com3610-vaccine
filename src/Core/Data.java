@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static Core.DataUtils.getLocalDate;
+
 public class Data {
 
     private LocalDate currentDate;
@@ -70,7 +72,7 @@ public class Data {
 
         // Van has 2 vaccines in storage on toOrigin when it should only have one
         // When it is toOrigin is has the right amount, and then doubles it when reaching origin
-        System.out.println("Write: vans" + vans);
+        // System.out.println("Write: vans" + vans);
 
         writeMaps(vaccines);
         writeMaps(factories);
@@ -127,7 +129,7 @@ public class Data {
     }
 
     private void writeValues(HashMap<String, String> valuesMap, String key) throws SQLException {
-        System.out.println(" Writing values: " + key + ", " + valuesMap);
+        // System.out.println(" Writing values: " + key + ", " + valuesMap);
 
         valuesMap.remove("change");
         String[] columnNames = new String[valuesMap.size()];
@@ -192,14 +194,6 @@ public class Data {
 //            }
 //        }
 //    }
-
-    private LocalDate getLocalDate(String databaseDate) {
-        String[] dateValues = databaseDate.split("-");
-        return LocalDate.of(
-                Integer.parseInt(dateValues[0]),
-                Integer.parseInt(dateValues[1]),
-                Integer.parseInt(dateValues[2].substring(0, 2)));
-    }
 
     private void removeInvalidVanReferences() throws SQLException {
         vans = readVans();

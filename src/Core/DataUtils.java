@@ -110,4 +110,11 @@ public class DataUtils {
         return getIDFieldName(keysList);
     }
 
+    public static LocalDate getLocalDate(String databaseDate) {
+        String[] dateValues = databaseDate.split("-");
+        return LocalDate.of(
+                Integer.parseInt(dateValues[0]),
+                Integer.parseInt(dateValues[1]),
+                Integer.parseInt(dateValues[2].substring(0, 2)));
+    }
 }

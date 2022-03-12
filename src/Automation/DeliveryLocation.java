@@ -37,7 +37,7 @@ public class DeliveryLocation extends StorageLocation {
             activityLog.add(vanID + " has been ordered to deliver more vaccines");
 
             // only has 1 VaccinesInStorage
-            System.out.println("Order vaccine, stores: " + vanStores);
+//            System.out.println("Order vaccine, stores: " + vanStores);
 
             van.put("stores", vanStores);
             van.put("Van.deliveryStage", "toOrigin");
@@ -195,5 +195,18 @@ public class DeliveryLocation extends StorageLocation {
             }
         }
         return newVaccinesInStorage;
+    }
+
+    protected static int getCapacityIncludingVans(HashMap<String, Object> storageLocation, HashMap<String, HashMap<String, Object>> vans) {
+        int capacity = getCapacity(storageLocation);
+        String locationID = (String) storageLocation.get("Location.locationID");
+        for (String key : vans.keySet()) {
+            HashMap<String, Object> van = vans.get(key);
+            String originID = (String) van.get("Van.originID");
+            if (locationID.equals(originID)) {
+                capacity += getCapacity(van);
+            }
+        }
+        return capacity;
     }
 }
