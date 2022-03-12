@@ -1,25 +1,27 @@
 package Automation;
 
+import Core.ActivityLog;
 import Core.Data;
+import Core.DataUtils;
 
 import java.util.HashMap;
 
 public class Delivery {
 
-    public static void update(Data data, int updateRate, int simulationSpeed) {
+    public static void update(ActivityLog activityLog, Data data, int updateRate, int simulationSpeed) {
         HashMap<String, HashMap<String, Object>> vans = data.getVans();
 
         vans = updateRemainingTime(vans, updateRate, simulationSpeed);
 
         for (String key : vans.keySet()) {
             HashMap<String, Object> van = vans.get(key);
-            van = updateStockAndDeliveryStage(data, updateRate, van);
+            van = updateStockAndDeliveryStage(activityLog, data, updateRate, van);
             vans.put(key, van);
         }
         data.setVans(vans);
     }
 
-    private static HashMap<String, Object> updateStockAndDeliveryStage(Data data, int updateRate, HashMap<String, Object> van) {
+    private static HashMap<String, Object> updateStockAndDeliveryStage(ActivityLog activityLog, Data data, int updateRate, HashMap<String, Object> van) {
         int remainingTime = Integer.parseInt((String) van.get("Van.remainingTime"));
 
         HashMap<String, Object> destination = getDestination(data, van);
@@ -28,21 +30,28 @@ public class Delivery {
             String deliveryStage = (String) van.get("Van.deliveryStage");
 
             if (deliveryStage.equals("toOrigin")) {
+                System.out.println("Van before reached origin: " + van); // Has 2 vaccinesInStorage, should only have 1
                 HashMap<String, Object> origin = getOrigin(data, van);
                 origin = removeVaccinesFromOrigin(origin, van);
-                van = vanReachedOrigin(van, origin, destination);
+                van = vanReachedOrigin(activityLog, van, origin, destination);
+                System.out.println("Van once reached origin: " + van); // Has 2 vaccinesInStorage, should only have 1
             }
             else if (deliveryStage.equals("toDestination")) {
                 destination = addVaccinesToDestination(data, destination, van);
-                van = vanReachedDestination(van, destination);
+                van = vanReachedDestination(activityLog, van, destination);
+
             }
             van.put("Van.change", "change");
         }
         return van;
     }
 
-    private static HashMap<String, Object> vanReachedOrigin(HashMap<String, Object> van, HashMap<String, Object> origin,
+    private static HashMap<String, Object> vanReachedOrigin(ActivityLog activityLog, HashMap<String, Object> van, HashMap<String, Object> origin,
     HashMap<String, Object> destination) {
+
+        String vanID = (String) van.get("Van.ID");
+        activityLog.add(vanID + " reached it's origin");
+
         String longitude = (String) origin.get("Location.longitude");
         String latitude = (String) origin.get("Location.latitude");
         int remainingTime = Distance.getTravelTime(origin, destination);
@@ -53,7 +62,25 @@ public class Delivery {
         return van;
     }
 
-    private static HashMap<String, Object> vanReachedDestination(HashMap<String, Object> van, HashMap<String, Object> destination) {
+    private static HashMap<String, Object> vanReachedDestination(ActivityLog activityLog, HashMap<String, Object> van, HashMap<String, Object> destination) {
+
+        String vanID = (String) van.get("Van.ID");
+        activityLog.add(vanID + " reached it's destination");
+
+        HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) van.get("stores");
+        for (String keyI : stores.keySet()) {
+            HashMap<String, Object> store = stores.get(keyI);
+            HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccinesInStorage");
+            for (String keyJ : vaccinesInStorage.keySet()) {
+                HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(keyJ);
+                vaccineInStorage.put("VaccineInStorage.delete", "delete");
+                vaccinesInStorage.put(keyJ, vaccineInStorage);
+            }
+            store.put("vaccinesInStorage", vaccinesInStorage);
+            stores.put(keyI, store);
+        }
+        van.put("stores", stores);
+
         String longitude = (String) destination.get("Location.longitude");
         String latitude = (String) destination.get("Location.latitude");
         van.put("Van.deliveryStage", "waiting");
@@ -65,18 +92,18 @@ public class Delivery {
     private static HashMap<String, Object> getOrigin(Data data, HashMap<String, Object> van) {
         String originID = (String) van.get("Van.originID");
         HashMap<String, HashMap<String, Object>> origins = new HashMap<>();
-        origins = Data.mergeMaps(origins, data.getFactories(), "f");
-        origins = Data.mergeMaps(origins, data.getDistributionCentres(), "d");
-        HashMap<String, Object> origin = Data.findMap(origins, "Location.locationID", originID);
+        origins = DataUtils.mergeMaps(origins, data.getFactories(), "f");
+        origins = DataUtils.mergeMaps(origins, data.getDistributionCentres(), "d");
+        HashMap<String, Object> origin = DataUtils.findMap(origins, "Location.locationID", originID);
         return origin;
     }
 
     private static HashMap<String, Object> getDestination(Data data, HashMap<String, Object> van) {
         String originID = (String) van.get("Van.destinationID");
         HashMap<String, HashMap<String, Object>> destinations = new HashMap<>();
-        destinations = Data.mergeMaps(destinations, data.getVaccinationCentres(), "v");
-        destinations = Data.mergeMaps(destinations, data.getDistributionCentres(), "d");
-        HashMap<String, Object> destination = Data.findMap(destinations, "Location.locationID", originID);
+        destinations = DataUtils.mergeMaps(destinations, data.getVaccinationCentres(), "v");
+        destinations = DataUtils.mergeMaps(destinations, data.getDistributionCentres(), "d");
+        HashMap<String, Object> destination = DataUtils.findMap(destinations, "Location.locationID", originID);
         return destination;
     }
 

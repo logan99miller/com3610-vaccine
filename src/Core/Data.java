@@ -3,8 +3,9 @@ package Core;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Data {
@@ -14,7 +15,7 @@ public class Data {
     private final VaccineSystem vaccineSystem;
     private HashMap<String, String> locationMap, storageLocationMap, medicalConditionMap;
     private HashMap<String, HashMap<String, Object>> vaccines, factories, transporterLocations, distributionCentres,
-            vaccinationCentres, people, vans;
+            vaccinationCentres, people, vans, bookings;
 
     public Data(VaccineSystem vaccineSystem) {
         this.vaccineSystem = vaccineSystem;
@@ -48,7 +49,8 @@ public class Data {
 
     public void update() throws SQLException {
         updateDate();
-        removeInvalidVanReferences();
+//        removeInvalidVanReferences();
+//        removeEmptyVaccinesInStorage(vans);
         removeExpiredStock(currentDate);
         removePastBookings(currentDate);
     }
@@ -61,9 +63,15 @@ public class Data {
         vaccinationCentres = readVaccinationCentres();
         people = readPeople();
         vans = readVans();
+        bookings = readBookings();
     }
 
     public void write() throws SQLException {
+
+        // Van has 2 vaccines in storage on toOrigin when it should only have one
+        // When it is toOrigin is has the right amount, and then doubles it when reaching origin
+        System.out.println("Write: vans" + vans);
+
         writeMaps(vaccines);
         writeMaps(factories);
         writeMaps(transporterLocations);
@@ -71,6 +79,7 @@ public class Data {
         writeMaps(vaccinationCentres);
         writeMaps(people);
         writeMaps(vans);
+        writeMaps(bookings);
     }
 
     private void writeMaps(HashMap<String, HashMap<String, Object>> maps) throws SQLException {
@@ -81,11 +90,15 @@ public class Data {
 
     private void writeMap(HashMap<String, Object> map) throws SQLException {
         HashMap<String, HashMap<String, String>> valuesToWrite = getValuesToWrite(map);
-
         for (String key : valuesToWrite.keySet()) {
             HashMap<String, String> valuesMap = valuesToWrite.get(key);
             if (valuesMap.get("change") != null) {
                 writeValues(valuesMap, key);
+            }
+            if (valuesMap.get("delete") != null) {
+                String IDFieldName = DataUtils.getIDFieldName(map.keySet());
+                String ID = valuesMap.get(IDFieldName);
+                vaccineSystem.delete(IDFieldName, ID, key);
             }
         }
     }
@@ -99,7 +112,6 @@ public class Data {
                 String[] splitKey = key.split("\\.");
                 String secondaryTableName = splitKey[0];
                 String fieldName = splitKey[1];
-
                 if (valuesToWrite.get(secondaryTableName) == null) {
                     valuesToWrite.put(secondaryTableName, new HashMap<>());
                 }
@@ -110,10 +122,13 @@ public class Data {
                 writeMap(value);
             }
         }
+
         return valuesToWrite;
     }
 
     private void writeValues(HashMap<String, String> valuesMap, String key) throws SQLException {
+        System.out.println(" Writing values: " + key + ", " + valuesMap);
+
         valuesMap.remove("change");
         String[] columnNames = new String[valuesMap.size()];
         String[] values = new String[valuesMap.size()];
@@ -161,6 +176,23 @@ public class Data {
         }
     }
 
+    // METHOD NOT TESTED
+//    private void removeEmptyVaccinesInStorage(HashMap<String, HashMap<String, Object>> storageLocations) throws SQLException {
+//        System.out.println("removeEmptyVaccinesInStorage():");
+//        for (String keyI : storageLocations.keySet()) {
+//            HashMap<String, Object> storageLocation = storageLocations.get(keyI);
+//            HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) storageLocation.get("stores");
+//            for (String keyJ : stores.keySet()) {
+//                HashMap<String, Object> store = stores.get(keyJ);
+//                HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccinesInStorage");
+//                System.out.println("VaccinesInStorage: " + vaccinesInStorage);
+//                if (vaccinesInStorage == null) {
+//                    vaccineSystem.delete("vaccineInStorageID", keyJ, "VaccineInStorage");
+//                }
+//            }
+//        }
+//    }
+
     private LocalDate getLocalDate(String databaseDate) {
         String[] dateValues = databaseDate.split("-");
         return LocalDate.of(
@@ -186,11 +218,12 @@ public class Data {
             String destinationID = (String) van.get("Van.destinationID");
             for (String keyJ : allStorageFacilities.keySet()) {
                 HashMap<String, Object> facility = allStorageFacilities.get(keyJ);
-                String storageLocationID = (String) facility.get("StorageLocation.storageLocationID");
-                if (storageLocationID.equals(originID)) {
+                String locationID = (String) facility.get("Location.locationID");
+
+                if (locationID.equals(originID)) {
                     originExists = true;
                 }
-                if (storageLocationID.equals(destinationID)) {
+                if (locationID.equals(destinationID)) {
                     destinationExists = true;
                 }
             }
@@ -204,7 +237,7 @@ public class Data {
     }
 
     private HashMap<String, HashMap<String, Object>> readVaccines() throws SQLException {
-        String[] columnNames = {"Vaccine.vaccineID", "Vaccine.name", "Vaccine.dosesNeeded", "Vaccine.daysBetweenDoses"};
+        String[] columnNames = {"Vaccine.vaccineID", "Vaccine.name", "Vaccine.dosesNeeded", "Vaccine.daysBetweenDoses", "Vaccine.minimumAge", "Vaccine.maximumAge"};
 
         HashMap<String, HashMap<String, Object>> vaccines = vaccineSystem.executeSelect(columnNames, "vaccine");
 
@@ -349,7 +382,7 @@ public class Data {
 
     private HashMap<String, HashMap<String, Object>> readVans() throws SQLException {
         String[] columnNames = {"Van.vanID", "Van.deliveryStage", "Van.totalTime", "Van.remainingTime", "Van.storageLocationID",
-        "Van.originID", "Van.destinationID", "Van.transporterLocationID"};
+                "Van.originID", "Van.destinationID", "Van.transporterLocationID"};
 
         storageLocationMap.put("localTableName", "Van");
         HashMap<String, HashMap<String, Object>> vans = readStorageLocations(columnNames, "Van", new HashMap[] {});
@@ -415,72 +448,6 @@ public class Data {
         System.arraycopy(arrayA, 0, arrayC, 0, arrayA.length);
         System.arraycopy(arrayB, 0, arrayC, arrayA.length, arrayB.length);
         return arrayC;
-    }
-
-    public static ArrayList<Integer> sortMaps(HashMap<String, HashMap<String, Object>> map, String sortKey) {
-        ArrayList<Integer> keys = new ArrayList<>();
-        ArrayList<Integer> values = new ArrayList<>();
-
-        for (String key : map.keySet()) {
-            keys.add(Integer.parseInt(key));
-            values.add(Integer.parseInt((String) map.get(key).get(sortKey)));
-        }
-
-        // Replace with better sorting algorithm
-        for (int i = 0; i < values.size() - 1; i++) {
-            for (int j = 0; j < values.size() - i - 1; j++) {
-                if (values.get(j) > values.get(j + 1)) {
-                    int tempID = keys.get(j);
-                    int tempValue = values.get(j);
-                    keys.set(j, keys.get(j + 1));
-                    keys.set(j + 1, tempID);
-                    values.set(j, values.get(j + 1));
-                    values.set(j + 1, tempValue);
-                }
-            }
-        }
-        return keys;
-    }
-
-    public static HashMap<String, Object> findMap(HashMap<String, HashMap<String, Object>> maps, String fieldName, String fieldValue) {
-        for (String key : maps.keySet()) {
-            HashMap<String, Object> map = maps.get(key);
-            if ((map.get(fieldName)).equals(fieldValue)) {
-                return map;
-            }
-        }
-        return null;
-    }
-
-    // Method expects dates in the format YYYY:MM:DD, where : is the splitter value given
-    public static LocalDate getDateFromString(String string, String splitter) {
-        String[] subString = string.split(splitter);
-        if (subString.length == 3) {
-            int year = Integer.parseInt(subString[0]);
-            int hour = Integer.parseInt(subString[1]);
-            int minute = Integer.parseInt(subString[2]);
-            LocalDate date = LocalDate.of(year, hour, minute);
-            return date;
-        }
-        return null;
-    }
-
-    // Converts the time stored in this class and the database into LocalTime type
-    public static LocalTime getLocalTime(String time) {
-        String[] stringTimeValues = time.split(":");
-        int[] timeValues = new int[stringTimeValues.length];
-        for (int i = 0; i < timeValues.length; i++) {
-            timeValues[i] = Integer.parseInt(stringTimeValues[i]);
-        }
-        return LocalTime.of(timeValues[0], timeValues[1], timeValues[2]);
-    }
-
-    public static HashMap<String, HashMap<String, Object>> mergeMaps(HashMap<String, HashMap<String, Object>> primaryMap,
-    HashMap<String, HashMap<String, Object>> secondaryMap, String keyAddition) {
-        for (String key : secondaryMap.keySet()) {
-            primaryMap.put(key + keyAddition, secondaryMap.get(key));
-        }
-        return primaryMap;
     }
 
     public HashMap<String, HashMap<String, Object>> getVaccines() {
@@ -553,5 +520,13 @@ public class Data {
 
     public void setVans(HashMap<String, HashMap<String, Object>> vans) {
         this.vans = vans;
+    }
+
+    public HashMap<String, HashMap<String, Object>> getBookings() {
+        return bookings;
+    }
+
+    public void setBookings(HashMap<String, HashMap<String, Object>> bookings) {
+        this.bookings = bookings;
     }
 }

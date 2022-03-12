@@ -72,9 +72,10 @@ public class AddStockLevelPage extends AddPage {
         columnNames = new String[] {"storeID", "capacity", "temperature"};
         String where = "storageLocationID = " + storageLocationID;
         try {
-            ArrayList<HashMap<String, String>> stores = vaccineSystem.executeSelect2(columnNames, "store", where);
+            HashMap<String, HashMap<String, Object>> stores = vaccineSystem.executeSelect(columnNames, "store", where);
 
-            for (HashMap<String, String> store : stores) {
+            for (String key : stores.keySet()) {
+                HashMap<String, Object> store = stores.get(key);
                 String labelText = "-" + store.get("capacity") + " at " + store.get("temperature") + " degrees:";
 
                 stockLevels.add(new HashMap<>());

@@ -69,10 +69,11 @@ public class Page implements ActionListener {
         ArrayList<String> output = new ArrayList<>();
 
         try {
-            ArrayList<HashMap<String, String>> resultSet = vaccineSystem.executeSelect2(columnNames, tableName);
+            HashMap<String, HashMap<String, Object>> resultSet = vaccineSystem.executeSelect(columnNames, tableName);
 
-            for (HashMap<String, String> record : resultSet) {
-                String addToOutput = record.get(columnNames[0]);
+            for (String key : resultSet.keySet()) {
+                HashMap<String, Object> record = resultSet.get(key);
+                String addToOutput = (String) record.get(columnNames[0]);
 
                 if (record.size() > 1) {
                     addToOutput += ":";

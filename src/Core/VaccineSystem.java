@@ -5,7 +5,6 @@ import UserInterface.MainPage;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class VaccineSystem extends JFrame {
@@ -17,6 +16,7 @@ public class VaccineSystem extends JFrame {
     private int updateRate, simulationSpeed;
     private Data data;
     private AutomateSystem automateSystem;
+    private ActivityLog activityLog;
 
     public static void main(String[] args) {
         new VaccineSystem("Vaccine System");
@@ -29,6 +29,7 @@ public class VaccineSystem extends JFrame {
         password = "artstowerhas20";
 
         data = new Data(this);
+        activityLog = new ActivityLog();
 
         configureWindow();
         createInterface();
@@ -37,9 +38,9 @@ public class VaccineSystem extends JFrame {
         simulationSpeed = 10;
 
         automateSystem = new AutomateSystem();
-        automateSystem.start(data, updateRate, simulationSpeed);
+        automateSystem.start(activityLog, data, updateRate, simulationSpeed);
         while (true) {
-//            automateSystem.run();
+            automateSystem.run();
             try {
                 Thread.sleep(updateRate);
             } catch (InterruptedException e) {
@@ -159,8 +160,34 @@ public class VaccineSystem extends JFrame {
         Statement statement;
 
         HashMap<String, HashMap<String, Object>> res = new HashMap<>();
-        HashMap<String, Object> values = new HashMap<>();
 
+        String statementText = createStatementText(columnNames, tableName, innerJoins, where);
+        try {
+            connection = DriverManager.getConnection(URL, user, password);
+            statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(statementText);
+            while(resultSet.next()) {
+                HashMap<String, Object> values = new HashMap<>();
+                for (String columnName : columnNames) {
+                    values.put(columnName, resultSet.getString(columnName));
+                }
+                res.put((String) values.get(columnNames[0]), values);
+            }
+            resultSet.close();
+            return res;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+        return null;
+    }
+
+    private String createStatementText(String[] columnNames, String tableName, HashMap<String, String>[] innerJoins, String where) {
         String statementText = "SELECT " + columnNames[0];
         for (int i = 1; i < columnNames.length; i++) {
             statementText += ", " + columnNames[i];
@@ -178,29 +205,7 @@ public class VaccineSystem extends JFrame {
         if (where != null) {
             statementText += " WHERE " + where;
         }
-        try {
-            connection = DriverManager.getConnection(URL, user, password);
-            statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(statementText);
-            while(resultSet.next()) {
-                for (String columnName : columnNames) {
-                    values.put(columnName, resultSet.getString(columnName));
-                }
-                res.put((String) values.get(columnNames[0]), values);
-                values = new HashMap<>();
-            }
-            resultSet.close();
-            return res;
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-        return null;
+        return statementText;
     }
 
     public HashMap<String, HashMap<String, Object>> executeSelect(String[] columnNames, String tableName) throws SQLException {
@@ -213,100 +218,6 @@ public class VaccineSystem extends JFrame {
 
     public HashMap<String, HashMap<String, Object>> executeSelect(String[] columnNames, String tableName, String where) throws SQLException {
         return executeSelect(columnNames, tableName, null, where);
-    }
-
-    public ArrayList<HashMap<String, String>> executeSelect2(String[] columnNames, String tableName, String where) throws SQLException {
-        Connection connection = null;
-        Statement statement;
-
-        ArrayList<HashMap<String, String>> res = new ArrayList<>();
-        HashMap<String, String> values = new HashMap<>();
-
-        StringBuilder statementText = new StringBuilder("SELECT ");
-        for (String columnLabel : columnNames) {
-            statementText.append(columnLabel).append(", ");
-        }
-        statementText = new StringBuilder(statementText.substring(0, statementText.length() - 2));
-        statementText.append(" FROM ").append(tableName);
-
-        if (where != null) {
-            statementText.append(" WHERE ").append(where);
-        }
-
-        try {
-            connection = DriverManager.getConnection(URL, user, password);
-            statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(statementText.toString());
-            while(resultSet.next()) {
-                for (String columnName : columnNames) {
-                    values.put(columnName, resultSet.getString(columnName));
-                }
-                res.add(values);
-                values = new HashMap<>();
-            }
-            resultSet.close();
-            return res;
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-        return null;
-    }
-
-    public ArrayList<HashMap<String, String>> executeSelect2(String[] columnNames, String tableName) throws SQLException {
-        return executeSelect2(columnNames, tableName, null);
-    }
-    
-    public ArrayList<ArrayList<String>> executeSelect1(String[] columnNames, String tableName, String where) throws SQLException {
-        Connection connection = null;
-        Statement statement;
-
-        ArrayList<ArrayList<String>> res = new ArrayList<>();
-        ArrayList<String> values = new ArrayList<>();
-
-        StringBuilder statementText = new StringBuilder("SELECT ");
-        for (String columnLabel : columnNames) {
-            statementText.append(columnLabel).append(", ");
-        }
-        statementText = new StringBuilder(statementText.substring(0, statementText.length() - 2));
-        statementText.append(" FROM ").append(tableName);
-
-        if (where != null) {
-            statementText.append(" WHERE ").append(where);
-        }
-
-        try {
-            connection = DriverManager.getConnection(URL, user, password);
-            statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(statementText.toString());
-            while(resultSet.next()) {
-                for (String columnLabel : columnNames) {
-                    values.add(resultSet.getString(columnLabel));
-                }
-                res.add(values);
-                values = new ArrayList<>();
-            }
-            resultSet.close();
-            return res;
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-        return null;
-    }
-
-    public ArrayList<ArrayList<String>> executeSelect1(String[] columnNames, String tableName) throws SQLException {
-        return executeSelect1(columnNames, tableName, null);
     }
 
     public void setUser(String user) {
@@ -339,5 +250,9 @@ public class VaccineSystem extends JFrame {
 
     public Data getData() {
         return data;
+    }
+
+    public ActivityLog getActivityLog() {
+        return activityLog;
     }
 }

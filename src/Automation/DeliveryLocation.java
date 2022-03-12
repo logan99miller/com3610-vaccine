@@ -1,11 +1,19 @@
 package Automation;
 
+import Core.ActivityLog;
+
 import java.util.HashMap;
 
 public class DeliveryLocation extends StorageLocation {
 
-    protected static HashMap<String, HashMap<String, Object>> orderVaccine(HashMap<String, HashMap<String, Object>> origins,
-     HashMap<String, Object> destination, HashMap<String, HashMap<String, Object>> vans, int amount, String vaccineID) {
+    protected static HashMap<String, HashMap<String, Object>> orderVaccine(
+        ActivityLog activityLog,
+        HashMap<String, HashMap<String, Object>> origins,
+        HashMap<String, Object> destination,
+        HashMap<String, HashMap<String, Object>> vans,
+        int amount,
+        String vaccineID)
+    {
         HashMap<String, Object> res = getOriginAndVanWithShortestDistance(origins, destination, vans, amount, vaccineID);
         if (res != null) {
             double distance = (double) res.get("distance");
@@ -25,7 +33,11 @@ public class DeliveryLocation extends StorageLocation {
             vanStore.put("vaccinesInStorage", vaccinesInStorage);
             vanStores.put(vanStoreKey, vanStore);
 
-            System.out.println("Ordered vaccines from " + van);
+            String vanID = (String) van.get("Van.vanID");
+            activityLog.add(vanID + " has been ordered to deliver more vaccines");
+
+            // only has 1 VaccinesInStorage
+            System.out.println("Order vaccine, stores: " + vanStores);
 
             van.put("stores", vanStores);
             van.put("Van.deliveryStage", "toOrigin");

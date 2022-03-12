@@ -1,6 +1,8 @@
 package Automation;
 
+import Core.ActivityLog;
 import Core.Data;
+import Core.DataUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -11,40 +13,52 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class Booking {
-    public static void simulateBookings(Data data) {
+    public static void simulateBookings(ActivityLog activityLog, Data data) {
         LocalDate currentDate = data.getCurrentDate();
         HashMap<String, HashMap<String, Integer>> availability = getAvailability(data);
-
-//        HashMap<String, HashMap<String, Object>> vaccinePriorities = data.getVaccinePriority();
-//        ArrayList<Integer> sortedKeys = Data.sortMaps(vaccinePriorities, "VaccinePriority.positionInQueue");
+        System.out.println("Availability: " + availability);
 
         HashMap<String, HashMap<String, Object>> unbookedPeople = getUnbookedPeople(data);
-        ArrayList<Integer> sortedKeys = Data.sortMaps(unbookedPeople, "Person.age");
+        ArrayList<Integer> sortedKeys = DataUtils.sortDateKeyInMap(unbookedPeople, "Person.DoB");
         Collections.reverse(sortedKeys);
 
-        for (Integer key : sortedKeys) {
-            HashMap<String, Object> person = unbookedPeople.get(key);
-            System.out.println("Person: " + person);
+        HashMap<String, HashMap<String, Object>> vaccines = data.getVaccines();
+
+        for (String vaccineKey : vaccines.keySet()) {
+            HashMap<String, Object> vaccine = vaccines.get(vaccineKey);
+            int dosesNeeded = Integer.parseInt((String) vaccine.get("Vaccine.dosesNeeded"));
+            int minimumAge = Integer.parseInt((String) vaccine.get("Vaccine.minimumAge"));
+            int maximumAge = Integer.parseInt((String) vaccine.get("Vaccine.maximumAge"));
+
+            for (int doseNumber = 1; doseNumber < dosesNeeded; doseNumber++) {
+                HashMap<String, HashMap<String, Object>> filteredPeople = filterPeopleByVaccineReceived(unbookedPeople, doseNumber);
+                for (String peopleKey : filteredPeople.keySet()) {
+                    HashMap<String, Object> person = unbookedPeople.get(peopleKey);
+                    LocalDate DoB = DataUtils.getDateFromString((String) person.get("Person.DoB"), "-");
+                    long age = ChronoUnit.YEARS.between(DoB, currentDate);
+                    if ((minimumAge <= age) && (maximumAge >= age)) {
+                        String personID = (String) person.get("Person.personID");
+                        simulateBooking(activityLog, data, personID, availability);
+                    }
+                }
+            }
         }
+    }
 
+    private static HashMap<String, HashMap<String, Object>> filterPeopleByVaccineReceived(
+        HashMap<String, HashMap<String, Object>> people,
+        int numVaccinesReceived
+    ) {
+        HashMap<String, HashMap<String, Object>> filteredPeople = new HashMap<>();
 
-//        for (int index : sortedKeys) {
-//            HashMap<String, Object> vaccinePriority = vaccinePriorities.get(String.valueOf(index));
-//            for (String key : unbookedPeople.keySet()) {
-//                HashMap<String, Object> person = unbookedPeople.get(key);
-//                LocalDate DoB = Data.getDateFromString((String) person.get("Person.DoB"), "-");
-//                long age = ChronoUnit.YEARS.between(DoB, currentDate);
-//                int lowestAge = Integer.parseInt((String) vaccinePriority.get("VaccinePriority.lowestAge"));
-//                int highestAge = Integer.parseInt((String) vaccinePriority.get("VaccinePriority.highestAge"));
-//                int doseNumber = Integer.parseInt((String) vaccinePriority.get("VaccinePriority.doseNumber"));
-//                int dosesReceived = ((HashMap<String, Object>) person.get("vaccinesReceived")).size();
-//
-//                if ((age >= lowestAge) && (age < highestAge) && (doseNumber - 1 == dosesReceived)) {
-//                    String personID = (String) person.get("Person.personID");
-//                    simulateBooking(personID, availability, data);
-//                }
-//            }
-//        }
+        for (String key : people.keySet()) {
+            HashMap<String, Object> person = people.get(key);
+            HashMap<String, Object> vaccinesReceived = (HashMap<String, Object>) person.get("vaccinesReceived");
+            if (vaccinesReceived.size() == numVaccinesReceived) {
+                filteredPeople.put(key, person);
+            }
+        }
+        return filteredPeople;
     }
 
     private static HashMap<String, HashMap<String, Object>> getUnbookedPeople(Data data) {
@@ -61,10 +75,11 @@ public class Booking {
         return unbookedPeople;
     }
 
-    private static HashMap<String, HashMap<String, Integer>> simulateBooking(String personID, HashMap<String, HashMap<String, Integer>> availability, Data data) {
+
+
+    private static HashMap<String, HashMap<String, Integer>> simulateBooking(ActivityLog activityLog, Data data, String personID, HashMap<String, HashMap<String, Integer>> availability) {
         String vaccinationCentreID = selectVaccinationCentre(availability);
         HashMap<String, Integer> slots = availability.get(vaccinationCentreID);
-        HashMap<String, Integer> modifiedSlots = slots;
         HashMap<String, HashMap<String, Object>> vaccinationCentres = data.getVaccinationCentres();
         HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(vaccinationCentreID);
         HashMap<String, HashMap<String, String>> bookings = (HashMap<String, HashMap<String, String>>) vaccinationCentre.get("bookings");
@@ -80,7 +95,8 @@ public class Booking {
 //                else {
 //                    modifiedSlots.put(date, value + 1);
 //                }
-                HashMap<String, String> booking = new HashMap<String, String>();
+                activityLog.add("Person " + personID + " booked in at " + vaccinationCentreID + " vaccination centre for " + date);
+                HashMap<String, String> booking = new HashMap<>();
                 booking.put("Booking.personID", personID);
                 booking.put("Booking.vaccinationCentreID", vaccinationCentreID);
                 booking.put("Booking.date", date);

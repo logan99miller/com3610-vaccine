@@ -1,12 +1,13 @@
 package Automation;
 
+import Core.ActivityLog;
 import Core.Data;
 
 import java.util.HashMap;
 
 public class VaccinationCentre extends DeliveryLocation {
 
-    public static void orderVaccines(Data data) {
+    public static void orderVaccines(ActivityLog activityLog, Data data) {
         HashMap<String, HashMap<String, Object>> distributionCentres = data.getDistributionCentres();
         HashMap<String, HashMap<String, Object>> vaccinationCentres = data.getVaccinationCentres();
         HashMap<String, HashMap<String, Object>> vans = data.getVans();
@@ -23,7 +24,7 @@ public class VaccinationCentre extends DeliveryLocation {
 
                 int vaccinesNeeded = 5; // NEEDS TO BE BASED OF A FUNCTION IN FUTURE
                 String vaccineID = "1"; // NEEDS TO BE BASED OF A FUNCTION IN FUTURE
-                vans = orderVaccine(distributionCentres, vaccinationCentre, vans, vaccinesNeeded, vaccineID);
+                vans = orderVaccine(activityLog, distributionCentres, vaccinationCentre, vans, vaccinesNeeded, vaccineID);
                 data.setVans(vans);
             }
         }

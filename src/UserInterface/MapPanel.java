@@ -1,6 +1,7 @@
 package UserInterface;
 
 import Core.Data;
+import Core.DataUtils;
 import Core.VaccineSystem;
 
 import javax.swing.*;
@@ -55,11 +56,11 @@ public class MapPanel extends JPanel {
 
     private HashMap<String, HashMap<String, Object>> setAllLocations() {
         allLocations = new HashMap<>();
-        Data.mergeMaps(allLocations, factories, "f");
-        Data.mergeMaps(allLocations, transporterLocations, "t");
-        Data.mergeMaps(allLocations, distributionCentres, "d");
-        Data.mergeMaps(allLocations, vaccinationCentres, "v");
-        Data.mergeMaps(allLocations, factories, "f");
+        DataUtils.mergeMaps(allLocations, factories, "f");
+        DataUtils.mergeMaps(allLocations, transporterLocations, "t");
+        DataUtils.mergeMaps(allLocations, distributionCentres, "d");
+        DataUtils.mergeMaps(allLocations, vaccinationCentres, "v");
+        DataUtils.mergeMaps(allLocations, factories, "f");
         return allLocations;
     }
 

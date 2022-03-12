@@ -1,6 +1,7 @@
 package UserInterface;
 
 import Core.Data;
+import Core.DataUtils;
 import Core.VaccineSystem;
 
 import javax.swing.*;
@@ -73,12 +74,13 @@ public class ViewPage extends Page {
         allMaps.put("Vaccines", data.getVaccines());
         allMaps.put("People", data.getPeople());
         allMaps.put("Vans", data.getVans());
+        allMaps.put("Bookings", data.getBookings());
         return allMaps;
     }
 
     private List<String> getSubKeys(String key) {
         HashMap<String, List<String>> subKeys = new HashMap<>();
-        subKeys.put("stores", Arrays.asList("Store.temperature", "Store.capacity"));
+        subKeys.put("stores", Arrays.asList("Store.temperature", "Store.capacity", "vaccinesInStorage"));
         subKeys.put("vaccinesInStorage", Arrays.asList("VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel", "VaccineInStorage.creationDate", "VaccineInStorage.expirationDate"));
         subKeys.put("openingTimes", Arrays.asList("OpeningTime.day", "OpeningTime.startTime", "OpeningTime.endTime"));
         subKeys.put("lifespans", Arrays.asList("VaccineLifespan.lifespan", "VaccineLifespan.lowestTemperature", "VaccineLifespan.highestTemperature"));
@@ -91,7 +93,7 @@ public class ViewPage extends Page {
 
     private List<String> getSubHeadings(String key) {
         HashMap<String, List<String>> subHeadings = new HashMap<>();
-        subHeadings.put("stores", Arrays.asList("Temperature", "Capacity"));
+        subHeadings.put("stores", Arrays.asList("Temperature", "Capacity", "Vaccines In Storage"));
         subHeadings.put("vaccinesInStorage", Arrays.asList("Vaccine ID", "Stock Level", "Creation Date", "Expiration Date"));
         subHeadings.put("openingTimes", Arrays.asList("Day", "Start Time", "End Time"));
         subHeadings.put("lifespans", Arrays.asList("Lifespan", "Lowest Temperature", "Highest Temperature"));
@@ -128,7 +130,7 @@ public class ViewPage extends Page {
     }
 
     private boolean addDeleteButtons() {
-        String IDFieldName = getIDFieldName(keys);
+        String IDFieldName = DataUtils.getIDFieldName(keys);
         if (IDFieldName == "") {
             return false;
         }
@@ -206,7 +208,7 @@ public class ViewPage extends Page {
         JButton deleteButton = new JButton("Delete");
         deleteButton.addActionListener(e -> {
 
-            String IDFieldName = getIDFieldName(keys);
+            String IDFieldName = DataUtils.getIDFieldName(keys);
             String tableName = IDFieldName.substring(0, IDFieldName.length() - 2);
             tableName = capitalizeFirstLetter(tableName);
 
@@ -222,20 +224,7 @@ public class ViewPage extends Page {
         return deleteButton;
     }
 
-    private String getIDFieldName(List<String> keys) {
-        for (String key : keys) {
-            String[] splitKey = key.split("\\.");
-            try {
-                String tableName = splitKey[0];
-                String fieldName = splitKey[1];
-                if (tableName.equalsIgnoreCase(fieldName.substring(0, fieldName.length() - 2))) {
-                    return fieldName;
-                }
-            }
-            catch (ArrayIndexOutOfBoundsException e1) {}
-        }
-        return "";
-    }
+
 
     private String capitalizeFirstLetter(String string) {
         String firstLetter = string.substring(0, 1);
