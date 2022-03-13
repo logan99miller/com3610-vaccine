@@ -4,10 +4,11 @@ import Core.VaccineSystem;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 
 public class MapPage extends Page {
 
-    private JButton refreshButton;
+    private JButton keyButton, refreshButton;
     private MapPanel mapPanel;
     private int panelWidth, panelHeight;
 
@@ -16,9 +17,7 @@ public class MapPage extends Page {
 
         mainPanel = new JPanel();
 
-        refreshButton = new JButton("Refresh");
-        refreshButton.addActionListener(this);
-        mainPanel.add(refreshButton);
+        mainPanel.add(createButtonPanel());
 
         final int BORDER = 10;
         final int HEADER_HEIGHT = 100;
@@ -29,6 +28,20 @@ public class MapPage extends Page {
         createMapPanel();
     }
 
+
+    private JPanel createButtonPanel() {
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 2));
+
+        keyButton = new JButton("Key");
+        refreshButton = new JButton("Refresh");
+
+        addButton(keyButton, buttonPanel);
+        addButton(refreshButton, buttonPanel);
+
+        setMaxWidthMinHeight(buttonPanel);
+
+        return buttonPanel;
+    }
     private void createMapPanel() {
         mapPanel = new MapPanel(vaccineSystem, panelWidth, panelHeight);
         mainPanel.add(mapPanel, BorderLayout.CENTER);
@@ -46,6 +59,19 @@ public class MapPage extends Page {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == refreshButton) {
             refreshPage();
+        }
+        if (e.getSource() == keyButton) {
+            JFrame frame = new JFrame();
+            frame.setResizable(false);
+
+            JPanel framePanel = new JPanel();
+            framePanel.setLayout(new BoxLayout(framePanel, BoxLayout.Y_AXIS));
+            framePanel.add(new JLabel("Factory: circle"));
+            framePanel.add(new JLabel("Transporter Location: square"));
+            framePanel.add(new JLabel("Distribution Centre: triangle"));
+            framePanel.add(new JLabel("Vaccination Centre: diamond"));
+
+            createPopupFrame(frame, framePanel, 400, 400);
         }
     }
 

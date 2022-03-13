@@ -209,4 +209,24 @@ public class DeliveryLocation extends StorageLocation {
         }
         return capacity;
     }
+
+    // Gets the total vaccines per hour across all vaccination centres
+    protected static int getTotalVaccinesPerHour(HashMap<String, HashMap<String, Object>> vaccinationCentres) {
+        int totalVaccinesPerHour = 0;
+        for (String key : vaccinationCentres.keySet()) {
+            HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
+            totalVaccinesPerHour += Integer.parseInt((String) vaccinationCentre.get("VaccinationCentre.vaccinesPerHour"));
+        }
+        return totalVaccinesPerHour;
+    }
+
+    // Gets the total storage capacity across all vaccination centres
+    protected static int getTotalCapacity(HashMap<String, HashMap<String, Object>> vaccinationCentres, HashMap<String, HashMap<String, Object>> vans) {
+        int totalCapacity = 0;
+        for (String key : vaccinationCentres.keySet()) {
+            HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
+            totalCapacity += getCapacityIncludingVans(vaccinationCentre, vans);
+        }
+        return totalCapacity;
+    }
 }

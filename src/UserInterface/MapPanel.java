@@ -6,6 +6,7 @@ import Core.VaccineSystem;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ public class MapPanel extends JPanel {
         this.setPreferredSize(new Dimension(width, height));
 
         Data data = vaccineSystem.getData();
+
         factories = data.getFactories();
         transporterLocations = data.getTransporterLocations();
         distributionCentres = data.getDistributionCentres();

@@ -39,7 +39,7 @@ public class VaccinationCentre extends DeliveryLocation {
         }
     }
 
-    private static int getVaccinesNeeded(
+    public static int getVaccinesNeeded(
         HashMap<String, Object> vaccinationCentre,
         HashMap<String, HashMap<String, Integer>> availabilities,
         HashMap<String, HashMap<String, Object>> unbookedPeople,
@@ -47,16 +47,11 @@ public class VaccinationCentre extends DeliveryLocation {
         int totalVaccinesPerHour,
         int totalCapacity
     ) {
-        final float PERCENTAGE_WHO_WANT_VACCINATION = 0.8f;
 
         int vaccinesPerHour = Integer.parseInt((String) vaccinationCentre.get("VaccinationCentre.vaccinesPerHour"));
         int capacity = getCapacityIncludingVans(vaccinationCentre, vans);
 
-        float proportionOfCapacity = capacity / totalCapacity;
-        float proportionOfVaccinesPerHour = vaccinesPerHour / totalVaccinesPerHour;
-
-        float proportionOfBookings = (proportionOfCapacity + proportionOfVaccinesPerHour) / 2;
-        int expectedBookings = Math.round(proportionOfBookings * unbookedPeople.size() * PERCENTAGE_WHO_WANT_VACCINATION);
+        int expectedBookings = getExpectedBookings(vaccinesPerHour, capacity, unbookedPeople.size(), totalVaccinesPerHour, totalCapacity);
 
         String vaccinationCentreID = (String) vaccinationCentre.get("VaccinationCentre.vaccinationCentreID");
         HashMap<String, Integer> availability = availabilities.get(vaccinationCentreID);
@@ -76,26 +71,6 @@ public class VaccinationCentre extends DeliveryLocation {
         return 0;
     }
 
-    // Gets the total vaccines per hour across all vaccination centres
-    private static int getTotalVaccinesPerHour(HashMap<String, HashMap<String, Object>> vaccinationCentres) {
-        int totalVaccinesPerHour = 0;
-        for (String key : vaccinationCentres.keySet()) {
-            HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
-            totalVaccinesPerHour += Integer.parseInt((String) vaccinationCentre.get("VaccinationCentre.vaccinesPerHour"));
-        }
-        return totalVaccinesPerHour;
-    }
-
-    // Gets the total storage capacity across all vaccination centres
-    private static int getTotalCapacity(HashMap<String, HashMap<String, Object>> vaccinationCentres, HashMap<String, HashMap<String, Object>> vans) {
-        int totalCapacity = 0;
-        for (String key : vaccinationCentres.keySet()) {
-            HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
-            totalCapacity += getCapacityIncludingVans(vaccinationCentre, vans);
-        }
-        return totalCapacity;
-    }
-
     private static int getNumberOfBookings(HashMap<String, Integer> availability) {
         int numberOfBookings = 0;
         for (String key : availability.keySet()) {
@@ -110,5 +85,16 @@ public class VaccinationCentre extends DeliveryLocation {
             numberOfPlaces += vaccinesPerHour;
         }
         return (numberOfPlaces - numberOfBookings);
+    }
+
+    // For a given vaccination centre
+    private static int getExpectedBookings(int vaccinesPerHour, int capacity, int numberOfUnbookedPeople, int totalVaccinesPerHour, int totalCapacity) {
+        final float PERCENTAGE_WHO_WANT_VACCINATION = 0.8f;
+
+        float proportionOfCapacity = capacity / totalCapacity;
+        float proportionOfVaccinesPerHour = vaccinesPerHour / totalVaccinesPerHour;
+
+        float proportionOfBookings = (proportionOfCapacity + proportionOfVaccinesPerHour) / 2;
+        return Math.round(proportionOfBookings * numberOfUnbookedPeople * PERCENTAGE_WHO_WANT_VACCINATION);
     }
 }
