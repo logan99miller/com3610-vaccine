@@ -3,6 +3,7 @@ package Automation;
 import Core.ActivityLog;
 import Data.Data;
 import Data.Utils;
+import UserInterface.LoggedInPage;
 
 import java.util.HashMap;
 
@@ -36,12 +37,10 @@ public class Delivery {
                 origin = removeVaccinesFromOrigin(origin, van);
                 van = vanReachedOrigin(activityLog, van, origin, destination);
                 System.out.println("Van once reached origin: " + van); // Has 2 vaccinesInStorage, should only have 1
-                activityLog.add("Van with ID " + vanID + " reached origin");
             }
             else if (deliveryStage.equals("toDestination")) {
                 destination = addVaccinesToDestination(activityLog, data, destination, van);
                 van = vanReachedDestination(activityLog, van, destination);
-                activityLog.add("Van with ID " + vanID + " reached destination");
             }
             van.put("Van.change", "change");
         }
@@ -51,8 +50,10 @@ public class Delivery {
     private static HashMap<String, Object> vanReachedOrigin(ActivityLog activityLog, HashMap<String, Object> van, HashMap<String, Object> origin,
     HashMap<String, Object> destination) {
 
-        String vanID = (String) van.get("Van.ID");
-        activityLog.add(vanID + " reached it's origin");
+        String vanID = (String) van.get("Van.vanID");
+        String originType = Location.getLocationType(origin);
+        String originID = Location.getID(origin);
+        activityLog.add("Van " + vanID + " reached it's origin, " + originType + " " + originID);
 
         String longitude = (String) origin.get("Location.longitude");
         String latitude = (String) origin.get("Location.latitude");
@@ -66,8 +67,10 @@ public class Delivery {
 
     private static HashMap<String, Object> vanReachedDestination(ActivityLog activityLog, HashMap<String, Object> van, HashMap<String, Object> destination) {
 
-        String vanID = (String) van.get("Van.ID");
-        activityLog.add(vanID + " reached it's destination");
+        String vanID = (String) van.get("Van.vanID");
+        String destinationType = Location.getLocationType(destination);
+        String destinationID = Location.getID(destination);
+        activityLog.add("Van " + vanID + " reached it's destination, " + destinationType + " " + destinationID);
 
         HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) van.get("stores");
         for (String keyI : stores.keySet()) {

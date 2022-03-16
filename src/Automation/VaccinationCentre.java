@@ -22,10 +22,10 @@ public class VaccinationCentre extends DeliveryLocation {
         int totalCapacity = getTotalCapacity(vaccinationCentres, vans);
 
         if (distributionCentres.size() == 0) {
-            System.out.println("No distribution centres so vaccination centre cannot order more vaccines");
+            activityLog.add("No distribution centres so vaccination centre cannot order more vaccines", true);
         }
         else if (vans.size() == 0) {
-            System.out.println("No vans so vaccination centre cannot order more vaccines");
+            activityLog.add("No vans so vaccination centre cannot order more vaccines", true);
         }
         else {
             for (String key : vaccinationCentres.keySet()) {

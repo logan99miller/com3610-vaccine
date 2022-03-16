@@ -3,6 +3,7 @@ package Automation;
 import Core.ActivityLog;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 public class DeliveryLocation extends StorageLocation {
 
@@ -34,7 +35,12 @@ public class DeliveryLocation extends StorageLocation {
             vanStores.put(vanStoreKey, vanStore);
 
             String vanID = (String) van.get("Van.vanID");
-            activityLog.add(vanID + " has been ordered to deliver more vaccines");
+            String originType = getLocationType(origin);
+            String destinationType = getLocationType(destination);
+            String originID = getID(origin);
+            String destinationID = getID(destination);
+
+            activityLog.add("Van " + vanID + " began delivering vaccines from " + originType + " " + originID + " to " + destinationType + " " + destinationID);
 
             // only has 1 VaccinesInStorage
 //            System.out.println("Order vaccine, stores: " + vanStores);
@@ -63,11 +69,18 @@ public class DeliveryLocation extends StorageLocation {
         HashMap<String, HashMap<String, Object>> availableVans = getAvailableVans(vans); // SHOULD ALSO CONSIDER VAN CAPACITY
 
         if (availableOrigins.size() == 0) {
-            activityLog.add("Not enough origins available", true);
+            Optional<String> firstOriginKey = origins.keySet().stream().findFirst();
+            String originType = getLocationType(origins.get(firstOriginKey));
+            String destinationType = getLocationType(destination);
+            String destinationID = getID(destination);
+            activityLog.add("No " + originType + " available for " + destinationType + " " + destinationID + " to order from", true);
             return null;
         }
         else if (availableVans.size() == 0) {
-            activityLog.add("Not enough vans available", true);
+            String destinationType = getLocationType(destination);
+            String destinationID = getID(destination);
+
+            activityLog.add("No vans available for " + destinationType + " " + destinationID + " to make and order", true);
             return null;
         }
         double shortestDistance = 1000000;

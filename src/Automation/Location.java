@@ -31,4 +31,36 @@ public class Location {
         }
         return null;
     }
+
+    protected static String getLocationType(HashMap<String, Object> location) {
+        if (location.get("Factory.factoryID") != null) {
+            return "factory";
+        }
+        if (location.get("TransporterLocation.transporterLocationID") != null) {
+            return "transporter location";
+        }
+        if (location.get("DistributionCentre.distributionCentreID") != null) {
+            return "distribution centre";
+        }
+        if (location.get("VaccinationCentre.vaccinationCentreID") != null) {
+            return "vaccination centre";
+        }
+        return null;
+    }
+
+    protected static String getID(HashMap<String, Object> location) {
+        String[] potentialFieldNames = new String[] {
+            "Factory.factoryID",
+            "TransporterLocation.transporterLocationID",
+            "DistributionCentre.distributionCentreID",
+                "VaccinationCentre.vaccinationCentreID"
+        };
+
+        for (String potentialFieldName : potentialFieldNames) {
+            if (location.get(potentialFieldName) != null) {
+                return (String) location.get(potentialFieldName);
+            }
+        }
+        return null;
+    }
 }

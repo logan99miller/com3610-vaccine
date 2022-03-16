@@ -26,10 +26,10 @@ public class DistributionCentre extends DeliveryLocation {
         HashMap<String, HashMap<String, Object>> unbookedPeople = getUnbookedPeople(data);
 
         if (factories.size() == 0) {
-            activityLog.add("No factories so distribution centres cannot order more vaccines");
+            activityLog.add("No factories so distribution centres cannot order more vaccines", true);
         }
         else if (vans.size() == 0) {
-            activityLog.add("No factories so distribution centres cannot order more vaccines");
+            activityLog.add("No vans so distribution centres cannot order more vaccines", true);
         }
         else {
             for (String key : distributionCentres.keySet()) {

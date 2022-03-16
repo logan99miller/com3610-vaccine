@@ -27,9 +27,6 @@ public class StorageLocation extends Location{
                 stores.put(key, store);
             }
         }
-        if (totalAmount > 0) {
-            activityLog.add(totalAmount + " vaccines couldn't be added to store");
-        }
         return stores;
     }
 
