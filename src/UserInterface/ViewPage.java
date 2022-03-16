@@ -1,7 +1,7 @@
 package UserInterface;
 
-import Core.Data;
-import Core.DataUtils;
+import Data.Data;
+import Data.Utils;
 import Core.VaccineSystem;
 
 import javax.swing.*;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class ViewPage extends Page {
 
-    private MainPage mainPage;
+    private LoggedInPage loggedInPage;
     private JButton backButton, refreshButton;
     private JScrollPane tableScrollPane;
     private JLabel noDataLabel;
@@ -24,10 +24,10 @@ public class ViewPage extends Page {
     private JFrame frame;
     private Data data;
 
-    public ViewPage(VaccineSystem vaccineSystem, MainPage mainPage, String mapKey, List<String> keys, List<String> headings) {
+    public ViewPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage, String mapKey, List<String> keys, List<String> headings) {
         super(vaccineSystem);
 
-        this.mainPage = mainPage;
+        this.loggedInPage = loggedInPage;
         this.mapKey = mapKey;
         this.keys = keys;
         this.headings = headings;
@@ -130,7 +130,7 @@ public class ViewPage extends Page {
     }
 
     private boolean addDeleteButtons() {
-        String IDFieldName = DataUtils.getIDFieldName(keys);
+        String IDFieldName = Utils.getIDFieldName(keys);
         if (IDFieldName == "") {
             return false;
         }
@@ -208,7 +208,7 @@ public class ViewPage extends Page {
         JButton deleteButton = new JButton("Delete");
         deleteButton.addActionListener(e -> {
 
-            String IDFieldName = DataUtils.getIDFieldName(keys);
+            String IDFieldName = Utils.getIDFieldName(keys);
             String tableName = IDFieldName.substring(0, IDFieldName.length() - 2);
             tableName = capitalizeFirstLetter(tableName);
 
@@ -223,8 +223,6 @@ public class ViewPage extends Page {
         });
         return deleteButton;
     }
-
-
 
     private String capitalizeFirstLetter(String string) {
         String firstLetter = string.substring(0, 1);
@@ -266,8 +264,8 @@ public class ViewPage extends Page {
         }
         else if (e.getSource() == backButton) {
             if (frame == null) {
-                mainPage.setPageName("view");
-                mainPage.updatePage();
+                loggedInPage.setPageName("view");
+                loggedInPage.updatePage();
             }
             else {
                 frame.setVisible(false);

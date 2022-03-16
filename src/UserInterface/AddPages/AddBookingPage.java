@@ -1,13 +1,14 @@
 package UserInterface.AddPages;
 
 import UserInterface.AddPage;
-import UserInterface.MainPage;
+import UserInterface.LoggedInPage;
 import UserInterface.Page;
 import Core.VaccineSystem;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import static UserInterface.Utils.*;
 
 public class AddBookingPage extends AddPage {
 
@@ -15,8 +16,8 @@ public class AddBookingPage extends AddPage {
     private JTextField dateTextField;
     private JSpinner hourSpinner, minuteSpinner;
 
-    public AddBookingPage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "Add Booking:");
+    public AddBookingPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
+        super(vaccineSystem, loggedInPage, "Add Booking:");
 
         String[] personColumnNames = {"personID", "forename", "surname"};
         String[] vaccinationCentreColumnNames = new String[] {"vaccinationCentreID", "name"};

@@ -1,16 +1,18 @@
 package UserInterface.AddPages;
 
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.AddUtils.Insert;
+import UserInterface.LoggedInPage;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import static UserInterface.Utils.*;
 
 public class AddVaccinationCentrePage extends AddStorageLocationPage {
 
     private JTextField nameTextField, vaccinesPerHourTextField;
 
-    public AddVaccinationCentrePage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "Add Vaccination Centre:");
+    public AddVaccinationCentrePage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
+        super(vaccineSystem, loggedInPage, "Add Vaccination Centre:");
         nameTextField = new JTextField();
         vaccinesPerHourTextField = new JTextField();
         addLabelledComponent(inputGridPanel,"*Name:", nameTextField);

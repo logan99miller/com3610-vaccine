@@ -1,17 +1,19 @@
 package UserInterface.AddPages;
 
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.AddUtils.Insert;
+import UserInterface.LoggedInPage;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import static UserInterface.Utils.*;
 
 public class AddFactoryPage extends AddStorageLocationPage {
 
     private JTextField vaccinesPerMinTextField;
     private JComboBox manufacturersComboBox;
 
-    public AddFactoryPage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "Add Factory:");
+    public AddFactoryPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
+        super(vaccineSystem, loggedInPage, "Add Factory:");
 
         vaccinesPerMinTextField = new JTextField();
 

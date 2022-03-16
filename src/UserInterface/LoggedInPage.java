@@ -8,14 +8,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-public class MainPage extends Page {
+public class LoggedInPage extends Page {
 
     private String pageName;
     private JButton addPageButton, viewPageButton, logPageButton, mapPageButton, logoutButton;
     private CardLayout cardLayout;
     private JPanel navPanel, cards;
 
-    public MainPage(VaccineSystem vaccineSystem) {
+    public LoggedInPage(VaccineSystem vaccineSystem) {
         super(vaccineSystem);
 
         navPanel = createNavPanel();
@@ -69,6 +69,10 @@ public class MainPage extends Page {
         cardLayout.show(cards, "view");
 
         return cards;
+    }
+
+    protected String getSanitizedButtonText(JButton button) {
+        return button.getText().replace(" ", "").toLowerCase();
     }
 
     public void actionPerformed(ActionEvent e) {

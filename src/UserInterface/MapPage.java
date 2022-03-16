@@ -4,7 +4,6 @@ import Core.VaccineSystem;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.sql.SQLException;
 
 public class MapPage extends Page {
 
@@ -74,5 +73,4 @@ public class MapPage extends Page {
             createPopupFrame(frame, framePanel, 400, 400);
         }
     }
-
 }

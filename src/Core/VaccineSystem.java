@@ -1,7 +1,15 @@
+/**
+ * The main class for this system. Acts as the main JFrame and a way for other classes to access each other, particularly
+ * for classes to access the database through DatabaseManager (a static class) and data through Data.
+ * Stores the URL and credentials for the database (given by the user).
+ * Includes methods to generate delete, insert, update and select SQL statements that are then passed to the DatabaseManager
+ */
 package Core;
 
+import Data.Data;
 import UserInterface.LoginPage;
-import UserInterface.MainPage;
+import UserInterface.LoggedInPage;
+
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
@@ -11,17 +19,24 @@ public class VaccineSystem extends JFrame {
 
     final private String URL = "jdbc:mysql://127.0.0.1:3306/vaccine_system";
     private String pageName, user, password;
-    private CardLayout cardLayout;
-    private JPanel cards;
     private int updateRate, simulationSpeed;
     private Data data;
     private AutomateSystem automateSystem;
     private ActivityLog activityLog;
+    private CardLayout cardLayout;
+    private JPanel cards;
 
+    /**
+     * Starts the system
+     */
     public static void main(String[] args) {
         new VaccineSystem("Vaccine System");
     }
 
+    /**
+     * Initializes the program by creating core classes, configuring user interface and beginning the automation thread
+     * @param titleBarText
+     */
     public VaccineSystem(String titleBarText) {
         super(titleBarText);
 
@@ -34,11 +49,24 @@ public class VaccineSystem extends JFrame {
         configureWindow();
         createInterface();
 
-        updateRate = 10000; // in milliseconds
+        // In milliseconds
+        updateRate = 10000;
+
+        // How much current time is multiplied by to increase speed
+        // E.g. simulationSpeed = 2 means every 1 minute in real life is 2 minutes in the system
         simulationSpeed = 10;
 
+        runAutomation();
+    }
+
+    /**
+     * Begins a thread which will run at a given update rate to automate vaccine supply, distribution and inoculation of vaccines
+     * to a population
+     */
+    private void runAutomation() {
         automateSystem = new AutomateSystem();
-        automateSystem.start(activityLog, data, updateRate, simulationSpeed);
+        automateSystem.start(activityLog, this);
+
         while (true) {
             automateSystem.run();
             try {
@@ -59,14 +87,14 @@ public class VaccineSystem extends JFrame {
 
     private void createInterface() {
         cardLayout = new CardLayout();
-         cards = new JPanel(cardLayout);
+        cards = new JPanel(cardLayout);
 
         LoginPage loginPage = new LoginPage(this);
         JPanel loginPanel = loginPage.getPanel();
         cards.add(loginPanel, "login");
 
-        MainPage mainPage = new MainPage(this);
-        JPanel mainPanel = mainPage.getPanel();
+        LoggedInPage loggedInPage = new LoggedInPage(this);
+        JPanel mainPanel = loggedInPage.getPanel();
         cards.add(mainPanel, "main");
 
         cardLayout.last(cards);
@@ -75,150 +103,167 @@ public class VaccineSystem extends JFrame {
     }
 
     public void delete(String IDFieldName, String ID, String tableName) throws SQLException {
-        executeUpdate("DELETE FROM " + tableName + " WHERE " + IDFieldName + " = " + ID);
+        String statementText = "DELETE FROM " + tableName + " WHERE " + IDFieldName + " = " + ID;
+        DatabaseManager.executeUpdate(statementText, URL, user, password);
     }
 
     public void insert(String[] columnNames, Object[] values, String tableName) throws SQLException {
         String columnNamesText = getColumnNamesText(columnNames);
         String valuesText = getValuesText(values);
-        executeUpdate("INSERT INTO " + tableName + " (" + columnNamesText + ") VALUES (" + valuesText + ");");
+        String statementText = "INSERT INTO " + tableName + " (" + columnNamesText + ") VALUES (" + valuesText + ");";
+        DatabaseManager.executeUpdate(statementText, URL, user, password);
     }
 
     public void update(String[] columnNames, Object[] values, String tableName, String where) throws SQLException {
         String statementText = "UPDATE " + tableName + " SET " + getOnText(columnNames, values) + " WHERE " + where;
-        executeUpdate(statementText);
+        DatabaseManager.executeUpdate(statementText, URL, user, password);
     }
 
-    private String getValuesText(Object[] values) {
-        String valuesText = "";
-        valuesText = addToValues(valuesText, values[0], "");
-        for (int i = 1; i < values.length; i++) {
-            valuesText = addToValues(valuesText, values[i], ", ");
-        }
-        return valuesText;
+    /**
+     * Generates the SQL select statement text based on the given parameters and passes it to the DatabaseManager's executeSelect
+     * method along with the database URl and credentials
+     * @param columnNames The column names in the database table to be read
+     * @param tableName The table to be read
+     * @param innerJoins
+     *      Data required to perform SQL inner joins to gather the correct data from the database.
+     *      Contains the foreignKey, foreignTableName and localTableName used in
+     *      "INNER JOIN foreignTableName ON localTableName.foreignKey = foreignTableName.foreignKey".
+     * @param where the where part of the select statement, e.g. (vaccineID = 1)
+     * @return The data gathered from the SQL select command
+     */
+    public HashMap<String, HashMap<String, Object>> select(String[] columnNames, String tableName, HashMap<String, String>[] innerJoins, String where) throws SQLException {
+        String statementText = createSelectStatementText(columnNames, tableName, innerJoins, where);
+        return DatabaseManager.executeSelect(statementText, columnNames, URL, user, password);
     }
 
-    private String getOnText(String[] columnNames, Object[] values) {
-        String setText = columnNames[0] + " = ";
-        setText = addToValues(setText, values[0], "");
-        for (int i = 1; i <  columnNames.length; i++) {
-            setText += addToSetText(columnNames[i], values[i]);
-        }
-        return setText;
+    // Different version of select which take different combinations of parameters
+
+    public HashMap<String, HashMap<String, Object>> select(String[] columnNames, String tableName) throws SQLException {
+        return select(columnNames, tableName, null, null);
     }
 
-    private String addToSetText(String columnName, Object value) {
-        String text = "";
-        return ", " + columnName + addToValues(text, value, " = ") + " ";
+    public HashMap<String, HashMap<String, Object>> select(String[] columnNames, String tableName, HashMap<String, String>[] innerJoins) throws SQLException {
+        return select(columnNames, tableName, innerJoins, null);
     }
 
-    private String addToValues(String valueText, Object value, String separator) {
-        try {
-            Float.parseFloat(value.toString());
-            valueText += separator + value;
-        }
-        catch (NullPointerException e) {
-            valueText += separator + "null";
-        }
-        catch (NumberFormatException e) {
-            valueText += separator + "'" + value + "'";
-        }
-        return valueText;
+    public HashMap<String, HashMap<String, Object>> select(String[] columnNames, String tableName, String where) throws SQLException {
+        return select(columnNames, tableName, null, where);
     }
 
-    private String getColumnNamesText(String[] columnNames) {
+    /**
+     * Converts an array of column names into a string containing the list of column names in the format required for an SQL statement
+     * @param columnNames column names used in an SQL statement
+     * @return the columns part of an SQL statement
+     */
+    public static String getColumnNamesText(String[] columnNames) {
         String columnNamesText = columnNames[0];
+
         for (int i = 1; i < columnNames.length; i++) {
             columnNamesText += ", " + columnNames[i];
         }
         return columnNamesText;
     }
 
-    public void executeUpdate(String statementText) throws SQLException {
-        Connection connection;
-        Statement statement = null;
-        System.out.println(statementText);
-        try {
-            connection = DriverManager.getConnection(URL, user, password);
-            statement = connection.createStatement();
-            statement.executeUpdate(statementText);
+    /**
+     * Converts an array of values into a string containing the list of values in the format required for an SQL statement
+     * @param values values used in an SQL statement
+     * @return the values part of an SQL statement
+     */
+    public static String getValuesText(Object[] values) {
+        String valuesText = "";
+        valuesText += getValuesText(values[0], "");
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+        for (int i = 1; i < values.length; i++) {
+            valuesText += getValuesText(values[i], ", ");
         }
-        finally {
-            if (statement != null) {
-                statement.close();
-            }
-        }
+        return valuesText;
     }
 
-    public HashMap<String, HashMap<String, Object>> executeSelect(String[] columnNames, String tableName,
-     HashMap<String, String>[] innerJoins, String where) throws SQLException {
-
-        Connection connection = null;
-        Statement statement;
-
-        HashMap<String, HashMap<String, Object>> res = new HashMap<>();
-
-        String statementText = createStatementText(columnNames, tableName, innerJoins, where);
-        try {
-            connection = DriverManager.getConnection(URL, user, password);
-            statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(statementText);
-            while(resultSet.next()) {
-                HashMap<String, Object> values = new HashMap<>();
-                for (String columnName : columnNames) {
-                    values.put(columnName, resultSet.getString(columnName));
-                }
-                res.put((String) values.get(columnNames[0]), values);
-            }
-            resultSet.close();
-            return res;
+    /**
+     * Converts an array of column names and their associated values into a string containing the list of value changes in
+     * the format required for an SQL statement, e.g. "vaccineID = 1, dosesNeeded = 3, daysBetweenDoses = 400"
+     * @param columnNames column names used in an SQL statement
+     * @param values values used in an SQL statement
+     * @return the set text which forms part of an SQL statement
+     */
+    public static String getOnText(String[] columnNames, Object[] values) {
+        String setText = columnNames[0] + " = ";
+        setText += getValuesText(values[0], "");
+        for (int i = 1; i <  columnNames.length; i++) {
+            setText += ", " + columnNames[i] + getValuesText(values[i], " = ") + " ";
         }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-        return null;
+        return setText;
     }
 
-    private String createStatementText(String[] columnNames, String tableName, HashMap<String, String>[] innerJoins, String where) {
+    /**
+     * Converts the given value into a string in the format needed to include it in an SQL statement
+     * @param value the value to be included in an SQL statement
+     * @param separator the string to be added before the value to separate it from other values
+     * @return the given value as a string in the format needed to include it in an SQL statement
+     */
+    private static String getValuesText(Object value, String separator) {
+        String valuesText = "";
+
+        // If value is a number
+        try {
+            Float.parseFloat(value.toString());
+            valuesText = separator + value;
+        }
+
+        // If value is null
+        catch (NullPointerException e) {
+            valuesText = separator + "null";
+        }
+
+        // if value is a string or date
+        catch (NumberFormatException e) {
+            valuesText = separator + "'" + value + "'";
+        }
+        return valuesText;
+    }
+
+    /**
+     * Creates the statement text required to execute an SQL select command on the database
+     *
+     * @param columnNames The column names in the database table to be read
+     * @param tableName The table to be read
+     * @param innerJoins
+     *      Data required to perform SQL inner joins to gather the correct data from the database.
+     *      Contains the foreignKey, foreignTableName and localTableName used in
+     *      "INNER JOIN foreignTableName ON localTableName.foreignKey = foreignTableName.foreignKey".
+     * @param where the where part of the select statement, e.g. (vaccineID = 1)
+     * @return
+     */
+    private static String createSelectStatementText(String[] columnNames, String tableName, HashMap<String, String>[] innerJoins, String where) {
         String statementText = "SELECT " + columnNames[0];
+
+        // Add the columns wanted from the table
         for (int i = 1; i < columnNames.length; i++) {
             statementText += ", " + columnNames[i];
         }
+
         statementText += " FROM " + tableName;
 
+        // Add inner joins to get data from other tables
         if (innerJoins != null) {
+
             for (HashMap<String, String> innerJoin : innerJoins) {
                 String foreignKey = innerJoin.get("foreignKey");
                 String innerJoinWhere = innerJoin.get("localTableName") + "." + foreignKey + " = " + innerJoin.get("foreignTableName") + "." + foreignKey;
+
                 statementText += " INNER JOIN " + innerJoin.get("foreignTableName") + " ON " + innerJoinWhere;
             }
         }
 
+        // Add where statement
         if (where != null) {
             statementText += " WHERE " + where;
         }
+
         return statementText;
     }
 
-    public HashMap<String, HashMap<String, Object>> executeSelect(String[] columnNames, String tableName) throws SQLException {
-        return executeSelect(columnNames, tableName, null, null);
-    }
-
-    public HashMap<String, HashMap<String, Object>> executeSelect(String[] columnNames, String tableName, HashMap<String, String>[] innerJoins) throws SQLException {
-        return executeSelect(columnNames, tableName, innerJoins, null);
-    }
-
-    public HashMap<String, HashMap<String, Object>> executeSelect(String[] columnNames, String tableName, String where) throws SQLException {
-        return executeSelect(columnNames, tableName, null, where);
-    }
+    // Get and set methods
 
     public void setUser(String user) {
         this.user = user;
@@ -226,14 +271,6 @@ public class VaccineSystem extends JFrame {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public void setPageName(String pageName) {
-        this.pageName = pageName;
-    }
-
-    public void updatePage() {
-        cardLayout.show(cards, pageName);
     }
 
     public String getURL() {
@@ -254,5 +291,13 @@ public class VaccineSystem extends JFrame {
 
     public ActivityLog getActivityLog() {
         return activityLog;
+    }
+
+    public void updatePage() {
+        cardLayout.show(cards, pageName);
+    }
+
+    public void setPageName(String pageName) {
+        this.pageName = pageName;
     }
 }

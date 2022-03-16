@@ -1,13 +1,13 @@
 package UserInterface;
 
 import Core.VaccineSystem;
-import UserInterface.Page;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import static UserInterface.Utils.*;
 
 public class LoginPage extends Page {
 

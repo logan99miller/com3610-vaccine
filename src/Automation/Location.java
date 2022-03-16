@@ -1,7 +1,7 @@
 package Automation;
 
-import Core.Data;
-import Core.DataUtils;
+import Data.Data;
+import Data.Utils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -12,8 +12,8 @@ public class Location {
     // Returns true if the location is open based on the given openingTimes and the systems date and time, false otherwise
     protected static boolean isOpen(Data data, HashMap<String, HashMap<String, String>> openingTimes) {
         HashMap<String, String> openingTime = getOpeningTime(data, openingTimes);
-        LocalTime startTime = DataUtils.getLocalTime(openingTime.get("OpeningTime.startTime"));
-        LocalTime endTime = DataUtils.getLocalTime(openingTime.get("OpeningTime.endTime"));
+        LocalTime startTime = Utils.getLocalTime(openingTime.get("OpeningTime.startTime"));
+        LocalTime endTime = Utils.getLocalTime(openingTime.get("OpeningTime.endTime"));
 
         LocalTime currentTime = data.getCurrentTime();
         return ((currentTime.isAfter(startTime)) && (currentTime.isBefore(endTime)));

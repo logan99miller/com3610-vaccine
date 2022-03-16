@@ -1,4 +1,4 @@
-package UserInterface.AddPages;
+package UserInterface.AddUtils;
 
 public class Insert {
     private String[] columnNames;

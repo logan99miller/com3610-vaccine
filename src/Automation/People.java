@@ -1,11 +1,11 @@
 package Automation;
 
-import Core.Data;
+import Data.Data;
 
 import java.time.LocalDate;
 import java.util.HashMap;
 
-import static Core.DataUtils.getLocalDate;
+import static Data.Utils.getLocalDate;
 
 public class People {
 

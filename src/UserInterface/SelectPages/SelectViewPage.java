@@ -1,7 +1,7 @@
 package UserInterface.SelectPages;
 
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.LoggedInPage;
 import UserInterface.ViewPage;
 
 import javax.swing.*;
@@ -9,8 +9,8 @@ import java.util.*;
 
 public class SelectViewPage extends SelectPage {
 
-    public SelectViewPage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "view");
+    public SelectViewPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
+        super(vaccineSystem, loggedInPage, "view");
 
         HashMap<String, List<String>> keys = new HashMap<>();
         keys.put("Factories", Arrays.asList("Factory.factoryID", "Location.longitude", "Location.latitude", "Manufacturer.name", "Manufacturer.vaccineID", "Factory.vaccinesPerMin", "openingTimes", "stores"));
@@ -35,8 +35,8 @@ public class SelectViewPage extends SelectPage {
         for (String mapKey : keys.keySet()) {
             JButton button = new JButton(mapKey);
             button.addActionListener(e -> {
-                ViewPage viewPage = new ViewPage(vaccineSystem, mainPage, mapKey, keys.get(mapKey), headings.get(mapKey));
-                mainPage.updatePageToComponent(viewPage.getPanel());
+                ViewPage viewPage = new ViewPage(vaccineSystem, loggedInPage, mapKey, keys.get(mapKey), headings.get(mapKey));
+                loggedInPage.updatePageToComponent(viewPage.getPanel());
             });
             mainPanel.add(button);
         }

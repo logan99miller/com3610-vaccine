@@ -4,33 +4,31 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import Core.VaccineSystem;
-import UserInterface.AddPages.Insert;
+import UserInterface.AddUtils.Insert;
+import static UserInterface.AddUtils.CheckInputs.*;
+import static UserInterface.Utils.errorMessage;
 
 public class AddPage extends Page {
 
-    protected MainPage mainPage;
-    private JButton backButton;
+    protected LoggedInPage loggedInPage;
+    protected JButton backButton;
     protected JPanel inputPanel, inputGridPanel;
     protected JButton submitButton;
     protected ArrayList<Insert> inserts;
     protected String values;
 
-    public AddPage(VaccineSystem vaccineSystem, MainPage mainPage, String title) {
+    public AddPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage, String title) {
         super(vaccineSystem);
-        this.mainPage = mainPage;
+        this.loggedInPage = loggedInPage;
 
         inserts = new ArrayList<>();
 
-        createBackButton();
-        createPageTitle(title);
-        createInputFieldsPanel();
-        createSubmitButton();
-        createFieldExplanations();
+        initializePage(title);
 
+        // Excluded form initializePage() as popup add pages don't make use of it
         inputGridPanel = new JPanel(new GridLayout(0, 2));
         inputPanel.add(inputGridPanel);
     }
@@ -39,28 +37,21 @@ public class AddPage extends Page {
         super();
     }
 
-    private void createBackButton() {
+    protected void initializePage(String title) {
+
         backButton = new JButton("Back");
         addButton(backButton, mainPanel);
-    }
 
-    protected void createPageTitle(String title) {
         mainPanel.add(new JLabel(title));
-    }
 
-    protected void createInputFieldsPanel() {
         inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         inputPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(inputPanel);
-    }
 
-    protected void createSubmitButton() {
         submitButton = new JButton("Submit");
         addButton(submitButton, mainPanel);
-    }
 
-    private void createFieldExplanations() {
         mainPanel.add(new JLabel("Fields marked with a * are required"));
         mainPanel.add(new JLabel("Fields marked with a # require an integer input"));
         mainPanel.add(new JLabel("Fields marked with a - require a numeric input"));
@@ -68,8 +59,8 @@ public class AddPage extends Page {
 
     protected void returnToSelectPage() {
         inserts = new ArrayList<>();
-        mainPage.setPageName("add");
-        mainPage.updatePage();
+        loggedInPage.setPageName("add");
+        loggedInPage.updatePage();
     }
 
     protected String insertAndGetID(String[] columnNames, Object[] values, String tableName, String IDFieldName) {
@@ -78,7 +69,7 @@ public class AddPage extends Page {
             try {
                 vaccineSystem.insert(columnNames, values, tableName);
                 final String maxID = "MAX(" + IDFieldName + ")";
-                HashMap<String, HashMap<String, Object>> resultSet = vaccineSystem.executeSelect(new String[]{maxID}, tableName);
+                HashMap<String, HashMap<String, Object>> resultSet = vaccineSystem.select(new String[]{maxID}, tableName);
                 String key = resultSet.keySet().iterator().next();
 
                 return (String) resultSet.get(key).get(maxID);
@@ -87,6 +78,31 @@ public class AddPage extends Page {
             }
         }
         return "";
+    }
+
+    protected ArrayList<String> getFormattedSelect(String[] columnNames, String tableName) {
+        ArrayList<String> output = new ArrayList<>();
+
+        try {
+            HashMap<String, HashMap<String, Object>> resultSet = vaccineSystem.select(columnNames, tableName);
+
+            for (String key : resultSet.keySet()) {
+                HashMap<String, Object> record = resultSet.get(key);
+                String addToOutput = (String) record.get(columnNames[0]);
+
+                if (record.size() > 1) {
+                    addToOutput += ":";
+                }
+
+                for (int i = 1; i < record.size(); i++) {
+                    addToOutput += " " + record.get(columnNames[i]);
+                }
+
+                output.add(addToOutput);
+            }
+        } catch (SQLException ignored) {}
+
+        return (output);
     }
 
     protected boolean checkInputConditions(boolean displayError) {
@@ -125,53 +141,6 @@ public class AddPage extends Page {
                 }
             }
             previousComponent = component;
-        }
-        return true;
-    }
-
-    private boolean checkRequiredInput(String label, String text) {
-        if (label.startsWith("*") || (label.startsWith("-*"))) {
-            return !text.equals("");
-        }
-        return true;
-    }
-
-    private boolean checkNumericInput(String label, String text) {
-        if (label.startsWith("-")) {
-            try {
-                Float.parseFloat(text);
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean checkIntegerInput(String label, String text) {
-        if (label.startsWith("#")) {
-            try {
-                Integer.parseInt(text);
-            }
-            catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean checkDateInput(String label, String text) {
-        if (label.contains("yyyy-mm-dd")) {
-            ArrayList<Integer> dateComponents = new ArrayList<>();
-            try {
-                for (String dateComponent : text.split("-")) {
-                    dateComponents.add(Integer.parseInt(dateComponent));
-                }
-
-                LocalDate.of(dateComponents.get(0), dateComponents.get(1), dateComponents.get(2));
-            }
-            catch (Exception ex) {
-                return false;
-            }
         }
         return true;
     }

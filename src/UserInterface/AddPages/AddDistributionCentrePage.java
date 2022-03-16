@@ -1,13 +1,14 @@
 package UserInterface.AddPages;
 
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.AddUtils.Insert;
+import UserInterface.LoggedInPage;
 import java.awt.event.ActionEvent;
 
 public class AddDistributionCentrePage extends AddStorageLocationPage {
 
-    public AddDistributionCentrePage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "Add Distribution Centre:");
+    public AddDistributionCentrePage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
+        super(vaccineSystem, loggedInPage, "Add Distribution Centre:");
         setMaxWidthMinHeight(inputPanel);
     }
 

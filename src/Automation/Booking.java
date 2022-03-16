@@ -1,8 +1,8 @@
 package Automation;
 
 import Core.ActivityLog;
-import Core.Data;
-import Core.DataUtils;
+import Data.Data;
+import Data.Utils;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -20,7 +20,7 @@ public class Booking {
         HashMap<String, HashMap<String, Integer>> availabilities = getAvailabilities(data);
 
         HashMap<String, HashMap<String, Object>> unbookedPeople = getUnbookedPeople(data);
-        ArrayList<Integer> sortedKeys = DataUtils.sortDateKeyInMap(unbookedPeople, "Person.DoB");
+        ArrayList<Integer> sortedKeys = Utils.sortDateKeyInMap(unbookedPeople, "Person.DoB");
         Collections.reverse(sortedKeys);
 
         HashMap<String, HashMap<String, Object>> vaccines = data.getVaccines();
@@ -35,7 +35,7 @@ public class Booking {
                 HashMap<String, HashMap<String, Object>> filteredPeople = filterPeopleByVaccineReceived(unbookedPeople, doseNumber);
                 for (String peopleKey : filteredPeople.keySet()) {
                     HashMap<String, Object> person = unbookedPeople.get(peopleKey);
-                    LocalDate DoB = DataUtils.getDateFromString((String) person.get("Person.DoB"), "-");
+                    LocalDate DoB = Utils.getLocalDate((String) person.get("Person.DoB"), "-");
                     long age = ChronoUnit.YEARS.between(DoB, currentDate);
                     if ((minimumAge <= age) && (maximumAge >= age)) {
                         String personID = (String) person.get("Person.personID");

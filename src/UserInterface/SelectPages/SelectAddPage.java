@@ -3,7 +3,8 @@ package UserInterface.SelectPages;
 import UserInterface.AddPage;
 import UserInterface.AddPages.*;
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.AddPopupPages.AddStockPage;
+import UserInterface.LoggedInPage;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -11,8 +12,8 @@ import java.util.Map;
 
 public class SelectAddPage extends SelectPage {
 
-    public SelectAddPage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "add");
+    public SelectAddPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
+        super(vaccineSystem, loggedInPage, "add");
         addButtons(createPages());
     }
 
@@ -39,9 +40,9 @@ public class SelectAddPage extends SelectPage {
             button.addActionListener(e -> {
                 try {
                     AddPage addPage = (AddPage) set.getValue().asSubclass(AddPage.class)
-                        .getConstructor(VaccineSystem.class, MainPage.class)
-                        .newInstance(vaccineSystem, mainPage);
-                    mainPage.updatePageToComponent(addPage.getPanel());
+                        .getConstructor(VaccineSystem.class, LoggedInPage.class)
+                        .newInstance(vaccineSystem, loggedInPage);
+                    loggedInPage.updatePageToComponent(addPage.getPanel());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

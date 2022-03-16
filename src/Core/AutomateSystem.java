@@ -2,19 +2,24 @@ package Core;
 
 import java.sql.SQLException;
 import Automation.*;
+import Data.Data;
+
+import static Data.Update.*;
 
 public class AutomateSystem {
 
     private ActivityLog activityLog;
+    private VaccineSystem vaccineSystem;
     private Data data;
     private int updateRate;
     private int simulationSpeed;
 
-    public void start(ActivityLog activityLog, Data data, int updateRate, int simulationSpeed) {
+    public void start(ActivityLog activityLog, VaccineSystem vaccineSystem) {
         this.activityLog = activityLog;
-        this.data = data;
-        this.updateRate = updateRate;
-        this.simulationSpeed = simulationSpeed;
+        this.vaccineSystem = vaccineSystem;
+        this.data = vaccineSystem.getData();
+        this.updateRate = vaccineSystem.getUpdateRate();
+        this.simulationSpeed = vaccineSystem.getSimulationSpeed();
     }
 
     public void run() {
@@ -26,7 +31,7 @@ public class AutomateSystem {
 
         try {
             System.out.println("------------------------------------");
-            data.update();
+            update(vaccineSystem, data);
             data.write();
             data.read();
         }

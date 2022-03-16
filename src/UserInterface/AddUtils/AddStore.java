@@ -1,4 +1,4 @@
-package UserInterface.AddPages;
+package UserInterface.AddUtils;
 
 import UserInterface.AddPage;
 

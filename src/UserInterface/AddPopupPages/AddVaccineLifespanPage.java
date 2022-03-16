@@ -1,31 +1,25 @@
-package UserInterface.AddPages;
+package UserInterface.AddPopupPages;
 
-import UserInterface.AddPage;
+import UserInterface.AddPages.AddVaccinePage;
+import UserInterface.AddPopupPage;
+import UserInterface.AddUtils.AddVaccineLifespan;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
-public class AddVaccineLifespanPage extends AddPage {
+public class AddVaccineLifespanPage extends AddPopupPage {
 
     private AddVaccinePage addVaccinePage;
     private ArrayList<AddVaccineLifespan> addVaccineLifespans;
-    private JFrame addVaccineLifespanFrame;
-    private int frameWidth;
 
-    public AddVaccineLifespanPage(AddVaccinePage addVaccinePage, JFrame addVaccineLifespanFrame, int frameWidth) {
+    public AddVaccineLifespanPage(AddVaccinePage addVaccinePage, JFrame frame, int frameWidth) {
+        super(frame, frameWidth);
+
         this.addVaccinePage = addVaccinePage;
-        this.addVaccineLifespanFrame = addVaccineLifespanFrame;
-        this.frameWidth = frameWidth;
 
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-
-        createPageTitle("Lifespans:");
-        createInputFieldsPanel();
         createAddLifespanPanel();
-        createSubmitButton();
     }
 
     private void createAddLifespanPanel() {
@@ -46,9 +40,10 @@ public class AddVaccineLifespanPage extends AddPage {
     }
 
     public void actionPerformed(ActionEvent e) {
+        super.actionPerformed(e);
         if (e.getSource() == submitButton) {
             addVaccinePage.setAddLifespans(addVaccineLifespans);
-            addVaccineLifespanFrame.setVisible(false);
+            frame.setVisible(false);
         }
     }
 }

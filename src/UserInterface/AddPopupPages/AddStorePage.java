@@ -1,31 +1,25 @@
-package UserInterface.AddPages;
+package UserInterface.AddPopupPages;
 
-import UserInterface.AddPage;
+import UserInterface.AddPages.AddStorageLocationPage;
+import UserInterface.AddPopupPage;
+import UserInterface.AddUtils.AddStore;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
-public class AddStorePage extends AddPage {
+public class AddStorePage extends AddPopupPage {
 
     private AddStorageLocationPage addStorageLocationPage;
     private ArrayList<AddStore> addStores;
-    private JFrame addStoreFrame;
-    private int frameWidth;
 
-    public AddStorePage(AddStorageLocationPage addStorageLocationPage, JFrame addStoreFrame, int frameWidth) {
+    public AddStorePage(AddStorageLocationPage addStorageLocationPage, JFrame frame, int frameWidth) {
+        super(frame, frameWidth);
+
         this.addStorageLocationPage = addStorageLocationPage;
-        this.addStoreFrame = addStoreFrame;
-        this.frameWidth = frameWidth;
 
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-
-        createPageTitle("Storage Capacities:");
-        createInputFieldsPanel();
         createAddStorePanel();
-        createSubmitButton();
     }
 
     private void createAddStorePanel() {
@@ -46,9 +40,10 @@ public class AddStorePage extends AddPage {
     }
 
     public void actionPerformed(ActionEvent e) {
+        super.actionPerformed(e);
         if (e.getSource() == submitButton) {
             addStorageLocationPage.setAddStores(addStores);
-            addStoreFrame.setVisible(false);
+            frame.setVisible(false);
         }
     }
 }

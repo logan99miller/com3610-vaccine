@@ -1,12 +1,14 @@
 package UserInterface.AddPages;
 
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.AddUtils.Insert;
+import UserInterface.LoggedInPage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.sql.SQLException;
 import java.util.HashMap;
+import static UserInterface.Utils.*;
 
 public class AddTransporterLocationPage extends AddLocationPage {
 
@@ -14,8 +16,8 @@ public class AddTransporterLocationPage extends AddLocationPage {
     private JTextField vanCapacityTextField;
     private JComboBox transportersComboBox;
 
-    public AddTransporterLocationPage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "Add Transporter Location:");
+    public AddTransporterLocationPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
+        super(vaccineSystem, loggedInPage, "Add Transporter Location:");
         createInputFieldsGridPanel();
         setMaxWidthMinHeight(inputPanel);
     }
@@ -54,7 +56,7 @@ public class AddTransporterLocationPage extends AddLocationPage {
         try {
             columnNames = new String[] {"locationID", "longitude", "latitude"};
             String where = "locationID = " + locationID;
-            HashMap<String, HashMap<String, Object>> locations = vaccineSystem.executeSelect(columnNames, "Location", where);
+            HashMap<String, HashMap<String, Object>> locations = vaccineSystem.select(columnNames, "Location", where);
             HashMap<String, Object> location = locations.get(String.valueOf(locationID));
             longitude = (String) location.get("longitude");
             latitude = (String) location.get("latitude");

@@ -2,12 +2,17 @@ package UserInterface.AddPages;
 
 import UserInterface.AddPage;
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.AddUtils.AddOpeningTime;
+import UserInterface.AddUtils.Insert;
+import UserInterface.LoggedInPage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.time.LocalTime;
 import java.util.ArrayList;
+
+import static UserInterface.AddUtils.CheckInputs.checkCoordinates;
+import static UserInterface.Utils.*;
 
 public class AddLocationPage extends AddPage {
 
@@ -15,8 +20,8 @@ public class AddLocationPage extends AddPage {
     private ArrayList<AddOpeningTime> addOpeningTimes;
     protected String locationID;
 
-    public AddLocationPage(VaccineSystem vaccineSystem, MainPage mainPage, String title) {
-        super(vaccineSystem, mainPage, title);
+    public AddLocationPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage, String title) {
+        super(vaccineSystem, loggedInPage, title);
 
         longitudeTextField = new JTextField();
         latitudeTextField = new JTextField();
@@ -64,20 +69,6 @@ public class AddLocationPage extends AddPage {
             values = new Object[] {locationID, day, startTime, endTime};
             inserts.add(new Insert(columnNames, values, "OpeningTime"));
         }
-    }
-
-    private boolean checkCoordinates(String label, String text) {
-        if (label.contains("longitude") || label.contains("latitude")) {
-            try {
-                float coordinate = Float.parseFloat(text);
-                if ((coordinate > 90) || (coordinate < -90)) {
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return true;
     }
 
     protected boolean checkInputConditions(boolean displayError) {

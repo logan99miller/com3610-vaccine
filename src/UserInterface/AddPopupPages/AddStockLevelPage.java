@@ -1,6 +1,6 @@
-package UserInterface.AddPages;
+package UserInterface.AddPopupPages;
 
-import UserInterface.AddPage;
+import UserInterface.AddPopupPage;
 import Core.VaccineSystem;
 
 import javax.swing.*;
@@ -9,34 +9,27 @@ import java.awt.event.ActionEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import static UserInterface.Utils.*;
 
-public class AddStockLevelPage extends AddPage {
+public class AddStockLevelPage extends AddPopupPage {
 
     private AddStockPage addStockPage;
-    private JFrame addStockLevelFrame;
     private ArrayList<HashMap<String, Object>> stockLevels;
     private String facility;
 
-    public AddStockLevelPage(VaccineSystem vaccineSystem, AddStockPage addStockPage, JFrame addStockLevelFrame, String facility) {
+    public AddStockLevelPage(VaccineSystem vaccineSystem, AddStockPage addStockPage, JFrame frame, String facility) {
+        super(frame);
+
         this.addStockPage = addStockPage;
-        this.addStockLevelFrame = addStockLevelFrame;
         this.facility = facility;
         this.vaccineSystem = vaccineSystem;
 
         stockLevels = new ArrayList<>();
 
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-
-        createPageTitle("Stock Levels:");
-        createInputFieldsPanel();
-
         inputGridPanel = new JPanel(new GridLayout(0, 2));
         inputPanel.add(inputGridPanel);
 
-        createInputFieldsPanel();
         createAddStockLevelsPanel();
-        createSubmitButton();
 
         setMaxWidthMinHeight(inputGridPanel);
     }
@@ -54,15 +47,15 @@ public class AddStockLevelPage extends AddPage {
             HashMap<String, HashMap<String, Object>> facilities = new HashMap<>();
             if (facility.startsWith(VACCINATION_CENTRE_PREFIX)) {
                 String where = "vaccinationCentreID = " + prefixAndID.replace(VACCINATION_CENTRE_PREFIX, "");
-                facilities = vaccineSystem.executeSelect(columnNames, "vaccinationCentre", where);
+                facilities = vaccineSystem.select(columnNames, "vaccinationCentre", where);
             }
             else if (facility.startsWith(DISTRIBUTION_CENTRE_PREFIX)) {
                 String where = "distributionCentreID = " + prefixAndID.replace(DISTRIBUTION_CENTRE_PREFIX, "");
-                facilities = vaccineSystem.executeSelect(columnNames, "distributionCentre", where);
+                facilities = vaccineSystem.select(columnNames, "distributionCentre", where);
             }
             else if (facility.startsWith(FACTORY_PREFIX)) {
                 String where = "factoryID = " + prefixAndID.replace(FACTORY_PREFIX, "");
-                facilities = vaccineSystem.executeSelect(columnNames, "factory", where);
+                facilities = vaccineSystem.select(columnNames, "factory", where);
             }
             String key = facilities.keySet().iterator().next();
             storageLocationID = (String) facilities.get(key).get("storageLocationID");
@@ -72,7 +65,7 @@ public class AddStockLevelPage extends AddPage {
         columnNames = new String[] {"storeID", "capacity", "temperature"};
         String where = "storageLocationID = " + storageLocationID;
         try {
-            HashMap<String, HashMap<String, Object>> stores = vaccineSystem.executeSelect(columnNames, "store", where);
+            HashMap<String, HashMap<String, Object>> stores = vaccineSystem.select(columnNames, "store", where);
 
             for (String key : stores.keySet()) {
                 HashMap<String, Object> store = stores.get(key);
@@ -89,9 +82,10 @@ public class AddStockLevelPage extends AddPage {
         } catch (SQLException ignored) {}
     }
     public void actionPerformed(ActionEvent e) {
+        super.actionPerformed(e);
         if (e.getSource() == submitButton) {
             addStockPage.setStockLevels(stockLevels);
-            addStockLevelFrame.setVisible(false);
+            frame.setVisible(false);
         }
     }
 }

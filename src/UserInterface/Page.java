@@ -4,9 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import Core.VaccineSystem;
 
 public class Page implements ActionListener {
@@ -24,70 +22,15 @@ public class Page implements ActionListener {
 
     public Page() {}
 
-    protected void errorMessage(String message) {
-        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    protected void errorMessage(String message, boolean displayError) {
-        if (displayError) {
-            errorMessage(message);
-        }
-    }
-
-    protected JPanel addLabelledComponent(JPanel panel, String label, JComponent component) {
-        panel.add(new JLabel(label));
-        panel.add(component);
-        return panel;
-    }
-
     protected void addButton(JButton button, JPanel panel) {
         button.addActionListener(this);
         panel.add(button);
     }
 
-    protected String getSanitizedButtonText(JButton button) {
-        return button.getText().replace(" ", "").toLowerCase();
-    }
-
-
     protected void setMaxWidthMinHeight(JComponent component) {
         int width = vaccineSystem.getWidth();
         int height = component.getMinimumSize().height;
         component.setMaximumSize(new Dimension(width, height));
-    }
-
-    protected ListModel ArrayListToListModel(ArrayList<String> arrayList) {
-        DefaultListModel<String> listModel = new DefaultListModel<>();
-
-        for (Object listItem : arrayList) {
-            listModel.addElement((String) listItem);
-        }
-        return (listModel);
-    }
-
-    protected ArrayList<String> getFormattedSelect(String[] columnNames, String tableName) {
-        ArrayList<String> output = new ArrayList<>();
-
-        try {
-            HashMap<String, HashMap<String, Object>> resultSet = vaccineSystem.executeSelect(columnNames, tableName);
-
-            for (String key : resultSet.keySet()) {
-                HashMap<String, Object> record = resultSet.get(key);
-                String addToOutput = (String) record.get(columnNames[0]);
-
-                if (record.size() > 1) {
-                    addToOutput += ":";
-                }
-
-                for (int i = 1; i < record.size(); i++) {
-                    addToOutput += " " + record.get(columnNames[i]);
-                }
-
-                output.add(addToOutput);
-            }
-        } catch (SQLException ignored) {}
-
-        return (output);
     }
 
     public static JSpinner createJSpinner(int minValue, int maxValue, int columns) {

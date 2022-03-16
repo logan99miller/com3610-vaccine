@@ -1,6 +1,6 @@
 package Automation;
 
-import Core.Data;
+import Data.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

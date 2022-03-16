@@ -2,19 +2,21 @@ package UserInterface.AddPages;
 
 import UserInterface.AddPage;
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.AddUtils.Insert;
+import UserInterface.LoggedInPage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import static UserInterface.Utils.*;
 
 public class AddPersonPage extends AddPage {
 
     private JTextField forenameTextField, surnameTextField, DoBTextField;
     private JList<String> medicalConditionsList;
 
-    public AddPersonPage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "Add Person:");
+    public AddPersonPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
+        super(vaccineSystem, loggedInPage, "Add Person:");
 
         JPanel medicalConditionsPanel = new JPanel(new GridLayout(0, 2));
         inputPanel.add(medicalConditionsPanel);

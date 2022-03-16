@@ -1,8 +1,8 @@
 package Automation;
 
 import Core.ActivityLog;
-import Core.Data;
-import Core.DataUtils;
+import Data.Data;
+import Data.Utils;
 
 import java.util.HashMap;
 
@@ -92,18 +92,18 @@ public class Delivery {
     private static HashMap<String, Object> getOrigin(Data data, HashMap<String, Object> van) {
         String originID = (String) van.get("Van.originID");
         HashMap<String, HashMap<String, Object>> origins = new HashMap<>();
-        origins = DataUtils.mergeMaps(origins, data.getFactories(), "f");
-        origins = DataUtils.mergeMaps(origins, data.getDistributionCentres(), "d");
-        HashMap<String, Object> origin = DataUtils.findMap(origins, "Location.locationID", originID);
+        origins = Utils.mergeMaps(origins, data.getFactories(), "f");
+        origins = Utils.mergeMaps(origins, data.getDistributionCentres(), "d");
+        HashMap<String, Object> origin = Utils.findMap(origins, "Location.locationID", originID);
         return origin;
     }
 
     private static HashMap<String, Object> getDestination(Data data, HashMap<String, Object> van) {
         String originID = (String) van.get("Van.destinationID");
         HashMap<String, HashMap<String, Object>> destinations = new HashMap<>();
-        destinations = DataUtils.mergeMaps(destinations, data.getVaccinationCentres(), "v");
-        destinations = DataUtils.mergeMaps(destinations, data.getDistributionCentres(), "d");
-        HashMap<String, Object> destination = DataUtils.findMap(destinations, "Location.locationID", originID);
+        destinations = Utils.mergeMaps(destinations, data.getVaccinationCentres(), "v");
+        destinations = Utils.mergeMaps(destinations, data.getDistributionCentres(), "d");
+        HashMap<String, Object> destination = Utils.findMap(destinations, "Location.locationID", originID);
         return destination;
     }
 

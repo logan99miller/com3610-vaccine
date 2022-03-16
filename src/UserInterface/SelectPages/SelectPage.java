@@ -1,18 +1,18 @@
 package UserInterface.SelectPages;
 
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.LoggedInPage;
 import UserInterface.Page;
 
 import javax.swing.*;
 
 public class SelectPage extends Page {
 
-    protected MainPage mainPage;
+    protected LoggedInPage loggedInPage;
 
-    public SelectPage(VaccineSystem vaccineSystem, MainPage mainPage, String buttonAction) {
+    public SelectPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage, String buttonAction) {
         super(vaccineSystem);
-        this.mainPage = mainPage;
+        this.loggedInPage = loggedInPage;
         this.buttonAction = buttonAction;
 
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));

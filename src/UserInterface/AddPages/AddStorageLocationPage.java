@@ -2,10 +2,17 @@ package UserInterface.AddPages;
 
 import Core.VaccineSystem;
 import UserInterface.*;
+import UserInterface.AddUtils.AddStore;
+import UserInterface.AddPopupPages.AddStorePage;
+import UserInterface.AddUtils.Insert;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+
+import static UserInterface.AddUtils.CheckInputs.checkCapacitiesCondition;
+import static UserInterface.Utils.*;
 
 public class AddStorageLocationPage extends AddLocationPage {
 
@@ -14,8 +21,8 @@ public class AddStorageLocationPage extends AddLocationPage {
     private ArrayList<AddStore> addStores;
     protected String storageLocationID;
 
-    public AddStorageLocationPage(VaccineSystem vaccineSystem, MainPage mainPage, String title) {
-        super(vaccineSystem, mainPage, title);
+    public AddStorageLocationPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage, String title) {
+        super(vaccineSystem, loggedInPage, title);
 
         JPanel temperatureVariationsPanel = new JPanel(new GridLayout(0, 2));
         inputPanel.add(temperatureVariationsPanel);
@@ -60,27 +67,9 @@ public class AddStorageLocationPage extends AddLocationPage {
         }
     }
 
-    private boolean checkCapacitiesCondition() {
-        try {
-            if (addStores.size() == 0) {
-                return false;
-            }
-
-            for (AddStore addStore : addStores) {
-                int capacity = Integer.parseInt(addStore.getCapacity());
-                if (capacity < 1) {
-                    return false;
-                }
-            }
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        return true;
-    }
-
     protected boolean checkInputConditions(boolean displayError) {
         if (super.checkInputConditions(displayError)) {
-            if (checkCapacitiesCondition()) {
+            if (checkCapacitiesCondition(addStores)) {
                 return true;
             }
             else {

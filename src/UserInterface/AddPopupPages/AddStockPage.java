@@ -1,12 +1,16 @@
-package UserInterface.AddPages;
+package UserInterface.AddPopupPages;
 
 import UserInterface.AddPage;
 import Core.VaccineSystem;
-import UserInterface.MainPage;
+import UserInterface.AddUtils.Insert;
+import UserInterface.LoggedInPage;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static UserInterface.AddUtils.CheckInputs.checkStockLevelsConditions;
+import static UserInterface.Utils.*;
 
 public class AddStockPage extends AddPage {
 
@@ -20,8 +24,8 @@ public class AddStockPage extends AddPage {
     private JButton stockLevelButton;
     private ArrayList<HashMap<String, Object>> stockLevels;
 
-    public AddStockPage(VaccineSystem vaccineSystem, MainPage mainPage) {
-        super(vaccineSystem, mainPage, "Add Stocks:");
+    public AddStockPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
+        super(vaccineSystem, loggedInPage, "Add Stocks:");
 
         String[] vaccinationCentreColumnNames = {"vaccinationCentreID", "name"};
         String[] distributionCentreColumnNames = {"distributionCentreID"};
@@ -101,27 +105,9 @@ public class AddStockPage extends AddPage {
         }
     }
 
-    private boolean checkStockLevelsConditions() {
-        try {
-            if (stockLevels.size() == 0) {
-                return false;
-            }
-
-            for (HashMap<String, Object> stockLevelMap : stockLevels) {
-                int stockLevel = Integer.parseInt(((JTextField) stockLevelMap.get("textField")).getText());
-                if (stockLevel < 1) {
-                    return false;
-                }
-            }
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        return true;
-    }
-
     protected boolean checkInputConditions(boolean displayError) {
         if (super.checkInputConditions(displayError)) {
-            if (checkStockLevelsConditions()) {
+            if (checkStockLevelsConditions(stockLevels)) {
                 return true;
             }
             else {

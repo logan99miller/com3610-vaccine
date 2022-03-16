@@ -1,7 +1,6 @@
-package UserInterface.AddPages;
+package UserInterface.AddUtils;
 
 import UserInterface.AddPage;
-
 import javax.swing.*;
 
 public class AddVaccineLifespan {
