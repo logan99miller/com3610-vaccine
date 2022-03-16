@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 
 public class MapPage extends Page {
 
-    private JButton keyButton, refreshButton;
+    private JButton keyButton;
     private MapPanel mapPanel;
     private int panelWidth, panelHeight;
 
@@ -16,7 +16,8 @@ public class MapPage extends Page {
 
         mainPanel = new JPanel();
 
-        mainPanel.add(createButtonPanel());
+        keyButton = new JButton("Key");
+        addButton(keyButton, mainPanel);
 
         final int BORDER = 10;
         final int HEADER_HEIGHT = 100;
@@ -27,26 +28,12 @@ public class MapPage extends Page {
         createMapPanel();
     }
 
-
-    private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel(new GridLayout(0, 2));
-
-        keyButton = new JButton("Key");
-        refreshButton = new JButton("Refresh");
-
-        addButton(keyButton, buttonPanel);
-        addButton(refreshButton, buttonPanel);
-
-        setMaxWidthMinHeight(buttonPanel);
-
-        return buttonPanel;
-    }
     private void createMapPanel() {
         mapPanel = new MapPanel(vaccineSystem, panelWidth, panelHeight);
         mainPanel.add(mapPanel, BorderLayout.CENTER);
     }
 
-    private void refreshPage() {
+    public void refreshPage() {
         mainPanel.remove(mapPanel);
         createMapPanel();
 
@@ -56,9 +43,6 @@ public class MapPage extends Page {
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == refreshButton) {
-            refreshPage();
-        }
         if (e.getSource() == keyButton) {
             JFrame frame = new JFrame();
             frame.setResizable(false);

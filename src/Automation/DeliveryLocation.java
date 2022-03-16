@@ -14,7 +14,7 @@ public class DeliveryLocation extends StorageLocation {
         int amount,
         String vaccineID)
     {
-        HashMap<String, Object> res = getOriginAndVanWithShortestDistance(origins, destination, vans, amount, vaccineID);
+        HashMap<String, Object> res = getOriginAndVanWithShortestDistance(activityLog, origins, destination, vans, amount, vaccineID);
         if (res != null) {
             double distance = (double) res.get("distance");
             String travelTime = String.valueOf(Distance.getTravelTime(distance));
@@ -51,16 +51,23 @@ public class DeliveryLocation extends StorageLocation {
         return vans;
     }
 
-    private static HashMap<String, Object> getOriginAndVanWithShortestDistance(HashMap<String, HashMap<String, Object>> origins,
-     HashMap<String, Object> destination, HashMap<String, HashMap<String, Object>> vans, int amount, String vaccineID) {
+    private static HashMap<String, Object> getOriginAndVanWithShortestDistance(
+        ActivityLog activityLog,
+        HashMap<String, HashMap<String, Object>> origins,
+        HashMap<String, Object> destination,
+        HashMap<String, HashMap<String, Object>> vans,
+        int amount,
+        String vaccineID
+    ) {
         HashMap<String, HashMap<String, Object>> availableOrigins = getAvailableOrigins(origins, vans, amount, vaccineID);
         HashMap<String, HashMap<String, Object>> availableVans = getAvailableVans(vans); // SHOULD ALSO CONSIDER VAN CAPACITY
+
         if (availableOrigins.size() == 0) {
-            System.out.println("Not enough origins available");
+            activityLog.add("Not enough origins available", true);
             return null;
         }
         else if (availableVans.size() == 0) {
-            System.out.println("Not enough vans available");
+            activityLog.add("Not enough vans available", true);
             return null;
         }
         double shortestDistance = 1000000;

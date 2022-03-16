@@ -23,7 +23,7 @@ public class AutomateSystem {
     }
 
     public void run() {
-        Factory.updateStockLevels(data, updateRate, simulationSpeed);
+        Factory.updateStockLevels(activityLog, data, updateRate, simulationSpeed);
         VaccinationCentre.orderVaccines(activityLog, data);
         DistributionCentre.orderVaccines(activityLog, data);
         Booking.simulateBookings(activityLog, data);

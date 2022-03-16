@@ -12,6 +12,8 @@ public class LoggedInPage extends Page {
 
     private String pageName;
     private JButton addPageButton, viewPageButton, logPageButton, mapPageButton, logoutButton;
+    private ActivityLogPage activityLogPage;
+    private MapPage mapPage;
     private CardLayout cardLayout;
     private JPanel navPanel, cards;
 
@@ -53,12 +55,12 @@ public class LoggedInPage extends Page {
 
         SelectAddPage selectAddPage = new SelectAddPage(vaccineSystem, this);
         SelectViewPage selectViewPage = new SelectViewPage(vaccineSystem, this);
-        ActivityLogPage logPage = new ActivityLogPage(vaccineSystem);
-        MapPage mapPage = new MapPage(vaccineSystem);
+        activityLogPage = new ActivityLogPage(vaccineSystem);
+        mapPage = new MapPage(vaccineSystem);
 
         JPanel addPanel = selectAddPage.getPanel();
         JPanel viewPanel = selectViewPage.getPanel();
-        JPanel logPanel = logPage.getPanel();
+        JPanel logPanel = activityLogPage.getPanel();
         JPanel mapPanel = mapPage.getPanel();
 
         cards.add(addPanel, getSanitizedButtonText(addPageButton));
@@ -69,6 +71,11 @@ public class LoggedInPage extends Page {
         cardLayout.show(cards, "view");
 
         return cards;
+    }
+
+    public void autoRefresh() {
+        activityLogPage.refreshPage();
+        mapPage.refreshPage();
     }
 
     protected String getSanitizedButtonText(JButton button) {

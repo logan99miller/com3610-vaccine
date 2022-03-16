@@ -1,5 +1,6 @@
 package Automation;
 
+import Core.ActivityLog;
 import Data.Data;
 
 import java.time.LocalDate;
@@ -10,8 +11,10 @@ public class StorageLocation extends Location{
     // Adds the given amount of vaccines with the given vaccineID and expirationDate to the given. Method currently will
     // add vaccines to the first store with capacity, but future versions will be more selective in which store to put it
     // in (e.g. one which will give it the best shelf life)
-    protected static HashMap<String, HashMap<String, Object>> addToStores(Data data, HashMap<String, HashMap<String, Object>> stores,
-    int totalAmount, String vaccineID, String creationDate, String expirationDate) {
+    protected static HashMap<String, HashMap<String, Object>> addToStores(
+        ActivityLog activityLog, Data data, HashMap<String, HashMap<String, Object>> stores, int totalAmount,
+        String vaccineID, String creationDate, String expirationDate
+    ) {
         for (String key : stores.keySet()) {
             if (totalAmount > 0) {
                 HashMap<String, Object> store = stores.get(key);
@@ -25,22 +28,25 @@ public class StorageLocation extends Location{
             }
         }
         if (totalAmount > 0) {
-            System.out.println(totalAmount + " vaccines couldn't be added to store");
+            activityLog.add(totalAmount + " vaccines couldn't be added to store");
         }
         return stores;
     }
 
-    protected static HashMap<String, HashMap<String, Object>> addToStores(Data data, HashMap<String, HashMap<String, Object>> stores,
-    int totalAmount, String vaccineID, String creationDate) {
-        return addToStores(data, stores, totalAmount, vaccineID, creationDate, null);
+    protected static HashMap<String, HashMap<String, Object>> addToStores(
+        ActivityLog activityLog, Data data, HashMap<String, HashMap<String, Object>> stores,
+        int totalAmount, String vaccineID, String creationDate
+    ) {
+        return addToStores(activityLog, data, stores, totalAmount, vaccineID, creationDate, null);
     }
-    protected static HashMap<String, HashMap<String, Object>> addToStores(Data data, HashMap<String, HashMap<String, Object>> stores,
-    int totalAmount, String vaccineID) {
-        return addToStores(data, stores, totalAmount, vaccineID, null, null);
+    protected static HashMap<String, HashMap<String, Object>> addToStores(
+        ActivityLog activityLog, Data data, HashMap<String, HashMap<String, Object>> stores,
+        int totalAmount, String vaccineID
+    ) {
+        return addToStores(activityLog, data, stores, totalAmount, vaccineID, null, null);
     }
 
-    private static HashMap<String, Object> addToStore(Data data, HashMap<String, Object> store, int amount, String vaccineID,
-    String creationDate, String expirationDate) {
+    private static HashMap<String, Object> addToStore(Data data, HashMap<String, Object> store, int amount, String vaccineID, String creationDate, String expirationDate) {
 
         HashMap<String, HashMap<String, String>> vaccinesInStorage = (HashMap<String, HashMap<String, String>>) store.get("vaccinesInStorage");
 

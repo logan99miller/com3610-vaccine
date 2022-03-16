@@ -23,6 +23,7 @@ public class VaccineSystem extends JFrame {
     private Data data;
     private AutomateSystem automateSystem;
     private ActivityLog activityLog;
+    private LoggedInPage loggedInPage;
     private CardLayout cardLayout;
     private JPanel cards;
 
@@ -61,7 +62,7 @@ public class VaccineSystem extends JFrame {
 
     /**
      * Begins a thread which will run at a given update rate to automate vaccine supply, distribution and inoculation of vaccines
-     * to a population
+     * to a population and automatically refresh the map and activity log pages
      */
     private void runAutomation() {
         automateSystem = new AutomateSystem();
@@ -69,6 +70,7 @@ public class VaccineSystem extends JFrame {
 
         while (true) {
             automateSystem.run();
+            loggedInPage.autoRefresh();
             try {
                 Thread.sleep(updateRate);
             } catch (InterruptedException e) {
@@ -93,7 +95,7 @@ public class VaccineSystem extends JFrame {
         JPanel loginPanel = loginPage.getPanel();
         cards.add(loginPanel, "login");
 
-        LoggedInPage loggedInPage = new LoggedInPage(this);
+        loggedInPage = new LoggedInPage(this);
         JPanel mainPanel = loggedInPage.getPanel();
         cards.add(mainPanel, "main");
 

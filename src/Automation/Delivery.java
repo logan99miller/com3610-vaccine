@@ -22,6 +22,7 @@ public class Delivery {
     }
 
     private static HashMap<String, Object> updateStockAndDeliveryStage(ActivityLog activityLog, Data data, int updateRate, HashMap<String, Object> van) {
+        String vanID = (String) van.get("Van.vanID");
         int remainingTime = Integer.parseInt((String) van.get("Van.remainingTime"));
 
         HashMap<String, Object> destination = getDestination(data, van);
@@ -35,11 +36,12 @@ public class Delivery {
                 origin = removeVaccinesFromOrigin(origin, van);
                 van = vanReachedOrigin(activityLog, van, origin, destination);
                 System.out.println("Van once reached origin: " + van); // Has 2 vaccinesInStorage, should only have 1
+                activityLog.add("Van with ID " + vanID + " reached origin");
             }
             else if (deliveryStage.equals("toDestination")) {
-                destination = addVaccinesToDestination(data, destination, van);
+                destination = addVaccinesToDestination(activityLog, data, destination, van);
                 van = vanReachedDestination(activityLog, van, destination);
-
+                activityLog.add("Van with ID " + vanID + " reached destination");
             }
             van.put("Van.change", "change");
         }
@@ -124,7 +126,7 @@ public class Delivery {
         return vans;
     }
 
-    private static HashMap<String, Object> addVaccinesToDestination(Data data, HashMap<String, Object> destination, HashMap<String, Object> van) {
+    private static HashMap<String, Object> addVaccinesToDestination(ActivityLog activityLog, Data data, HashMap<String, Object> destination, HashMap<String, Object> van) {
         HashMap<String, HashMap<String, Object>> vanStores = (HashMap<String, HashMap<String, Object>>) van.get("stores");
         HashMap<String, HashMap<String, Object>> destinationStores = (HashMap<String, HashMap<String, Object>>) destination.get("stores");
         for (String keyI : vanStores.keySet()) {
@@ -135,7 +137,7 @@ public class Delivery {
                 int amount = Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
                 String vaccineID = (String) vaccineInStorage.get("VaccineInStorage.vaccineID");
                 String creationDate = (String) vaccineInStorage.get("VaccineInStorage.creationDate");
-                destinationStores = StorageLocation.addToStores(data, destinationStores, amount, vaccineID, creationDate);
+                destinationStores = StorageLocation.addToStores(activityLog, data, destinationStores, amount, vaccineID, creationDate);
             }
         }
         destination.put("stores", destinationStores);
