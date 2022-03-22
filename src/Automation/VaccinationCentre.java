@@ -1,22 +1,32 @@
 package Automation;
 
 import Core.ActivityLog;
+import Core.AutomateSystem;
 import Data.Data;
 
 import java.util.HashMap;
 
 import static Automation.Availability.getAvailabilities;
-import static Automation.People.getUnbookedPeople;
+import static Automation.People.getBookablePeople;
 
 public class VaccinationCentre extends DeliveryLocation {
 
-    public static void orderVaccines(ActivityLog activityLog, Data data) {
+//    public static void orderVaccines(ActivityLog activityLog, Data data) {
+    public static void orderVaccines(AutomateSystem automateSystem) {
+        Data data = automateSystem.getData();
+        ActivityLog activityLog = automateSystem.getActivityLog();
+
+        HashMap<String, HashMap<String, Integer>> availabilities = automateSystem.getAvailabilities();
+        HashMap<String, HashMap<String, Object>> bookablePeople = automateSystem.getBookablePeople();
+
         HashMap<String, HashMap<String, Object>> distributionCentres = data.getDistributionCentres();
         HashMap<String, HashMap<String, Object>> vaccinationCentres = data.getVaccinationCentres();
         HashMap<String, HashMap<String, Object>> vans = data.getVans();
 
-        HashMap<String, HashMap<String, Integer>> availabilities = getAvailabilities(data);
-        HashMap<String, HashMap<String, Object>> unbookedPeople = getUnbookedPeople(data);
+        float predictedVaccinationRate = Float.parseFloat(data.getPredictedVaccinationRate());
+
+//        HashMap<String, HashMap<String, Integer>> availabilities = getAvailabilities(data);
+//        HashMap<String, HashMap<String, Object>> bookablePeople = getBookablePeople(data);
 
         int totalVaccinesPerHour = getTotalVaccinesPerHour(vaccinationCentres);
         int totalCapacity = getTotalCapacity(vaccinationCentres, vans);
@@ -31,7 +41,7 @@ public class VaccinationCentre extends DeliveryLocation {
             for (String key : vaccinationCentres.keySet()) {
                 HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
 
-                int vaccinesNeeded = getVaccinesNeeded(vaccinationCentre, availabilities, unbookedPeople, vans, totalVaccinesPerHour, totalCapacity);
+                int vaccinesNeeded = getVaccinesNeeded(vaccinationCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
                 String vaccineID = "1"; // NEEDS TO BE BASED OF A FUNCTION IN FUTURE
                 vans = orderVaccine(activityLog, distributionCentres, vaccinationCentre, vans, vaccinesNeeded, vaccineID);
                 data.setVans(vans);
@@ -42,16 +52,17 @@ public class VaccinationCentre extends DeliveryLocation {
     public static int getVaccinesNeeded(
         HashMap<String, Object> vaccinationCentre,
         HashMap<String, HashMap<String, Integer>> availabilities,
-        HashMap<String, HashMap<String, Object>> unbookedPeople,
+        HashMap<String, HashMap<String, Object>> bookablePeople,
         HashMap<String, HashMap<String, Object>> vans,
         int totalVaccinesPerHour,
-        int totalCapacity
+        int totalCapacity,
+        float predictedVaccinationRate
     ) {
 
         int vaccinesPerHour = Integer.parseInt((String) vaccinationCentre.get("VaccinationCentre.vaccinesPerHour"));
         int capacity = getCapacityIncludingVans(vaccinationCentre, vans);
 
-        int expectedBookings = getExpectedBookings(vaccinesPerHour, capacity, unbookedPeople.size(), totalVaccinesPerHour, totalCapacity);
+        int expectedBookings = getExpectedBookings(vaccinesPerHour, capacity, bookablePeople.size(), totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
 
         String vaccinationCentreID = (String) vaccinationCentre.get("VaccinationCentre.vaccinationCentreID");
         HashMap<String, Integer> availability = availabilities.get(vaccinationCentreID);
@@ -88,13 +99,11 @@ public class VaccinationCentre extends DeliveryLocation {
     }
 
     // For a given vaccination centre
-    private static int getExpectedBookings(int vaccinesPerHour, int capacity, int numberOfUnbookedPeople, int totalVaccinesPerHour, int totalCapacity) {
-        final float PERCENTAGE_WHO_WANT_VACCINATION = 0.8f;
-
+    private static int getExpectedBookings(int vaccinesPerHour, int capacity, int numberOfBookablePeople, int totalVaccinesPerHour, int totalCapacity, float predictedVaccinationRate) {
         float proportionOfCapacity = capacity / totalCapacity;
         float proportionOfVaccinesPerHour = vaccinesPerHour / totalVaccinesPerHour;
 
         float proportionOfBookings = (proportionOfCapacity + proportionOfVaccinesPerHour) / 2;
-        return Math.round(proportionOfBookings * numberOfUnbookedPeople * PERCENTAGE_WHO_WANT_VACCINATION);
+        return Math.round(proportionOfBookings * numberOfBookablePeople * predictedVaccinationRate);
     }
 }

@@ -1,7 +1,6 @@
 package UserInterface.AddPopupPages;
 
 import UserInterface.AddPages.AddVaccinePage;
-import UserInterface.AddPopupPage;
 import UserInterface.AddUtils.AddVaccineLifespan;
 
 import javax.swing.*;

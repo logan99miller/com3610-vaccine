@@ -1,6 +1,11 @@
+/**
+ * Used for the add store pop-up page to create panels containing input fields for the store's temperature and capacity, and
+ * by the add storage location page to get the capacities and temperatures given by the user.
+ * As there can be 1 to many stores per storage location this helps reduce code reuse.
+ */
 package UserInterface.AddUtils;
 
-import UserInterface.AddPage;
+import UserInterface.AddPages.AddPage;
 
 import javax.swing.*;
 

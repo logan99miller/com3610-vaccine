@@ -1,6 +1,8 @@
+/**
+ * Parent class for any page used to insert a location into the system's database
+ */
 package UserInterface.AddPages;
 
-import UserInterface.AddPage;
 import Core.VaccineSystem;
 import UserInterface.AddUtils.AddOpeningTime;
 import UserInterface.AddUtils.Insert;
@@ -12,7 +14,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 
 import static UserInterface.AddUtils.CheckInputs.checkCoordinates;
-import static UserInterface.Utils.*;
 
 public class AddLocationPage extends AddPage {
 
@@ -55,6 +56,9 @@ public class AddLocationPage extends AddPage {
         inputPanel.add(openingTimesPanel);
     }
 
+    /**
+     * Creates the SQL statements required and adds them to the inserts list
+     */
     protected void createStatements() {
         String[] columnNames = new String[] {"longitude", "latitude"};
         Object[] values = new Object[] {longitudeTextField.getText(), latitudeTextField.getText()};
@@ -71,15 +75,27 @@ public class AddLocationPage extends AddPage {
         }
     }
 
+    /**
+     * Checks the user's input against criteria in AddPage as well as checking that the coordinates given are between -90
+     * and 90
+     * @param displayError if an error message should be displayed to the user, setting it to false can prevent multiple
+     *                     error messages being displayed if the input conditions are checked several times (e.g. if they
+     *                     have to be checked while the user still has more data to input)
+     * @return
+     */
     protected boolean checkInputConditions(boolean displayError) {
         if (super.checkInputConditions(displayError)) {
             Component previousComponent = new JPanel();
 
             for (Component component : inputGridPanel.getComponents()) {
+
                 if (previousComponent instanceof JLabel) {
                     String label = ((JLabel) previousComponent).getText().toLowerCase();
+
                     if (component instanceof JTextField) {
+
                         String text = ((JTextField) component).getText();
+
                         if (!checkCoordinates(label, text)) {
                             errorMessage("Coordinates values must be between -90 and 90", displayError);
                             return false;

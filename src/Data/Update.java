@@ -5,6 +5,7 @@
  */
 package Data;
 
+import Core.ActivityLog;
 import Core.VaccineSystem;
 
 import java.sql.SQLException;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 
 import static Data.Read.*;
 import static Data.Read.readVaccinationCentres;
-import static Data.Utils.getLocalDate;
+import static Data.Utils.*;
 import static Data.Write.writeMap;
 
 public class Update {
@@ -22,15 +23,17 @@ public class Update {
     /**
      * Updates the data in the database by removing data that should no longer be there before reading from the database
      * and updates the systems date and time
+     * @param activityLog needed to add to the activity log that vaccines have expired
+     * @param vaccineSystem needed to modify the database
+     * @param data needed to get the current date
      */
-    public static void update(VaccineSystem vaccineSystem, Data data) throws SQLException {
-        HashMap<String, HashMap<String, Object>> vans = data.getVans();
-
+    public static void update(ActivityLog activityLog, VaccineSystem vaccineSystem, Data data) throws SQLException {
         updateDateAndTime(data);
         removeInvalidVanReferences(vaccineSystem);
-//        removeEmptyVaccinesInStorage(vaccineSystem, vans);
-        removeExpiredStock(vaccineSystem, data);
-        removePastBookings(vaccineSystem, data);
+        removeEmptyVaccinesInStorage(vaccineSystem);
+        removeExpiredStock(activityLog, vaccineSystem, data);
+        processBookings(vaccineSystem, data);
+        updateRates(data);
     }
 
     /**
@@ -44,6 +47,7 @@ public class Update {
     /**
      * Goes through all vans and sets delivery stage to "waiting" if the originID or destinationID is not valid (occurs
      * if user deletes location during van delivery)
+     * @param vaccineSystem needed to modify the database
      */
     private static void removeInvalidVanReferences(VaccineSystem vaccineSystem) throws SQLException {
         HashMap<String, HashMap<String, Object>> vans = readVans(vaccineSystem);
@@ -85,58 +89,207 @@ public class Update {
         }
     }
 
-    // METHOD NOT TESTED
-//    private static void removeEmptyVaccinesInStorage(VaccineSystem vaccineSystem, HashMap<String, HashMap<String, Object>> storageLocations) throws SQLException {
-//        System.out.println("removeEmptyVaccinesInStorage():");
-//        for (String keyI : storageLocations.keySet()) {
-//            HashMap<String, Object> storageLocation = storageLocations.get(keyI);
-//            HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) storageLocation.get("stores");
-//            for (String keyJ : stores.keySet()) {
-//                HashMap<String, Object> store = stores.get(keyJ);
-//                HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccinesInStorage");
-//                System.out.println("VaccinesInStorage: " + vaccinesInStorage);
-//                if (vaccinesInStorage == null) {
-//                    vaccineSystem.delete("vaccineInStorageID", keyJ, "VaccineInStorage");
-//                }
-//            }
-//        }
-//    }
-
     /**
-     * Deletes all stock from the database that have an expiration date before the current date
+     * Deletes vaccinesInStorage records in the database if they have a stock level of 0 or less. This occurs when a van
+     * @param vaccineSystem needed to modify the database
      */
-    private static void removeExpiredStock(VaccineSystem vaccineSystem, Data data) throws SQLException {
-        LocalDate currentDate = data.getCurrentDate();
+    private static void removeEmptyVaccinesInStorage(VaccineSystem vaccineSystem) throws SQLException {
 
         HashMap<String, HashMap<String, Object>> vaccinesInStorage = readVaccinesInStorage(vaccineSystem);
 
         for (String key : vaccinesInStorage.keySet()) {
-            LocalDate expirationDate = getLocalDate((String) vaccinesInStorage.get(key).get("VaccineInStorage.expirationDate"));
+            HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(key);
 
-            if (expirationDate.isBefore(currentDate)) {
-                String ID = (String) vaccinesInStorage.get(key).get("VaccineInStorage.vaccineInStorageID");
-                vaccineSystem.delete("vaccineInStorageID", ID, "VaccineInStorage");
-                // In future should also add to activity log
+            int stockLevel = Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
+
+            if (stockLevel < 1) {
+                vaccineSystem.delete("vaccineInStorageID", key, "VaccineInStorage");
             }
         }
     }
 
     /**
-     * Deletes all bookings from the database that have a date before the current date
+     * Deletes all stock from the database that have an expiration date before the current date
+     * @param activityLog needed to add to the activity log that vaccines have expired
+     * @param vaccineSystem needed to modify the database
+     * @param data needed to get the current date
      */
-    private static void removePastBookings(VaccineSystem vaccineSystem, Data data) throws SQLException {
+    private static void removeExpiredStock(ActivityLog activityLog, VaccineSystem vaccineSystem, Data data) throws SQLException {
         LocalDate currentDate = data.getCurrentDate();
 
+        HashMap<String, HashMap<String, Object>> vaccinesInStorage = readVaccinesInStorage(vaccineSystem);
+
+        for (String key : vaccinesInStorage.keySet()) {
+            HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(key);
+
+            LocalDate expirationDate = getLocalDate((String) vaccineInStorage.get("VaccineInStorage.expirationDate"));
+
+            if (expirationDate.isBefore(currentDate)) {
+
+                String ID = (String) vaccineInStorage.get("VaccineInStorage.vaccineInStorageID");
+                String stockLevel = (String) vaccineInStorage.get("VaccineInStorage.stockLevel");
+
+                vaccineSystem.delete("vaccineInStorageID", ID, "VaccineInStorage");
+
+                activityLog.add(stockLevel + " vaccine(s) have expired and thrown away");
+            }
+        }
+    }
+
+    /**
+     * Iterates through all bookings and completes the appointment if the appointment is now in the past
+     * @param vaccineSystem needed to modify the database
+     * @param data needed to access the current time and date
+     */
+    private static void processBookings(VaccineSystem vaccineSystem, Data data) throws SQLException {
+
+        LocalDate currentDate = data.getCurrentDate();
+        LocalTime currentTime = data.getCurrentTime();
+
+        HashMap<String, HashMap<String, Object>> vaccinationCentres = readVaccinationCentres(vaccineSystem);
         HashMap<String, HashMap<String, Object>> bookings = readBookings(vaccineSystem);
 
         for (String key : bookings.keySet()) {
-            LocalDate bookingDate = getLocalDate((String) bookings.get(key).get("Booking.date"));
+            HashMap<String, Object> booking = bookings.get(key);
 
-            if (bookingDate.isBefore(currentDate)) {
-                String ID = (String) bookings.get(key).get("Booking.bookingID");
-                vaccineSystem.delete("bookingID", ID, "Booking");
-                // In future should also add to activity log
+            // In the format YYYY-MM-DD HH:MM:SS
+            String dateTime = (String) booking.get("Booking.date");
+
+            // In the format HH:MM:SS
+            String time = dateTime.substring(dateTime.length() - 8);
+
+            LocalDate bookingDate = getLocalDate(dateTime);
+            LocalTime bookingTime = getLocalTime(time);
+
+            if (hasAppointmentHappened(bookingDate, bookingTime, currentDate, currentTime)) {
+
+                String vaccinationCentreID = (String) booking.get("Booking.vaccinationCentreID");
+                HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(vaccinationCentreID);
+
+                completeAppointment(vaccineSystem, booking, vaccinationCentre);
             }
+        }
+
+    }
+
+    /**
+     * Determines if the appointment has happened or not be seeing if its date and time is before the current date and time
+     * @return true if the appointment has happened, false otherwise
+     */
+    private static boolean hasAppointmentHappened(LocalDate bookingDate, LocalTime bookingTime, LocalDate currentDate, LocalTime currentTime) {
+        if (bookingDate.equals(currentDate)) {;
+            if (bookingTime.isBefore(currentTime)) {
+                return true;
+            }
+        }
+        else if (bookingDate.isBefore(currentDate)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * If an appointment has happened this method is called to modify the database to reflect the completed appointment. This
+     * involves deleting the booking, reducing the vaccination centre's stock levels and adding a record to note that the
+     * person has received a vaccine.
+     * @param vaccineSystem needed to modify the database
+     * @param booking the booking which has been completed, in the format HashMap<columnName, databaseValue>
+     * @param vaccinationCentre the vaccination centre the appointment occured at, in the format HashMap<columnName, databaseValue>
+     */
+    private static void completeAppointment(VaccineSystem vaccineSystem, HashMap<String, Object> booking, HashMap<String, Object> vaccinationCentre) throws SQLException {
+        String bookingID = (String) booking.get("Booking.bookingID");
+
+        HashMap<String, Object> bestVaccineInStorage = getBestVaccinesInStorage(vaccinationCentre);
+
+        vaccineSystem.delete("bookingID", bookingID, "Booking");
+
+        reduceStockLevels(vaccineSystem, bestVaccineInStorage);
+        addVaccineReceived(vaccineSystem, booking, bestVaccineInStorage);
+    }
+
+    /**
+     * Reduces the stock levels of the given vaccineInStorage by 1 to represent that an inoculation has occured
+     * @param vaccineSystem needed to modify the database
+     * @param vaccineInStorage the vaccineInStorage used to perform the inoculation, in the format HashMap<columnName, databaseValue>
+     */
+    private static void reduceStockLevels(VaccineSystem vaccineSystem, HashMap<String, Object> vaccineInStorage) throws SQLException {
+
+        int stockLevel = Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
+
+        String[] columnNames = {"stockLevel"};
+        Object[] values = new Object[] {stockLevel - 1};
+
+        String vaccineInStorageID = (String) vaccineInStorage.get("VaccineInStorage.vaccineInStorageID");
+        String where = "vaccineInStorageID = " + vaccineInStorageID;
+
+        vaccineSystem.update(columnNames, values, "VaccineInStorage", where);
+    }
+
+    /**
+     * Adds to the VaccineReceived table to store the details of the vaccination
+     * @param vaccineSystem needed to modify the database
+     * @param booking the booking which has been completed, in the format HashMap<columnName, databaseValue>
+     * @param vaccineInStorage the vaccineInStorage used to perform the inoculation, in the format HashMap<columnName, databaseValue>
+     */
+    private static void addVaccineReceived(VaccineSystem vaccineSystem, HashMap<String, Object> booking, HashMap<String, Object> vaccineInStorage) throws SQLException {
+        String personID = (String) booking.get("Booking.personID");
+        String vaccineID = (String) vaccineInStorage.get("VaccineInStorage.vaccineID");
+        String date = (String) booking.get("Booking.date");
+
+        String[] columnNames = {"personID", "vaccineID", "date"};
+        Object[] values = {personID, vaccineID, date};
+        vaccineSystem.insert(columnNames, values, "VaccineReceived");
+    }
+
+    /**
+     * Finds the vaccines in the storage location that will expire soonest, and return the vaccineStorage hashmap
+     * representing them.
+     * @param storageLocation the storage location to find the best vaccines in
+     * @return the vaccines will expire the soonest, in the format HashMap<columnName, databaseValue>
+     */
+    private static HashMap<String, Object> getBestVaccinesInStorage(HashMap<String, Object> storageLocation) {
+        HashMap<String, HashMap<String, Object>> allVaccinesInStorage = getAllVaccinesInStorage(storageLocation);
+
+        HashMap<String, Object> bestVaccineInStorage = new HashMap<>();
+
+        // Set an arbitrarily far away expiration date so the 1st expiration date is marked as the soonest
+        LocalDate earliestExpirationDate = LocalDate.of(4000, 01, 01);
+
+        for (String key : allVaccinesInStorage.keySet()) {
+
+            HashMap<String, Object> vaccineInStorage = allVaccinesInStorage.get(key);
+            LocalDate expirationDate = getLocalDate((String) vaccineInStorage.get("VaccineInStorage.expirationDate"));
+
+            if (expirationDate.isBefore(earliestExpirationDate)) {
+                bestVaccineInStorage = vaccineInStorage;
+                earliestExpirationDate = expirationDate;
+            }
+        }
+
+        return bestVaccineInStorage;
+    }
+
+    /**
+     * Updates the simulation rates in the system by reading from the simulation table that they are stored in so that
+     * they are stored even if the program crashes
+     * @param data
+     */
+    private static void updateRates(Data data) {
+        final String DEFAULT_RATE = "0.5";
+
+        try {
+            HashMap<String, HashMap<String, Object>> simulations = data.getSimulations();
+            String simulationKey = simulations.keySet().iterator().next();
+            HashMap<String, Object> simulation = simulations.get(simulationKey);
+
+            data.setActualBookingRate((String) simulation.get("Simulation.actualBookingRate"));
+            data.setActualAttendanceRate((String) simulation.get("Simulation.actualAttendanceRate"));
+            data.setPredictedVaccinationRate((String) simulation.get("Simulation.predictedVaccinationRate"));
+        }
+        catch (Exception e) {
+            data.setActualBookingRate(DEFAULT_RATE);
+            data.setActualAttendanceRate(DEFAULT_RATE);
+            data.setPredictedVaccinationRate(DEFAULT_RATE);
         }
     }
 }

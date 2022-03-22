@@ -21,12 +21,12 @@ public class Utils {
      * @param integerKey The key for the value that will be give the date
      * @return sorted list of keys for the given map
      */
-    public static ArrayList<Integer> sortIntegerKeyInMap(HashMap<String, HashMap<String, Object>> maps, String integerKey) {
-        ArrayList<Integer> keys = new ArrayList<>();
+    public static ArrayList<String> sortIntegerKeyInMap(HashMap<String, HashMap<String, Object>> maps, String integerKey) {
+        ArrayList<String> keys = new ArrayList<>();
         ArrayList<Integer> values = new ArrayList<>();
 
         for (String key : maps.keySet()) {
-            keys.add(Integer.parseInt(key));
+            keys.add(key);
             values.add(Integer.parseInt((String) maps.get(key).get(integerKey)));
         }
 
@@ -34,10 +34,11 @@ public class Utils {
         for (int i = 0; i < values.size() - 1; i++) {
             for (int j = 0; j < values.size() - i - 1; j++) {
                 if (values.get(j) > values.get(j + 1)) {
-                    int tempID = keys.get(j);
+//                    int tempID = keys.get(j);
+                    String tempKey = keys.get(j);
                     int tempValue = values.get(j);
                     keys.set(j, keys.get(j + 1));
-                    keys.set(j + 1, tempID);
+                    keys.set(j + 1, tempKey);
                     values.set(j, values.get(j + 1));
                     values.set(j + 1, tempValue);
                 }
@@ -53,18 +54,32 @@ public class Utils {
      * @param dateKey The key for the value that will be give the date
      * @return A sorted list of keys for the given map
      */
-    public static ArrayList<Integer> sortDateKeyInMap(HashMap<String, HashMap<String, Object>> maps, String dateKey) {
+    public static ArrayList<String> sortDateKeyInMap(HashMap<String, HashMap<String, Object>> maps, String dateKey) {
+
+        // Prevents sorting algorithm changing the given map by writing all changes to a unique, modified, key and then
+        // removing all values with the modified key after sorting completed
+        final String KEY_MODIFICATION = "mod";
+        String modifiedKey = dateKey + KEY_MODIFICATION;
 
         // Convert dates to integers
         for (String iterationKey : maps.keySet()) {
             HashMap<String, Object> map = maps.get(iterationKey);
             String date = (String) map.get(dateKey);
 
-            map.put(dateKey, date.replace("-", ""));
+            map.put(modifiedKey, date.replace("-", ""));
             maps.put(iterationKey, map);
         }
 
-        return sortIntegerKeyInMap(maps, dateKey);
+        ArrayList<String> sortedKeys = sortIntegerKeyInMap(maps, modifiedKey);
+
+        // Remove modified keys to ensure map data has not been changed
+        for (String iterationKey : maps.keySet()) {
+            HashMap<String, Object> map = maps.get(iterationKey);
+            map.remove(modifiedKey);
+            maps.put(iterationKey, map);
+        }
+
+        return sortedKeys;
     }
 
     /**
@@ -165,5 +180,19 @@ public class Utils {
             timeValues[i] = Integer.parseInt(stringTimeValues[i]);
         }
         return LocalTime.of(timeValues[0], timeValues[1], timeValues[2]);
+    }
+
+    public static HashMap<String, HashMap<String, Object>> getAllVaccinesInStorage(HashMap<String, Object> storageLocation) {
+        HashMap<String, HashMap<String, Object>> allVaccinesInStorage = new HashMap<>();
+
+        HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) storageLocation.get("stores");
+        for (String storeKey : stores.keySet()) {
+            HashMap<String, Object> store = stores.get(storeKey);
+            HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccinesInStorage");
+            for (String vaccineInStorageKey : vaccinesInStorage.keySet()) {
+                allVaccinesInStorage.put(storeKey + "-" + vaccineInStorageKey, vaccinesInStorage.get(vaccineInStorageKey));
+            }
+        }
+        return allVaccinesInStorage;
     }
 }

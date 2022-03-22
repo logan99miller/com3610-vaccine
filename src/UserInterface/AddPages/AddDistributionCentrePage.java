@@ -1,3 +1,6 @@
+/**
+ * Page used to insert a distribution centre into the system's database
+ */
 package UserInterface.AddPages;
 
 import Core.VaccineSystem;
@@ -12,6 +15,9 @@ public class AddDistributionCentrePage extends AddStorageLocationPage {
         setMaxWidthMinHeight(inputPanel);
     }
 
+    /**
+     * Creates the SQL statements required and adds them to the inserts list
+     */
     protected void createStatements() {
         super.createStatements();
         String[] columnNames = new String[] {"storageLocationID"};

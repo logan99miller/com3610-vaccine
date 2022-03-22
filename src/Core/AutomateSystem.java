@@ -1,9 +1,10 @@
 package Core;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+
 import Automation.*;
 import Data.Data;
-
 import static Data.Update.*;
 
 public class AutomateSystem {
@@ -13,8 +14,11 @@ public class AutomateSystem {
     private Data data;
     private int updateRate;
     private int simulationSpeed;
+    private HashMap<String, HashMap<String, Integer>> availabilities;
+    private HashMap<String, HashMap<String, Object>> bookablePeople;
 
     public void start(ActivityLog activityLog, VaccineSystem vaccineSystem) {
+
         this.activityLog = activityLog;
         this.vaccineSystem = vaccineSystem;
         this.data = vaccineSystem.getData();
@@ -23,15 +27,28 @@ public class AutomateSystem {
     }
 
     public void run() {
-        Factory.updateStockLevels(activityLog, data, updateRate, simulationSpeed);
-        VaccinationCentre.orderVaccines(activityLog, data);
-        DistributionCentre.orderVaccines(activityLog, data);
-        Booking.simulateBookings(activityLog, data);
-        Delivery.update(activityLog, data, updateRate, simulationSpeed);
+
+        // Heavily shared values that can be created here and passed through to reduce repeated executions
+        // BEFORE MAKING ANY CHANGES CHECK THEY ARE NOT CHANGED DURING AUTOMATION
+        /**
+         * getBookablePeople
+         * getAvailabilities
+         * VaccinationCentre.getVaccinesNeeded
+         * booking rate (0.8)
+         */
+
+        availabilities = Availability.getAvailabilities(data);
+        bookablePeople = People.getBookablePeople(data);
+
+        Factory.updateStockLevels(this);
+        VaccinationCentre.orderVaccines(this);
+        DistributionCentre.orderVaccines(this);
+        Booking.simulateBookings(this);
+        Delivery.update(this);
 
         try {
             System.out.println("------------------------------------");
-            update(vaccineSystem, data);
+            update(activityLog, vaccineSystem, data);
             data.write();
             data.read();
         }
@@ -40,4 +57,31 @@ public class AutomateSystem {
         }
     }
 
+    public ActivityLog getActivityLog() {
+        return activityLog;
+    }
+
+    public Data getData() {
+        return data;
+    }
+
+    public int getUpdateRate() {
+        return updateRate;
+    }
+
+    public int getSimulationSpeed() {
+        return simulationSpeed;
+    }
+
+    public HashMap<String, HashMap<String, Integer>> getAvailabilities() {
+        return availabilities;
+    }
+
+    public void setAvailabilities(HashMap<String, HashMap<String, Integer>> availabilities) {
+        this.availabilities = availabilities;
+    }
+
+    public HashMap<String, HashMap<String, Object>> getBookablePeople() {
+        return bookablePeople;
+    }
 }

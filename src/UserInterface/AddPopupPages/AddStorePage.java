@@ -1,7 +1,6 @@
 package UserInterface.AddPopupPages;
 
 import UserInterface.AddPages.AddStorageLocationPage;
-import UserInterface.AddPopupPage;
 import UserInterface.AddUtils.AddStore;
 
 import javax.swing.*;

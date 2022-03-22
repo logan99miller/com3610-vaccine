@@ -1,6 +1,7 @@
 package Automation;
 
 import Core.ActivityLog;
+import Core.AutomateSystem;
 import Data.Data;
 
 import java.util.HashMap;
@@ -11,7 +12,13 @@ import static Automation.People.*;
 
 public class DistributionCentre extends DeliveryLocation {
 
-    public static void orderVaccines(ActivityLog activityLog, Data data) {
+    public static void orderVaccines(AutomateSystem automateSystem) {
+        Data data = automateSystem.getData();
+        ActivityLog activityLog = automateSystem.getActivityLog();
+
+        HashMap<String, HashMap<String, Integer>> availabilities = automateSystem.getAvailabilities();
+        HashMap<String, HashMap<String, Object>> bookablePeople = automateSystem.getBookablePeople();
+
         HashMap<String, HashMap<String, Object>> factories = data.getFactories();
         HashMap<String, HashMap<String, Object>> vaccinationCentres = data.getVaccinationCentres();
         HashMap<String, HashMap<String, Object>> distributionCentres = data.getDistributionCentres();
@@ -22,8 +29,8 @@ public class DistributionCentre extends DeliveryLocation {
         int totalVaccinesPerHour = getTotalVaccinesPerHour(vaccinationCentres);
         int totalCapacity = getTotalCapacity(vaccinationCentres, vans);
 
-        HashMap<String, HashMap<String, Integer>> availabilities = getAvailabilities(data);
-        HashMap<String, HashMap<String, Object>> unbookedPeople = getUnbookedPeople(data);
+//        HashMap<String, HashMap<String, Integer>> availabilities = getAvailabilities(data);
+//        HashMap<String, HashMap<String, Object>> bookablePeople = getBookablePeople(data);
 
         if (factories.size() == 0) {
             activityLog.add("No factories so distribution centres cannot order more vaccines", true);
@@ -34,9 +41,8 @@ public class DistributionCentre extends DeliveryLocation {
         else {
             for (String key : distributionCentres.keySet()) {
                 HashMap<String, Object> distributionCentre = distributionCentres.get(key);
-                // For some reason DC not ordering vaccines from factory
 
-                int vaccinesNeeded = getVaccinesNeeded(data, distributionCentre, availabilities, unbookedPeople, vans, totalVaccinesPerHour, totalCapacity, totalDistance, totalVaccinesNeeded);
+                int vaccinesNeeded = getVaccinesNeeded(data, distributionCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, totalDistance, totalVaccinesNeeded);
                 String vaccineID = "1"; // NEEDS TO BE BASED OF A FUNCTION IN FUTURE
                 vans = orderVaccine(activityLog, factories, distributionCentre, vans, vaccinesNeeded, vaccineID);
                 data.setVans(vans);
@@ -48,7 +54,7 @@ public class DistributionCentre extends DeliveryLocation {
             Data data,
             HashMap<String, Object> distributionCentre,
             HashMap<String, HashMap<String, Integer>> availabilities,
-            HashMap<String, HashMap<String, Object>> unbookedPeople,
+            HashMap<String, HashMap<String, Object>> bookablePeople,
             HashMap<String, HashMap<String, Object>> vans,
             int totalVaccinesPerHour,
             int totalCapacity,
@@ -56,6 +62,8 @@ public class DistributionCentre extends DeliveryLocation {
             int totalVaccinesNeeded
     ) {
         final float DEMAND_MULTIPLIER = 1.5f; // How many more vaccines we want over VC demand
+
+        float predictedVaccinationRate = Float.parseFloat(data.getPredictedVaccinationRate());
 
         HashMap<String, HashMap<String, Object>> vaccinationCentres = data.getVaccinationCentres();
 
@@ -66,7 +74,7 @@ public class DistributionCentre extends DeliveryLocation {
             HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
 
             double distance = getDistance(vaccinationCentre, distributionCentre);
-            int vaccinesNeeded = VaccinationCentre.getVaccinesNeeded(vaccinationCentre, availabilities, unbookedPeople, vans, totalVaccinesPerHour, totalCapacity);
+            int vaccinesNeeded = VaccinationCentre.getVaccinesNeeded(vaccinationCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
 
             double proportionOfDistance = distance / totalDistance;
 
@@ -107,15 +115,17 @@ public class DistributionCentre extends DeliveryLocation {
         HashMap<String, HashMap<String, Object>> vans = data.getVans();
 
         HashMap<String, HashMap<String, Integer>> availabilities = getAvailabilities(data);
-        HashMap<String, HashMap<String, Object>> unbookedPeople = getUnbookedPeople(data);
+        HashMap<String, HashMap<String, Object>> bookablePeople = getBookablePeople(data);
 
         int totalVaccinesPerHour = getTotalVaccinesPerHour(vaccinationCentres);
         int totalCapacity = getTotalCapacity(vaccinationCentres, vans);
 
+        float predictedVaccinationRate = Float.parseFloat(data.getPredictedVaccinationRate());
+
         int totalVaccinesNeeded = 0;
         for (String keyI : vaccinationCentres.keySet()) {
             HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(keyI);
-            totalVaccinesNeeded += VaccinationCentre.getVaccinesNeeded(vaccinationCentre, availabilities, unbookedPeople, vans, totalVaccinesPerHour, totalCapacity);
+            totalVaccinesNeeded += VaccinationCentre.getVaccinesNeeded(vaccinationCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
 
         }
         return totalVaccinesNeeded;

@@ -6,6 +6,7 @@
  */
 package Data;
 
+import Core.ActivityLog;
 import Core.VaccineSystem;
 
 import java.sql.SQLException;
@@ -22,13 +23,17 @@ public class Data {
     private LocalDate currentDate;
     private LocalTime currentTime;
     private final VaccineSystem vaccineSystem;
+    private String actualBookingRate, actualAttendanceRate, predictedVaccinationRate;
     private HashMap<String, HashMap<String, Object>> vaccines, factories, transporterLocations, distributionCentres,
-        vaccinationCentres, people, vans, bookings;
+        vaccinationCentres, people, vans, bookings, simulations;
+
 
     public Data(VaccineSystem vaccineSystem) {
         this.vaccineSystem = vaccineSystem;
+
         try {
-            update(vaccineSystem, this);
+            ActivityLog activityLog = vaccineSystem.getActivityLog();
+            update(activityLog, vaccineSystem, this);
             read();
         }
         catch (SQLException e) {
@@ -50,6 +55,7 @@ public class Data {
         people = readPeople(vaccineSystem);
         vans = readVans(vaccineSystem);
         bookings = readBookings(vaccineSystem);
+        simulations = readSimulations(vaccineSystem);
     }
 
     /**
@@ -69,6 +75,7 @@ public class Data {
         writeMaps(vaccineSystem, people);
         writeMaps(vaccineSystem, vans);
         writeMaps(vaccineSystem, bookings);
+        writeMaps(vaccineSystem, simulations);
     }
 
     // Getters and setters
@@ -127,6 +134,7 @@ public class Data {
 
     public void setCurrentDate(LocalDate currentDate) {
         this.currentDate = currentDate;
+        System.out.println("setCurrentDate(): " + currentDate);
     }
 
     public LocalTime getCurrentTime() {
@@ -151,5 +159,37 @@ public class Data {
 
     public void setBookings(HashMap<String, HashMap<String, Object>> bookings) {
         this.bookings = bookings;
+    }
+
+    public HashMap<String, HashMap<String, Object>> getSimulations() {
+        return simulations;
+    }
+
+    public String getActualBookingRate() {
+        return actualBookingRate;
+    }
+
+    public void setActualBookingRate(String actualBookingRate) {
+        this.actualBookingRate = actualBookingRate;
+    }
+
+    public String getActualAttendanceRate() {
+        return actualAttendanceRate;
+    }
+
+    public void setActualAttendanceRate(String actualAttendanceRate) {
+        this.actualAttendanceRate = actualAttendanceRate;
+    }
+
+    public String getPredictedVaccinationRate() {
+        return predictedVaccinationRate;
+    }
+
+    public void setPredictedVaccinationRate(String predictedVaccinationRate) {
+        this.predictedVaccinationRate = predictedVaccinationRate;
+    }
+
+    public void setSimulations(HashMap<String, HashMap<String, Object>> simulations) {
+        this.simulations = simulations;
     }
 }

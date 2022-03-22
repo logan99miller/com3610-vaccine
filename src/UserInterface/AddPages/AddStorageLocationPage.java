@@ -1,3 +1,6 @@
+/**
+ * Parent class for any page used to insert a storage location into the system's database
+ */
 package UserInterface.AddPages;
 
 import Core.VaccineSystem;
@@ -10,9 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-
 import static UserInterface.AddUtils.CheckInputs.checkCapacitiesCondition;
-import static UserInterface.Utils.*;
 
 public class AddStorageLocationPage extends AddLocationPage {
 
@@ -50,6 +51,9 @@ public class AddStorageLocationPage extends AddLocationPage {
         return storePanel;
     }
 
+    /**
+     * Creates the SQL statements required and adds them to the inserts list
+     */
     protected void createStatements() {
         super.createStatements();
 
@@ -67,6 +71,14 @@ public class AddStorageLocationPage extends AddLocationPage {
         }
     }
 
+    /**
+     * Checks the user's input against criteria in AddPage and AddLocationPage as well as checking that capacities given for
+     * each store is an integer greater than 0
+     * @param displayError if an error message should be displayed to the user, setting it to false can prevent multiple
+     *                     error messages being displayed if the input conditions are checked several times (e.g. if they
+     *                     have to be checked while the user still has more data to input)
+     * @return
+     */
     protected boolean checkInputConditions(boolean displayError) {
         if (super.checkInputConditions(displayError)) {
             if (checkCapacitiesCondition(addStores)) {
@@ -82,6 +94,10 @@ public class AddStorageLocationPage extends AddLocationPage {
         return false;
     }
 
+    /**
+     * Creates a pop-up store frame, as the number of stores is unknown until the user informs us so the input field required
+     * cannot be generated in the original page
+     */
     private void createStoreFrame() {
         final int FRAME_WIDTH = 400;
 

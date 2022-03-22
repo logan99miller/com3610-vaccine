@@ -1,6 +1,5 @@
 package UserInterface.AddPopupPages;
 
-import UserInterface.AddPopupPage;
 import Core.VaccineSystem;
 
 import javax.swing.*;
@@ -9,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import static UserInterface.Utils.*;
 
 public class AddStockLevelPage extends AddPopupPage {
 

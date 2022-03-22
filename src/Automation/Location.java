@@ -1,3 +1,7 @@
+/**
+ * Parent class for all locations (factories, transporter locations, vans, distribution centres & vaccination centres)
+ * containing classes they will call whilst automating the system.
+ */
 package Automation;
 
 import Data.Data;
@@ -9,9 +13,15 @@ import java.util.HashMap;
 
 public class Location {
 
-    // Returns true if the location is open based on the given openingTimes and the systems date and time, false otherwise
+    /**
+     * Returns true if the location is open based on the given openingTimes and the systems date and time, false otherwise
+     * @param data used to get the current date and time
+     * @param openingTimes the location's opening times
+     * @return if the location is open
+     */
     protected static boolean isOpen(Data data, HashMap<String, HashMap<String, String>> openingTimes) {
         HashMap<String, String> openingTime = getOpeningTime(data, openingTimes);
+
         LocalTime startTime = Utils.getLocalTime(openingTime.get("OpeningTime.startTime"));
         LocalTime endTime = Utils.getLocalTime(openingTime.get("OpeningTime.endTime"));
 
@@ -19,12 +29,19 @@ public class Location {
         return ((currentTime.isAfter(startTime)) && (currentTime.isBefore(endTime)));
     }
 
-    // Returns the relevant opening time information on the systems date
+    /**
+     * Returns the opening times from the given opening times for the current day
+     * @param data used to get the current day (as stored in the system)
+     * @param openingTimes the location's opening times for the whole week
+     * @return the opening times for the current day
+     */
     private static HashMap<String, String> getOpeningTime(Data data, HashMap<String, HashMap<String, String>> openingTimes) {
         for (String key : openingTimes.keySet()) {
             LocalDate currentDate = data.getCurrentDate();
+
             String currentDay = currentDate.getDayOfWeek().toString().toLowerCase();
             String openingTimeDay = (openingTimes.get(key).get("OpeningTime.day")).toLowerCase();
+
             if (currentDay.equals(openingTimeDay)) {
                 return openingTimes.get(key);
             }
@@ -32,6 +49,11 @@ public class Location {
         return null;
     }
 
+    /**
+     * Gets the type of location that the given location is, used for generating the text in the activity log
+     * @param location
+     * @return
+     */
     protected static String getLocationType(HashMap<String, Object> location) {
         if (location.get("Factory.factoryID") != null) {
             return "factory";
@@ -48,6 +70,13 @@ public class Location {
         return null;
     }
 
+    /**
+     * Gets the ID of the given location by iterating through potential ID field names that the location could have. Cannot use
+     * Data.Utils.getIDFieldName() as location will contain other ID field names matching the pattern (e.g. "Location.locationID")
+     * the Data.Utils method is looking for. Used to generate an activity log.
+     * @param location
+     * @return
+     */
     protected static String getID(HashMap<String, Object> location) {
         String[] potentialFieldNames = new String[] {
             "Factory.factoryID",

@@ -1,14 +1,15 @@
+/**
+ * Page used to insert a booking into the system's database
+ */
 package UserInterface.AddPages;
 
-import UserInterface.AddPage;
+import UserInterface.AddUtils.Insert;
 import UserInterface.LoggedInPage;
 import UserInterface.Page;
 import Core.VaccineSystem;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import static UserInterface.Utils.*;
 
 public class AddBookingPage extends AddPage {
 
@@ -36,6 +37,9 @@ public class AddBookingPage extends AddPage {
         setMaxWidthMinHeight(inputPanel);
     }
 
+    /**
+     * Creates the SQL statements required and adds them to the inserts list
+     */
     private void createStatements() {
         inserts = new ArrayList<>();
 
@@ -44,15 +48,13 @@ public class AddBookingPage extends AddPage {
 
         int personID = Integer.parseInt(person.split(":")[0]);
         int vaccinationCentreID = Integer.parseInt(vaccinationCentre.split(":")[0]);
+
         String date = dateTextField.getText() + " " + hourSpinner.getValue() + ":" + minuteSpinner.getValue();
 
         String[] columnNames = new String[] {"personID", "vaccinationCentreID", "date"};
         Object[] values = new Object[] {personID, vaccinationCentreID, date};
-        try {
-            vaccineSystem.insert(columnNames, values, "Booking");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+
+        inserts.add(new Insert(columnNames, values, "Booking"));
     }
 
     public void actionPerformed(ActionEvent e) {

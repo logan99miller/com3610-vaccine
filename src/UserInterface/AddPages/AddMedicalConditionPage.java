@@ -1,6 +1,8 @@
+/**
+ * Page used to insert a medical condition into the system's database
+ */
 package UserInterface.AddPages;
 
-import UserInterface.AddPage;
 import Core.VaccineSystem;
 import UserInterface.AddUtils.Insert;
 import UserInterface.LoggedInPage;
@@ -8,7 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import static UserInterface.Utils.*;
 
 public class AddMedicalConditionPage extends AddPage {
 
@@ -35,11 +36,15 @@ public class AddMedicalConditionPage extends AddPage {
         setMaxWidthMinHeight(inputPanel);
     }
 
+    /**
+     * Creates the SQL statements required and adds them to the inserts list
+     */
     private void createStatements() {
         inserts = new ArrayList<>();
 
         String[] columnNames = new String[] {"name", "vulnerabilityLevel"};
         Object[] values = new Object[] {nameTextField.getText(), vulnerabilityLevelSpinner.getValue()};
+
         String medicalConditionID = insertAndGetID(columnNames, values, "MedicalCondition", "medicalConditionID");
 
         for (String vaccine : vaccinesList.getSelectedValuesList()) {

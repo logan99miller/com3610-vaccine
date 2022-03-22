@@ -1,6 +1,8 @@
+/**
+ * Page used to insert a vaccine into the system's database
+ */
 package UserInterface.AddPages;
 
-import UserInterface.AddPage;
 import Core.VaccineSystem;
 import UserInterface.AddUtils.AddVaccineLifespan;
 import UserInterface.AddPopupPages.AddVaccineLifespanPage;
@@ -11,8 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
-import static UserInterface.Utils.*;
-
+import static UserInterface.AddUtils.CheckInputs.*;
 
 public class AddVaccinePage extends AddPage {
 
@@ -57,7 +58,11 @@ public class AddVaccinePage extends AddPage {
         addLifespans = new ArrayList<>();
     }
 
-
+    /**
+     *
+     * @param maxRange
+     * @return
+     */
     private JPanel createLifespanPanel(int maxRange) {
         JPanel lifespanPanel = new JPanel();
 
@@ -75,44 +80,9 @@ public class AddVaccinePage extends AddPage {
         return lifespanPanel;
     }
 
-    private boolean checkLifespanConditions() {
-        try {
-            if (addLifespans.size() == 0) {
-                return false;
-            }
-
-            for (AddVaccineLifespan addLifespan : addLifespans) {
-                int lifespan = Integer.parseInt(addLifespan.getLifespan());
-                if (lifespan < 1) {
-                    return false;
-                }
-            }
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean checkTemperatureConditions() {
-        for (AddVaccineLifespan addLifespan : addLifespans) {
-            int minimumTemperature = (int) addLifespan.getMinimumTemperature();
-            int maximumTemperature = (int) addLifespan.getMaximumTemperature();
-            if (minimumTemperature > maximumTemperature) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean checkAgeConditions() {
-        int minimumAge = Integer.parseInt(minimumAgeTextField.getText());
-        int maximumAge = Integer.parseInt(maximumAgeTextField.getText());
-        if (maximumAge - minimumAge >= 0) {
-            return true;
-        }
-        return false;
-    }
-
+    /**
+     * Creates the SQL statements required and adds them to the inserts list
+     */
     private void createStatements() {
         inserts = new ArrayList<>();
 
@@ -126,21 +96,34 @@ public class AddVaccinePage extends AddPage {
         Object[] values = new Object[] {name, dosesNeeded, daysBetweenDoses, minimumAge, maximumAge};
         String vaccineID = insertAndGetID(columnNames, values, "Vaccine", "vaccineID");
 
+        createExemptionStatements(vaccineID);
+        createLifespanStatements(vaccineID);
+    }
+
+    /**
+     * Adds the associated vaccine exemptions to the insert list
+     */
+    private void createExemptionStatements(String vaccineID) {
         for (String medicalCondition : medicalConditionsList.getSelectedValuesList()) {
             int medicalConditionID = Integer.parseInt( medicalCondition.split(":")[0]);
 
-            columnNames = new String[] {"vaccineID", "medicalConditionID"};
-            values = new Object[] {vaccineID, medicalConditionID};
+            String[] columnNames = new String[] {"vaccineID", "medicalConditionID"};
+            Object[] values = new Object[] {vaccineID, medicalConditionID};
             inserts.add(new Insert(columnNames, values, "VaccineExemption"));
         }
+    }
 
+    /**
+     * Adds the associated vaccine lifespans to the insert list
+     */
+    private void createLifespanStatements(String vaccineID) {
         for (AddVaccineLifespan addLifespan : addLifespans) {
             String lifespan = addLifespan.getLifespan();
             int lowestTemperature = (int) addLifespan.getMinimumTemperature();
             int highestTemperature = (int) addLifespan.getMaximumTemperature();
 
-            columnNames = new String[] {"vaccineID", "lifespan", "lowestTemperature", "highestTemperature"};
-            values = new Object[] {vaccineID, lifespan, lowestTemperature, highestTemperature};
+            String[] columnNames = new String[] {"vaccineID", "lifespan", "lowestTemperature", "highestTemperature"};
+            Object[] values = new Object[] {vaccineID, lifespan, lowestTemperature, highestTemperature};
             inserts.add(new Insert(columnNames, values, "VaccineLifespan"));
         }
     }
@@ -157,17 +140,24 @@ public class AddVaccinePage extends AddPage {
         createPopupFrame(addLifespanFrame, addLifespanPage.getPanel(), FRAME_WIDTH, 500);
     }
 
+    /**
+     * Checks the user's input against criteria in AddPage as well as checking conditions specific to adding vaccines
+     * @param displayError if an error message should be displayed to the user, setting it to false can prevent multiple
+     *                     error messages being displayed if the input conditions are checked several times (e.g. if they
+     *                     have to be checked while the user still has more data to input)
+     * @return
+     */
     protected boolean checkInputConditions(boolean displayError) {
         if (super.checkInputConditions(displayError)) {
-            if (!checkLifespanConditions()) {
+            if (!checkLifespanConditions(addLifespans)) {
                 errorMessage("Lifespans must be an integer greater than 0", displayError);
                 return false;
             }
-            else if (!checkTemperatureConditions()) {
+            else if (!checkTemperatureConditions(addLifespans)) {
                 errorMessage("Minimum temperature cannot be greater than maximum temperature", displayError);
                 return false;
             }
-            else if (!checkAgeConditions()) {
+            else if (!checkAgeConditions(minimumAgeTextField, maximumAgeTextField)) {
                 errorMessage("Minimum age cannot be greater than maximum age", displayError);
                 return false;
             }

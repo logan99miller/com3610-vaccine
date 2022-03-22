@@ -1,6 +1,10 @@
+/**
+ * Adds input fields for the start and end opening times for a location for a given day. This helps reduce code repetition.
+ * Consists of day, start time and end time panels which the page can display in a gird layout with 3 columns
+ */
 package UserInterface.AddUtils;
 
-import UserInterface.AddPage;
+import UserInterface.AddPages.AddPage;
 import UserInterface.Page;
 
 import javax.swing.*;

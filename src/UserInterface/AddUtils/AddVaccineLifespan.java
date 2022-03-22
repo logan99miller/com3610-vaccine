@@ -1,6 +1,11 @@
+/**
+ * Used for the add vaccine lifespan pop-up page to create panels containing input fields for the lifespan (in days) for a
+ * user given temperature range, and by the add vaccine page to get the lifespans at different ranges.
+ * As there can be 1 to many stores per storage location this helps reduce code reuse.
+ */
 package UserInterface.AddUtils;
 
-import UserInterface.AddPage;
+import UserInterface.AddPages.AddPage;
 import javax.swing.*;
 
 public class AddVaccineLifespan {

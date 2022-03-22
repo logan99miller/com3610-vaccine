@@ -148,6 +148,11 @@ public class Read {
         return vaccineSystem.select(columnNames, "Booking");
     }
 
+    public static HashMap<String, HashMap<String, Object>> readSimulations(VaccineSystem vaccineSystem) throws SQLException {
+        String[] columnNames = {"Simulation.simulationID", "Simulation.actualBookingRate", "Simulation.actualAttendanceRate", "Simulation.predictedVaccinationRate"};
+        return vaccineSystem.select(columnNames, "Simulation");
+    }
+
     public static HashMap<String, HashMap<String, Object>> readVaccinesInStorage(VaccineSystem vaccineSystem) throws SQLException {
         String[] columnNames = {
             "VaccineInStorage.vaccineInStorageID", "VaccineInStorage.vaccineID", "VaccineInStorage.stockLevel",

@@ -1,6 +1,12 @@
-package UserInterface;
+/**
+ * Displays the location of each factory, distribution centre, vaccination centre and transporter location and a line
+ * indicating any van moving between them.
+ */
+package UserInterface.Map;
 
 import Core.VaccineSystem;
+import UserInterface.Page;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -28,11 +34,17 @@ public class MapPage extends Page {
         createMapPanel();
     }
 
+    /**
+     * Not included in the constructor as it is called when the map panel is refreshed
+     */
     private void createMapPanel() {
         mapPanel = new MapPanel(vaccineSystem, panelWidth, panelHeight);
         mainPanel.add(mapPanel, BorderLayout.CENTER);
     }
 
+    /**
+     * Automatically called every time the system updates (defined by the updateRate)
+     */
     public void refreshPage() {
         mainPanel.remove(mapPanel);
         createMapPanel();
@@ -42,6 +54,9 @@ public class MapPage extends Page {
         vaccineSystem.repaint();
     }
 
+    /**
+     * Creates a popup frame explaining each symbol if the key button is pressed
+     */
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == keyButton) {
             JFrame frame = new JFrame();

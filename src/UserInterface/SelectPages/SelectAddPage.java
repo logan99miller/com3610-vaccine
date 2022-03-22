@@ -1,6 +1,6 @@
 package UserInterface.SelectPages;
 
-import UserInterface.AddPage;
+import UserInterface.AddPages.AddPage;
 import UserInterface.AddPages.*;
 import Core.VaccineSystem;
 import UserInterface.AddPopupPages.AddStockPage;

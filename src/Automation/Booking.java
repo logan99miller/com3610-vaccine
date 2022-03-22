@@ -1,9 +1,9 @@
 package Automation;
 
 import Core.ActivityLog;
+import Core.AutomateSystem;
 import Data.Data;
 import Data.Utils;
-
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -11,17 +11,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
-import static Automation.Availability.getAvailabilities;
-import static Automation.People.getUnbookedPeople;
-
 public class Booking {
-    public static void simulateBookings(ActivityLog activityLog, Data data) {
-        LocalDate currentDate = data.getCurrentDate();
-        HashMap<String, HashMap<String, Integer>> availabilities = getAvailabilities(data);
+    public static void simulateBookings(AutomateSystem automateSystem) {
+        Data data = automateSystem.getData();
+        ActivityLog activityLog = automateSystem.getActivityLog();
 
-        HashMap<String, HashMap<String, Object>> unbookedPeople = getUnbookedPeople(data);
-        ArrayList<Integer> sortedKeys = Utils.sortDateKeyInMap(unbookedPeople, "Person.DoB");
-        Collections.reverse(sortedKeys);
+        HashMap<String, HashMap<String, Integer>> availabilities = automateSystem.getAvailabilities();
+        HashMap<String, HashMap<String, Object>> bookablePeople = automateSystem.getBookablePeople();
+
+        LocalDate currentDate = data.getCurrentDate();
 
         HashMap<String, HashMap<String, Object>> vaccines = data.getVaccines();
 
@@ -31,30 +29,38 @@ public class Booking {
             int minimumAge = Integer.parseInt((String) vaccine.get("Vaccine.minimumAge"));
             int maximumAge = Integer.parseInt((String) vaccine.get("Vaccine.maximumAge"));
 
-            for (int doseNumber = 1; doseNumber < dosesNeeded; doseNumber++) {
-                HashMap<String, HashMap<String, Object>> filteredPeople = filterPeopleByVaccineReceived(unbookedPeople, doseNumber);
-                for (String peopleKey : filteredPeople.keySet()) {
-                    HashMap<String, Object> person = unbookedPeople.get(peopleKey);
+            for (int doseNumber = 1; doseNumber < dosesNeeded + 1; doseNumber++) {
+                HashMap<String, HashMap<String, Object>> filteredPeople = filterPeopleByVaccineReceived(bookablePeople, doseNumber - 1);
+
+                ArrayList<String> sortedKeys = Utils.sortDateKeyInMap(filteredPeople, "Person.DoB");
+                Collections.reverse(sortedKeys);
+
+                for (String peopleKey : sortedKeys) {
+
+                    HashMap<String, Object> person = filteredPeople.get(peopleKey);
                     LocalDate DoB = Utils.getLocalDate((String) person.get("Person.DoB"), "-");
                     long age = ChronoUnit.YEARS.between(DoB, currentDate);
                     if ((minimumAge <= age) && (maximumAge >= age)) {
                         String personID = (String) person.get("Person.personID");
-                        simulateBooking(activityLog, data, personID, availabilities);
+                        availabilities = simulateBooking(activityLog, data, personID, availabilities);
                     }
                 }
             }
         }
+        automateSystem.setAvailabilities(availabilities);
     }
 
     private static HashMap<String, HashMap<String, Object>> filterPeopleByVaccineReceived(
         HashMap<String, HashMap<String, Object>> people,
         int numVaccinesReceived
     ) {
+
         HashMap<String, HashMap<String, Object>> filteredPeople = new HashMap<>();
 
         for (String key : people.keySet()) {
             HashMap<String, Object> person = people.get(key);
             HashMap<String, Object> vaccinesReceived = (HashMap<String, Object>) person.get("vaccinesReceived");
+
             if (vaccinesReceived.size() == numVaccinesReceived) {
                 filteredPeople.put(key, person);
             }

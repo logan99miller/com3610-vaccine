@@ -1,3 +1,6 @@
+/**
+ * Page used to insert a factory into the system's database
+ */
 package UserInterface.AddPages;
 
 import Core.VaccineSystem;
@@ -5,7 +8,6 @@ import UserInterface.AddUtils.Insert;
 import UserInterface.LoggedInPage;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import static UserInterface.Utils.*;
 
 public class AddFactoryPage extends AddStorageLocationPage {
 
@@ -26,6 +28,9 @@ public class AddFactoryPage extends AddStorageLocationPage {
         setMaxWidthMinHeight(inputPanel);
     }
 
+    /**
+     * Creates the SQL statements required and adds them to the inserts list
+     */
     protected void createStatements() {
         super.createStatements();
 

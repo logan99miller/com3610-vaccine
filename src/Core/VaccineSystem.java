@@ -50,7 +50,7 @@ public class VaccineSystem extends JFrame {
         configureWindow();
         createInterface();
 
-        // In milliseconds
+        // How often the system updates in milliseconds
         updateRate = 10000;
 
         // How much current time is multiplied by to increase speed

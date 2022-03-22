@@ -1,3 +1,6 @@
+/**
+ * Used to store all the data required to perform an SQL insert statement
+ */
 package UserInterface.AddUtils;
 
 public class Insert {

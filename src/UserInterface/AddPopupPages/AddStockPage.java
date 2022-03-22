@@ -1,6 +1,6 @@
 package UserInterface.AddPopupPages;
 
-import UserInterface.AddPage;
+import UserInterface.AddPages.AddPage;
 import Core.VaccineSystem;
 import UserInterface.AddUtils.Insert;
 import UserInterface.LoggedInPage;
@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static UserInterface.AddUtils.CheckInputs.checkStockLevelsConditions;
-import static UserInterface.Utils.*;
 
 public class AddStockPage extends AddPage {
 

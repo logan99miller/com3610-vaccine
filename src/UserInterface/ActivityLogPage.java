@@ -74,6 +74,9 @@ public class ActivityLogPage extends Page {
         return logPanel;
     }
 
+    /**
+     * Automatically called every time the system updates (defined by the updateRate)
+     */
     public void refreshPage() {
         mainPanel.remove(logScrollPane);
         logScrollPane = createLogScrollPane();
