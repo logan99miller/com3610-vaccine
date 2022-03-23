@@ -9,16 +9,10 @@ import java.util.HashMap;
 
 public class Factory extends StorageLocation {
 
-    //** FIX COMMENTS
     /**
      * Increases the stock levels of all factories if they are open
-     *
-//     * @param updateRate How often the system updates in milliseconds
-//     * @param simulationSpeed
-     *      How much current time is multiplied by to increase speed
-     *      E.g. simulationSpeed = 2 means every 1 minute in real life is 2 minutes in the system
+     * @param automateSystem used to get data from the data class as well as the updateRate and simulationSpeed
      */
-//    public static void updateStockLevels(Data data, int updateRate, int simulationSpeed) {
     public static void updateStockLevels(AutomateSystem automateSystem) {
         Data data = automateSystem.getData();
         int updateRate = automateSystem.getUpdateRate();
@@ -29,14 +23,13 @@ public class Factory extends StorageLocation {
         for (String key : factories.keySet()) {
             HashMap<String, Object> factory = factories.get(key);
             HashMap<String, HashMap<String, String>> openingTimes = (HashMap<String, HashMap<String, String>>) factory.get("openingTimes");
+
             if (isOpen(data, openingTimes)) {
                 factories.put(key, updateStockLevel(data, factory, updateRate, simulationSpeed));
             }
         }
         data.setFactories(factories);
     }
-
-    //
 
     /**
      * Increases the stock levels of the given factory based on its rate of production and the systems updateRate and simulation speed

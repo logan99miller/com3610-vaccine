@@ -30,9 +30,6 @@ public class SimulationPage extends Page {
     private String actualBookingRate, actualAttendanceRate, predictedVaccinationRate;
     private LocalDate currentDate;
     private int currentHour, currentMinute;
-    private HashMap<String, HashMap<String, Object>> simulations;
-    private HashMap<String, Object> simulation;
-    private String firstKey;
 
     public SimulationPage(VaccineSystem vaccineSystem) {
         super(vaccineSystem);
@@ -41,32 +38,11 @@ public class SimulationPage extends Page {
     }
 
     private void initializeValues() {
-        final String DEFAULT_VALUE = "0.5";
 
         data = vaccineSystem.getData();
-        simulations = data.getSimulations();
-
-        // try statements may not be needed anymore
-
-        try {
-            firstKey = simulations.keySet().iterator().next();
-            simulation = simulations.get(firstKey);
-        }
-        catch (Exception e) {
-            firstKey = "newID";
-            simulation = new HashMap<>();
-        }
-
-        try {
-            actualBookingRate = (String) simulation.get("Simulation.actualBookingRate");
-            actualAttendanceRate = (String) simulation.get("Simulation.actualAttendanceRate");
-            predictedVaccinationRate = (String) simulation.get("Simulation.predictedVaccinationRate");
-        }
-        catch (NullPointerException e) {
-            actualBookingRate = DEFAULT_VALUE;
-            actualAttendanceRate = DEFAULT_VALUE;
-            predictedVaccinationRate = DEFAULT_VALUE;
-        }
+        actualBookingRate = data.getActualBookingRate();
+        actualAttendanceRate = data.getActualAttendanceRate();
+        predictedVaccinationRate = data.getPredictedVaccinationRate();
 
         currentDate = data.getCurrentDate();
 
@@ -111,6 +87,20 @@ public class SimulationPage extends Page {
     public void actionPerformed(ActionEvent e) {
         super.actionPerformed(e);
         if (e.getSource() == submitButton) {
+
+            HashMap<String, HashMap<String, Object>> simulations = data.getSimulations();
+            HashMap<String, Object> simulation;
+            String firstKey;
+
+            // If there are not already simulation values stored in the database, create a new record
+            try {
+                firstKey = simulations.keySet().iterator().next();
+                simulation = simulations.get(firstKey);
+            }
+            catch (Exception ex) {
+                firstKey = "newID";
+                simulation = new HashMap<>();
+            }
 
             simulation.put("Simulation.actualBookingRate", actualBookingRateTextField.getText());
             simulation.put("Simulation.actualAttendanceRate", actualAttendanceRateTextField.getText());

@@ -134,7 +134,6 @@ public class Data {
 
     public void setCurrentDate(LocalDate currentDate) {
         this.currentDate = currentDate;
-        System.out.println("setCurrentDate(): " + currentDate);
     }
 
     public LocalTime getCurrentTime() {

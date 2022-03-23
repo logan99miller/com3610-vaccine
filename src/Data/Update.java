@@ -161,7 +161,7 @@ public class Update {
             LocalDate bookingDate = getLocalDate(dateTime);
             LocalTime bookingTime = getLocalTime(time);
 
-            if (hasAppointmentHappened(bookingDate, bookingTime, currentDate, currentTime)) {
+            if (hasAppointmentHappened(data, bookingDate, bookingTime, currentDate, currentTime)) {
 
                 String vaccinationCentreID = (String) booking.get("Booking.vaccinationCentreID");
                 HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(vaccinationCentreID);
@@ -173,17 +173,27 @@ public class Update {
     }
 
     /**
-     * Determines if the appointment has happened or not be seeing if its date and time is before the current date and time
-     * @return true if the appointment has happened, false otherwise
+     * Determines if the appointment has happened or not be seeing if its date and time is before the current date and time and
+     * if the appointment was attended based off the user defined attendance rate
+     * @return true if the appointment has occurred and was attended, false otherwise
      */
-    private static boolean hasAppointmentHappened(LocalDate bookingDate, LocalTime bookingTime, LocalDate currentDate, LocalTime currentTime) {
+    private static boolean hasAppointmentHappened(Data data, LocalDate bookingDate, LocalTime bookingTime, LocalDate currentDate, LocalTime currentTime) {
+        boolean appointmentTimePassed = false;
+
         if (bookingDate.equals(currentDate)) {;
             if (bookingTime.isBefore(currentTime)) {
-                return true;
+                appointmentTimePassed = true;
             }
         }
         else if (bookingDate.isBefore(currentDate)) {
-            return true;
+            appointmentTimePassed = true;
+        }
+
+        // Return true if the appointment time has passed and the appointment was attended (based on a random number between
+        // 0 and 1 and the attendance rate)
+        if (appointmentTimePassed) {
+            float attendanceRate = Float.parseFloat(data.getActualAttendanceRate());
+            return (Math.random() < attendanceRate);
         }
         return false;
     }
@@ -272,9 +282,8 @@ public class Update {
     /**
      * Updates the simulation rates in the system by reading from the simulation table that they are stored in so that
      * they are stored even if the program crashes
-     * @param data
      */
-    private static void updateRates(Data data) {
+    public static void updateRates(Data data) {
         final String DEFAULT_RATE = "0.5";
 
         try {
