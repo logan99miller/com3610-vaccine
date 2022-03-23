@@ -80,12 +80,7 @@ public class Booking {
             int value = slots.get(date);
             if (value < vaccinesPerHour) {
                 slots.put(date, value + 1);
-//                if (value != (vaccinesPerHour - 1)) {
-////                    modifiedSlots.remove(date);
-//                }
-//                else {
-//                    modifiedSlots.put(date, value + 1);
-//                }
+
                 activityLog.add("Person " + personID + " booked in at " + vaccinationCentreID + " vaccination centre for " + date);
                 HashMap<String, String> booking = new HashMap<>();
                 booking.put("Booking.personID", personID);
@@ -104,7 +99,7 @@ public class Booking {
 
     private static String selectVaccinationCentre(HashMap<String, HashMap<String, Integer>> availabilities) {
         Object[] keySet = availabilities.keySet().toArray();
-        String vaccinationCentreID = (String) keySet[new Random().nextInt(keySet.length)]; // Random should be more shared
+        String vaccinationCentreID = (String) keySet[new Random().nextInt(keySet.length)];
         return vaccinationCentreID;
     }
 }

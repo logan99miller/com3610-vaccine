@@ -46,7 +46,7 @@ public class VaccinationCentre extends DeliveryLocation {
                 HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
 
                 int vaccinesNeeded = getVaccinesNeeded(vaccinationCentre, availabilities, bookablePeople, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
-                String vaccineID = "1"; // NEEDS TO BE BASED OF A FUNCTION IN FUTURE
+                String vaccineID = "1";
                 vans = orderVaccine(activityLog, distributionCentres, vaccinationCentre, vans, vaccinesNeeded, vaccineID);
                 data.setVans(vans);
             }

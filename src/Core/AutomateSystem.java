@@ -28,15 +28,6 @@ public class AutomateSystem {
 
     public void run() {
 
-        // Heavily shared values that can be created here and passed through to reduce repeated executions
-        // BEFORE MAKING ANY CHANGES CHECK THEY ARE NOT CHANGED DURING AUTOMATION
-        /**
-         * getBookablePeople
-         * getAvailabilities
-         * VaccinationCentre.getVaccinesNeeded
-         * booking rate (0.8)
-         */
-
         availabilities = Availability.getAvailabilities(data);
         bookablePeople = People.getBookablePeople(data);
 

@@ -64,9 +64,7 @@ public class DatabaseManager {
             ResultSet resultSet = statement.executeQuery(statementText);
             res = createSelectResults(resultSet, columnNames);
         }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
+        catch (SQLException e) {}
         finally {
             if (connection != null) {
                 connection.close();

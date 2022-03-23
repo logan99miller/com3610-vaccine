@@ -24,13 +24,15 @@ public class Availability {
         HashMap<String, LocalDate> week = getDaysOfWeek(currentDate);
 
         // Get the available slots for each vaccination centre and add them to the hash map to be returned
-        for (String key : vaccinationCentres.keySet()) {
+        if (vaccinationCentres != null) {
+            for (String key : vaccinationCentres.keySet()) {
 
-            HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
-            String vaccinationCentreID = (String) vaccinationCentre.get("VaccinationCentre.vaccinationCentreID");
+                HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
+                String vaccinationCentreID = (String) vaccinationCentre.get("VaccinationCentre.vaccinationCentreID");
 
-            HashMap<String, Integer> slots = getSlots(vaccinationCentre, week);
-            availabilities.put(vaccinationCentreID, slots);
+                HashMap<String, Integer> slots = getSlots(vaccinationCentre, week);
+                availabilities.put(vaccinationCentreID, slots);
+            }
         }
 
         return availabilities;

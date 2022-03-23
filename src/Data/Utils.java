@@ -30,15 +30,19 @@ public class Utils {
             values.add(Integer.parseInt((String) maps.get(key).get(integerKey)));
         }
 
-        // Replace with better sorting algorithm
+        // Basic sorting algorithm
         for (int i = 0; i < values.size() - 1; i++) {
             for (int j = 0; j < values.size() - i - 1; j++) {
+
                 if (values.get(j) > values.get(j + 1)) {
-//                    int tempID = keys.get(j);
+
                     String tempKey = keys.get(j);
+
                     int tempValue = values.get(j);
+
                     keys.set(j, keys.get(j + 1));
                     keys.set(j + 1, tempKey);
+
                     values.set(j, values.get(j + 1));
                     values.set(j + 1, tempValue);
                 }
@@ -114,8 +118,10 @@ public class Utils {
         HashMap<String, HashMap<String, Object>> secondaryMap,
         String keyAddition
     ) {
-        for (String key : secondaryMap.keySet()) {
-            primaryMap.put(key + keyAddition, secondaryMap.get(key));
+        if ((primaryMap != null) && (secondaryMap != null)) {
+            for (String key : secondaryMap.keySet()) {
+                primaryMap.put(key + keyAddition, secondaryMap.get(key));
+            }
         }
         return primaryMap;
     }

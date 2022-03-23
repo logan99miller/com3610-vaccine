@@ -50,7 +50,7 @@ public class DistributionCentre extends DeliveryLocation {
                     data, distributionCentre, availabilities, bookablePeople, totalVaccinesPerHour, totalCapacity, totalDistance, totalVaccinesNeeded
                 );
 
-                String vaccineID = "1"; // NEEDS TO BE BASED OF A FUNCTION IN FUTURE
+                String vaccineID = "1";
                 vans = orderVaccine(activityLog, factories, distributionCentre, vans, vaccinesNeeded, vaccineID);
                 data.setVans(vans);
             }

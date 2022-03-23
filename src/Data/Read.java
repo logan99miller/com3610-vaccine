@@ -49,14 +49,16 @@ public class Read {
         HashMap<String, HashMap<String, Object>> vaccines = vaccineSystem.select(columnNames, "vaccine");
 
         // Add lifespan and exemption data for each vaccine
-        for (String key : vaccines.keySet()) {
-            String vaccineID = (String) vaccines.get(key).get("Vaccine.vaccineID");
+        if (vaccines != null) {
+            for (String key : vaccines.keySet()) {
+                String vaccineID = (String) vaccines.get(key).get("Vaccine.vaccineID");
 
-            HashMap<String, HashMap<String, Object>> lifespans = readVaccineLifespans(vaccineSystem, vaccineID);
-            HashMap<String, HashMap<String, Object>> exemptions = readVaccineExemptions(vaccineSystem, vaccineID);
+                HashMap<String, HashMap<String, Object>> lifespans = readVaccineLifespans(vaccineSystem, vaccineID);
+                HashMap<String, HashMap<String, Object>> exemptions = readVaccineExemptions(vaccineSystem, vaccineID);
 
-            vaccines.get(key).put("lifespans", lifespans);
-            vaccines.get(key).put("exemptions", exemptions);
+                vaccines.get(key).put("lifespans", lifespans);
+                vaccines.get(key).put("exemptions", exemptions);
+            }
         }
 
         return vaccines;
@@ -100,12 +102,14 @@ public class Read {
         HashMap<String, HashMap<String, Object>> vaccinationCentres = readStorageLocations(vaccineSystem, columnNames, "VaccinationCentre", new HashMap[] {});
 
         // Add booking data for each vaccination centre
-        for (String key : vaccinationCentres.keySet()) {
-            String vaccinationCentreID = (String) vaccinationCentres.get(key).get("VaccinationCentre.vaccinationCentreID");
+        if (vaccinationCentres != null) {
+            for (String key : vaccinationCentres.keySet()) {
+                String vaccinationCentreID = (String) vaccinationCentres.get(key).get("VaccinationCentre.vaccinationCentreID");
 
-            HashMap<String, HashMap<String, Object>> bookings = readBookingsFromVaccinationCentreID(vaccineSystem, vaccinationCentreID);
+                HashMap<String, HashMap<String, Object>> bookings = readBookingsFromVaccinationCentreID(vaccineSystem, vaccinationCentreID);
 
-            vaccinationCentres.get(key).put("bookings", bookings);
+                vaccinationCentres.get(key).put("bookings", bookings);
+            }
         }
 
         return vaccinationCentres;
@@ -117,18 +121,19 @@ public class Read {
         HashMap<String, HashMap<String, Object>> people = vaccineSystem.select(columnNames, "Person");
 
         // Add booking, medical condition and vaccines received data for each person
-        for (String key : people.keySet()) {
-            String personID = (String) people.get(key).get("Person.personID");
+        if (people != null) {
+            for (String key : people.keySet()) {
+                String personID = (String) people.get(key).get("Person.personID");
 
-            HashMap<String, HashMap<String, Object>> bookings = readBookingsFromPersonID(vaccineSystem, personID);
-            HashMap<String, HashMap<String, Object>> medicalConditions = readPersonMedicalConditions(vaccineSystem, personID);
-            HashMap<String, HashMap<String, Object>> vaccinesReceived = readVaccinesReceived(vaccineSystem, personID);
+                HashMap<String, HashMap<String, Object>> bookings = readBookingsFromPersonID(vaccineSystem, personID);
+                HashMap<String, HashMap<String, Object>> medicalConditions = readPersonMedicalConditions(vaccineSystem, personID);
+                HashMap<String, HashMap<String, Object>> vaccinesReceived = readVaccinesReceived(vaccineSystem, personID);
 
-            people.get(key).put("bookings", bookings);
-            people.get(key).put("medicalConditions", medicalConditions);
-            people.get(key).put("vaccinesReceived", vaccinesReceived);
+                people.get(key).put("bookings", bookings);
+                people.get(key).put("medicalConditions", medicalConditions);
+                people.get(key).put("vaccinesReceived", vaccinesReceived);
+            }
         }
-
         return people;
     }
 
@@ -196,22 +201,24 @@ public class Read {
 
         locationMap.put("localTableName", "StorageLocation");
 
-        HashMap<String, HashMap<String, Object>> storageLocation = readLocations(vaccineSystem, columnNames, tableName, innerJoins);
+        HashMap<String, HashMap<String, Object>> storageLocations = readLocations(vaccineSystem, columnNames, tableName, innerJoins);
 
         // For all storageLocations, add all store data, and for each store add all vaccineInStorage data
-        for (String keyI : storageLocation.keySet()) {
-            HashMap<String, HashMap<String, Object>> stores = readStores(vaccineSystem, (String) storageLocation.get(keyI).get("StorageLocation.storageLocationID"));
+        if (storageLocations != null) {
+            for (String keyI : storageLocations.keySet()) {
+                HashMap<String, HashMap<String, Object>> stores = readStores(vaccineSystem, (String) storageLocations.get(keyI).get("StorageLocation.storageLocationID"));
 
-            for (String keyJ : stores.keySet()) {
-                String storeID = (String) stores.get(keyJ).get("Store.storeID");
-                HashMap<String, HashMap<String, Object>> vaccinesInStorage = readVaccinesInStorage(vaccineSystem, storeID);
-                stores.get(keyJ).put("vaccinesInStorage", vaccinesInStorage);
+                for (String keyJ : stores.keySet()) {
+                    String storeID = (String) stores.get(keyJ).get("Store.storeID");
+                    HashMap<String, HashMap<String, Object>> vaccinesInStorage = readVaccinesInStorage(vaccineSystem, storeID);
+                    stores.get(keyJ).put("vaccinesInStorage", vaccinesInStorage);
+                }
+
+                storageLocations.get(keyI).put("stores", stores);
             }
-
-            storageLocation.get(keyI).put("stores", stores);
         }
 
-        return storageLocation;
+        return storageLocations;
     }
 
     private static HashMap<String, HashMap<String, Object>> readLocations(
@@ -232,9 +239,11 @@ public class Read {
         HashMap<String, HashMap<String, Object>> locations = vaccineSystem.select(columnNames, tableName, innerJoins);
 
         // Add opening times data for each location
-        for (String key : locations.keySet()) {
-            HashMap<String, HashMap<String, Object>> openingTimes = readOpeningTimes(vaccineSystem, (String) locations.get(key).get("Location.locationID"));
-            locations.get(key).put("openingTimes", openingTimes);
+        if (locations != null) {
+            for (String key : locations.keySet()) {
+                HashMap<String, HashMap<String, Object>> openingTimes = readOpeningTimes(vaccineSystem, (String) locations.get(key).get("Location.locationID"));
+                locations.get(key).put("openingTimes", openingTimes);
+            }
         }
 
         return locations;

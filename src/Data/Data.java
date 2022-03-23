@@ -64,9 +64,6 @@ public class Data {
      */
     public void write() throws SQLException {
 
-        // Van has 2 vaccines in storage on toOrigin when it should only have one
-        // When it is toOrigin is has the right amount, and then doubles it when reaching origin
-
         writeMaps(vaccineSystem, vaccines);
         writeMaps(vaccineSystem, factories);
         writeMaps(vaccineSystem, transporterLocations);

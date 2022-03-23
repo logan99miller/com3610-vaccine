@@ -20,15 +20,17 @@ public class Factory extends StorageLocation {
 
         HashMap<String, HashMap<String, Object>> factories = data.getFactories();
 
-        for (String key : factories.keySet()) {
-            HashMap<String, Object> factory = factories.get(key);
-            HashMap<String, HashMap<String, String>> openingTimes = (HashMap<String, HashMap<String, String>>) factory.get("openingTimes");
+        if (factories != null) {
+            for (String key : factories.keySet()) {
+                HashMap<String, Object> factory = factories.get(key);
+                HashMap<String, HashMap<String, String>> openingTimes = (HashMap<String, HashMap<String, String>>) factory.get("openingTimes");
 
-            if (isOpen(data, openingTimes)) {
-                factories.put(key, updateStockLevel(data, factory, updateRate, simulationSpeed));
+                if (isOpen(data, openingTimes)) {
+                    factories.put(key, updateStockLevel(data, factory, updateRate, simulationSpeed));
+                }
             }
+            data.setFactories(factories);
         }
-        data.setFactories(factories);
     }
 
     /**

@@ -29,11 +29,11 @@ public class Update {
      */
     public static void update(ActivityLog activityLog, VaccineSystem vaccineSystem, Data data) throws SQLException {
         updateDateAndTime(data);
+        updateRates(data);
         removeInvalidVanReferences(vaccineSystem);
         removeEmptyVaccinesInStorage(vaccineSystem);
         removeExpiredStock(activityLog, vaccineSystem, data);
         processBookings(vaccineSystem, data);
-        updateRates(data);
     }
 
     /**
@@ -41,7 +41,7 @@ public class Update {
      */
     private static void updateDateAndTime(Data data) {
         data.setCurrentDate(LocalDate.now());
-        data.setCurrentTime(LocalTime.of(11, 0));
+        data.setCurrentTime(LocalTime.now());
     }
 
     /**
@@ -54,39 +54,54 @@ public class Update {
 
         // Allows us to iterate through all storage locations
         HashMap<String, HashMap<String, Object>> allStorageLocations = new HashMap<>();
-        allStorageLocations.putAll(readFactories(vaccineSystem));
-        allStorageLocations.putAll(readDistributionCentres(vaccineSystem));
-        allStorageLocations.putAll(readVaccinationCentres(vaccineSystem));
+
+        allStorageLocations = addStorageLocationToAllLocations(allStorageLocations, readFactories(vaccineSystem));
+        allStorageLocations = addStorageLocationToAllLocations(allStorageLocations, readDistributionCentres(vaccineSystem));
+        allStorageLocations = addStorageLocationToAllLocations(allStorageLocations, readVaccinationCentres(vaccineSystem));
 
         boolean originExists = false;
         boolean destinationExists = false;
 
-        for (String keyI : vans.keySet()) {
-            HashMap<String, Object> van = vans.get(keyI);
+        if (vans != null) {
+            for (String keyI : vans.keySet()) {
+                HashMap<String, Object> van = vans.get(keyI);
 
-            String originID = (String) van.get("Van.originID");
-            String destinationID = (String) van.get("Van.destinationID");
+                String originID = (String) van.get("Van.originID");
+                String destinationID = (String) van.get("Van.destinationID");
 
-            for (String keyJ : allStorageLocations.keySet()) {
+                for (String keyJ : allStorageLocations.keySet()) {
 
-                HashMap<String, Object> storageLocation = allStorageLocations.get(keyJ);
-                String locationID = (String) storageLocation.get("Location.locationID");
+                    HashMap<String, Object> storageLocation = allStorageLocations.get(keyJ);
+                    String locationID = (String) storageLocation.get("Location.locationID");
 
-                if (locationID.equals(originID)) {
-                    originExists = true;
+                    if (locationID.equals(originID)) {
+                        originExists = true;
+                    }
+                    if (locationID.equals(destinationID)) {
+                        destinationExists = true;
+                    }
                 }
-                if (locationID.equals(destinationID)) {
-                    destinationExists = true;
-                }
-            }
 
-            // If either origin or destination does not exist, change van's delivery stage
-            if ((!originExists) || (!destinationExists)) {
-                van.put("Van.deliveryStage", "waiting");
-                van.put("Van.change", "change");
-                writeMap(vaccineSystem, van);
+                // If either origin or destination does not exist, change van's delivery stage
+                if ((!originExists) || (!destinationExists)) {
+                    van.put("Van.deliveryStage", "waiting");
+                    van.put("Van.change", "change");
+                    writeMap(vaccineSystem, van);
+                }
             }
         }
+    }
+
+    /**
+     * Checks the given storage locations are not null befor adding them to all storage locations
+     */
+    private static HashMap<String, HashMap<String, Object>> addStorageLocationToAllLocations(
+        HashMap<String, HashMap<String, Object>> allStorageLocations, HashMap<String, HashMap<String, Object>> storageLocations
+    ) {
+        if (storageLocations != null) {
+            allStorageLocations.putAll(storageLocations);
+        }
+        return allStorageLocations;
     }
 
     /**
@@ -97,13 +112,15 @@ public class Update {
 
         HashMap<String, HashMap<String, Object>> vaccinesInStorage = readVaccinesInStorage(vaccineSystem);
 
-        for (String key : vaccinesInStorage.keySet()) {
-            HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(key);
+        if (vaccinesInStorage != null) {
+            for (String key : vaccinesInStorage.keySet()) {
+                HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(key);
 
-            int stockLevel = Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
+                int stockLevel = Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
 
-            if (stockLevel < 1) {
-                vaccineSystem.delete("vaccineInStorageID", key, "VaccineInStorage");
+                if (stockLevel < 1) {
+                    vaccineSystem.delete("vaccineInStorageID", key, "VaccineInStorage");
+                }
             }
         }
     }
@@ -119,19 +136,21 @@ public class Update {
 
         HashMap<String, HashMap<String, Object>> vaccinesInStorage = readVaccinesInStorage(vaccineSystem);
 
-        for (String key : vaccinesInStorage.keySet()) {
-            HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(key);
+        if (vaccinesInStorage != null) {
+            for (String key : vaccinesInStorage.keySet()) {
+                HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(key);
 
-            LocalDate expirationDate = getLocalDate((String) vaccineInStorage.get("VaccineInStorage.expirationDate"));
+                LocalDate expirationDate = getLocalDate((String) vaccineInStorage.get("VaccineInStorage.expirationDate"));
 
-            if (expirationDate.isBefore(currentDate)) {
+                if (expirationDate.isBefore(currentDate)) {
 
-                String ID = (String) vaccineInStorage.get("VaccineInStorage.vaccineInStorageID");
-                String stockLevel = (String) vaccineInStorage.get("VaccineInStorage.stockLevel");
+                    String ID = (String) vaccineInStorage.get("VaccineInStorage.vaccineInStorageID");
+                    String stockLevel = (String) vaccineInStorage.get("VaccineInStorage.stockLevel");
 
-                vaccineSystem.delete("vaccineInStorageID", ID, "VaccineInStorage");
+                    vaccineSystem.delete("vaccineInStorageID", ID, "VaccineInStorage");
 
-                activityLog.add(stockLevel + " vaccine(s) have expired and thrown away");
+                    activityLog.add(stockLevel + " vaccine(s) have expired and thrown away");
+                }
             }
         }
     }
@@ -149,27 +168,28 @@ public class Update {
         HashMap<String, HashMap<String, Object>> vaccinationCentres = readVaccinationCentres(vaccineSystem);
         HashMap<String, HashMap<String, Object>> bookings = readBookings(vaccineSystem);
 
-        for (String key : bookings.keySet()) {
-            HashMap<String, Object> booking = bookings.get(key);
+        if (bookings != null) {
+            for (String key : bookings.keySet()) {
+                HashMap<String, Object> booking = bookings.get(key);
 
-            // In the format YYYY-MM-DD HH:MM:SS
-            String dateTime = (String) booking.get("Booking.date");
+                // In the format YYYY-MM-DD HH:MM:SS
+                String dateTime = (String) booking.get("Booking.date");
 
-            // In the format HH:MM:SS
-            String time = dateTime.substring(dateTime.length() - 8);
+                // In the format HH:MM:SS
+                String time = dateTime.substring(dateTime.length() - 8);
 
-            LocalDate bookingDate = getLocalDate(dateTime);
-            LocalTime bookingTime = getLocalTime(time);
+                LocalDate bookingDate = getLocalDate(dateTime);
+                LocalTime bookingTime = getLocalTime(time);
 
-            if (hasAppointmentHappened(data, bookingDate, bookingTime, currentDate, currentTime)) {
+                if (hasAppointmentHappened(data, bookingDate, bookingTime, currentDate, currentTime)) {
 
-                String vaccinationCentreID = (String) booking.get("Booking.vaccinationCentreID");
-                HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(vaccinationCentreID);
+                    String vaccinationCentreID = (String) booking.get("Booking.vaccinationCentreID");
+                    HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(vaccinationCentreID);
 
-                completeAppointment(vaccineSystem, booking, vaccinationCentre);
+                    completeAppointment(vaccineSystem, booking, vaccinationCentre);
+                }
             }
         }
-
     }
 
     /**

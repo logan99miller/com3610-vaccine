@@ -47,24 +47,30 @@ public class MapPanel extends JPanel {
      * Sets the scale (how many pixels per coordinate integer) and the minimum x and y values for all the locations
      */
     private void setScaleAndMin() {
-        ArrayList<Float> longitudes = new ArrayList<>();
-        ArrayList<Float> latitudes = new ArrayList<>();
 
-        for (String key : allLocations.keySet()) {
-            HashMap<String, Object> location = allLocations.get(key);
-            longitudes.add(Float.parseFloat((String) location.get("Location.longitude")));
-            latitudes.add(Float.parseFloat((String) location.get("Location.latitude")));
+        if (allLocations.size() > 0) {
+
+            ArrayList<Float> longitudes = new ArrayList<>();
+            ArrayList<Float> latitudes = new ArrayList<>();
+
+            for (String key : allLocations.keySet()) {
+                HashMap<String, Object> location = allLocations.get(key);
+                longitudes.add(Float.parseFloat((String) location.get("Location.longitude")));
+                latitudes.add(Float.parseFloat((String) location.get("Location.latitude")));
+            }
+
+            xMin = Collections.min(longitudes);
+            yMin = Collections.min(latitudes);
+
+            float longitudeRange = Math.abs(Collections.max(longitudes) - xMin);
+            float latitudeRange = Math.abs(Collections.max(latitudes) - yMin);
+
+            final int BORDER = 10;
+
+            // (ICON_SIZE * 2) subtracted from width and height as the icon's x and y values are for the top left of the icon
+            xScale = (this.getPreferredSize().width - (ICON_SIZE * 2) - BORDER) / longitudeRange;
+            yScale = (this.getPreferredSize().height - (ICON_SIZE * 2) - BORDER) / latitudeRange;
         }
-
-        xMin = Collections.min(longitudes);
-        yMin = Collections.min(latitudes);
-
-        float longitudeRange = Math.abs(Collections.max(longitudes) - xMin);
-        float latitudeRange = Math.abs(Collections.max(latitudes) - yMin);
-
-        // (ICON_SIZE * 2) subtracted from width and height as the icon's x and y values are for the top left of the icon
-        xScale = (this.getPreferredSize().width - (ICON_SIZE * 2)) / longitudeRange;
-        yScale = (this.getPreferredSize().height - (ICON_SIZE * 2)) / latitudeRange;
     }
 
     /**
@@ -240,6 +246,58 @@ public class MapPanel extends JPanel {
         g.drawLine(aX, aY, midX, midY);
     }
 
+    /**
+     * Draws a line representing 1km on the x and y axis
+     * @param g required to draw to the panel
+     */
+    private void drawScale(Graphics g) {
+        final int KM_PER_COORDINATE = 111;
+
+        final int SIDE_LINE_HEIGHT = 5;
+
+        int longitudeLength = Math.round((xScale / KM_PER_COORDINATE));
+        int latitudeLength = Math.round((yScale / KM_PER_COORDINATE));
+
+        drawLongitudeScale(g, 0, longitudeLength, 0, SIDE_LINE_HEIGHT, 20);
+        drawLatitudeScale(g, 0, SIDE_LINE_HEIGHT, SIDE_LINE_HEIGHT * 2, latitudeLength, 50);
+
+    }
+
+    /**
+     * Draws a line which represents a km in the x-axis
+     */
+    private void drawLongitudeScale(Graphics g, int startX, int xLength, int startY, int yLength, int labelHeight) {
+        int endX = startX + xLength;
+
+        startY = startY + labelHeight;
+
+        int midY = startY + (yLength / 2);
+        int endY = startY + yLength;
+
+        g.drawLine(startX, startY, startX, endY);
+        g.drawLine(startX, midY, endX, midY);
+        g.drawLine(endX, startY, endX, endY);
+        g.drawString("1 km", startX, startY - labelHeight);
+    }
+
+    /**
+     * Draws a line which represents a km in the y-axis
+     */
+    private void drawLatitudeScale(Graphics g, int startX, int xLength, int startY, int yLength, int labelWidth) {
+
+        startX = startX + labelWidth;
+
+        int midX = startX + (xLength / 2);
+        int endX = startX + xLength;
+
+        int endY = startY + yLength;
+
+        g.drawLine(startX, startY, endX, startY);
+        g.drawLine(midX, startY, midX, endY);
+        g.drawLine(startX, endY, endX, endY);
+        g.drawString("1 km", startX - labelWidth, startY);
+    }
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         drawDeliveries(g);
@@ -247,5 +305,6 @@ public class MapPanel extends JPanel {
         drawFacilities(g, transporterLocations, "transporterLocation");
         drawFacilities(g, distributionCentres, "distributionCentre");
         drawFacilities(g, vaccinationCentres, "vaccinationCentre");
+        drawScale(g);
     }
 }

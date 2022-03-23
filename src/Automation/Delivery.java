@@ -4,13 +4,11 @@ import Core.ActivityLog;
 import Core.AutomateSystem;
 import Data.Data;
 import Data.Utils;
-import UserInterface.LoggedInPage;
 
 import java.util.HashMap;
 
 public class Delivery {
 
-//    public static void update(ActivityLog activityLog, Data data, int updateRate, int simulationSpeed) {
     public static void update(AutomateSystem automateSystem) {
         Data data = automateSystem.getData();
         ActivityLog activityLog = automateSystem.getActivityLog();
@@ -39,11 +37,9 @@ public class Delivery {
             String deliveryStage = (String) van.get("Van.deliveryStage");
 
             if (deliveryStage.equals("toOrigin")) {
-                System.out.println("Van before reached origin: " + van); // Has 2 vaccinesInStorage, should only have 1
                 HashMap<String, Object> origin = getOrigin(data, van);
                 origin = removeVaccinesFromOrigin(origin, van);
                 van = vanReachedOrigin(activityLog, van, origin, destination);
-                System.out.println("Van once reached origin: " + van); // Has 2 vaccinesInStorage, should only have 1
             }
             else if (deliveryStage.equals("toDestination")) {
                 destination = addVaccinesToDestination(data, destination, van);

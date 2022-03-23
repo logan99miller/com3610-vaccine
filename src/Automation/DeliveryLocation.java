@@ -90,7 +90,7 @@ public class DeliveryLocation extends StorageLocation {
     ) {
 
         HashMap<String, HashMap<String, Object>> availableOrigins = getAvailableOrigins(origins, vans, amount, vaccineID);
-        HashMap<String, HashMap<String, Object>> availableVans = getAvailableVans(vans); // SHOULD ALSO CONSIDER VAN CAPACITY
+        HashMap<String, HashMap<String, Object>> availableVans = getAvailableVans(vans);
 
         if (availableOrigins.size() == 0) {
             addNoOriginsToActivityLog(activityLog, origins, destination);
@@ -362,9 +362,11 @@ public class DeliveryLocation extends StorageLocation {
     protected static int getTotalVaccinesPerHour(HashMap<String, HashMap<String, Object>> vaccinationCentres) {
         int totalVaccinesPerHour = 0;
 
-        for (String key : vaccinationCentres.keySet()) {
-            HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
-            totalVaccinesPerHour += Integer.parseInt((String) vaccinationCentre.get("VaccinationCentre.vaccinesPerHour"));
+        if (vaccinationCentres != null) {
+            for (String key : vaccinationCentres.keySet()) {
+                HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
+                totalVaccinesPerHour += Integer.parseInt((String) vaccinationCentre.get("VaccinationCentre.vaccinesPerHour"));
+            }
         }
 
         return totalVaccinesPerHour;
@@ -378,9 +380,11 @@ public class DeliveryLocation extends StorageLocation {
     protected static int getTotalCapacity(HashMap<String, HashMap<String, Object>> vaccinationCentres) {
         int totalCapacity = 0;
 
-        for (String key : vaccinationCentres.keySet()) {
-            HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
-            totalCapacity += getCapacity(vaccinationCentre);
+        if (vaccinationCentres != null) {
+            for (String key : vaccinationCentres.keySet()) {
+                HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
+                totalCapacity += getCapacity(vaccinationCentre);
+            }
         }
 
         return totalCapacity;

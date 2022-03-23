@@ -111,8 +111,6 @@ public class AddPage extends Page {
                 e.printStackTrace();
             }
         }
-
-        // Return
         return "";
     }
 

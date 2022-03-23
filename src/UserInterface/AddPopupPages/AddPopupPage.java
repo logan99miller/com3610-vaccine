@@ -32,7 +32,6 @@ public class AddPopupPage extends AddPage {
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == backButton) {
-            System.out.println("Hello world");
             frame.setVisible(false);
         }
     }

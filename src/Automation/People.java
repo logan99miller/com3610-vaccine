@@ -23,16 +23,18 @@ public class People {
         HashMap<String, HashMap<String, Object>> people = data.getPeople();
         HashMap<String, HashMap<String, Object>> bookablePeople = new HashMap<>();
 
-        for (String keyI : people.keySet()) {
+        if (people != null) {
+            for (String keyI : people.keySet()) {
 
-            HashMap<String, Object> person = people.get(keyI);
-            HashMap<String, Object> bookings = (HashMap<String, Object>) person.get("bookings");
+                HashMap<String, Object> person = people.get(keyI);
+                HashMap<String, Object> bookings = (HashMap<String, Object>) person.get("bookings");
 
-            if (bookings.size() == 0) {
+                if (bookings.size() == 0) {
 
-                // Don't include the person in the unbooked hashmap if person is not eligible for another vaccine yet
-                if (longEnoughSincePreviousVaccines(data, person)) {
-                    bookablePeople.put(keyI, person);
+                    // Don't include the person in the unbooked hashmap if person is not eligible for another vaccine yet
+                    if (longEnoughSincePreviousVaccines(data, person)) {
+                        bookablePeople.put(keyI, person);
+                    }
                 }
             }
         }
