@@ -31,14 +31,14 @@ public class VaccineSystem extends JFrame {
      * Starts the system
      */
     public static void main(String[] args) {
-        new VaccineSystem("Vaccine System");
+        new VaccineSystem("Vaccine System", true);
     }
 
     /**
      * Initializes the program by creating core classes, configuring user interface and beginning the automation thread
-     * @param titleBarText
+     * @param runAutomation used in unit testing
      */
-    public VaccineSystem(String titleBarText) {
+    public VaccineSystem(String titleBarText, boolean runAutomation) {
         super(titleBarText);
 
         user = "root";
@@ -57,7 +57,9 @@ public class VaccineSystem extends JFrame {
         // E.g. simulationSpeed = 2 means every 1 minute in real life is 2 minutes in the system
         simulationSpeed = 10;
 
-        runAutomation();
+        if (runAutomation) {
+            runAutomation();
+        }
     }
 
     /**

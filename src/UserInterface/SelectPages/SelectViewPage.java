@@ -14,7 +14,7 @@ public class SelectViewPage extends SelectPage {
 
         HashMap<String, List<String>> keys = new HashMap<>();
         keys.put("Factories", Arrays.asList("Factory.factoryID", "Location.longitude", "Location.latitude", "Manufacturer.name", "Manufacturer.vaccineID", "Factory.vaccinesPerMin", "openingTimes", "stores"));
-        keys.put("Transporter Locations", Arrays.asList("TransporterLocation.transporterLocationID", "Location.longitude", "Location.latitude", "Transporter.name"));
+        keys.put("Transporter Locations", Arrays.asList("TransporterLocation.transporterLocationID", "Location.longitude", "Location.latitude", "openingTimes", "Transporter.name"));
         keys.put("Distribution Centres", Arrays.asList("DistributionCentre.distributionCentreID", "Location.longitude", "Location.latitude", "openingTimes", "stores"));
         keys.put("Vaccination Centres", Arrays.asList("VaccinationCentre.vaccinationCentreID", "VaccinationCentre.name", "Location.longitude", "Location.latitude", "VaccinationCentre.vaccinesPerHour", "bookings", "openingTimes", "stores"));
         keys.put("Vaccines", Arrays.asList("Vaccine.vaccineID", "Vaccine.name", "Vaccine.dosesNeeded", "Vaccine.daysBetweenDoses", "lifespans", "exemptions"));
@@ -24,7 +24,7 @@ public class SelectViewPage extends SelectPage {
 
         HashMap<String, List<String>> headings = new HashMap<>();
         headings.put("Factories", Arrays.asList("ID", "Longitude", "Latitude", "Manufacturer", "Vaccine ID", "Vaccine Per Min", "Opening Times", "Stores"));
-        headings.put("Transporter Locations", Arrays.asList("ID", "Longitude", "Latitude", "Transporter"));
+        headings.put("Transporter Locations", Arrays.asList("ID", "Longitude", "Latitude", "Opening Times", "Transporter"));
         headings.put("Distribution Centres", Arrays.asList("ID", "Longitude", "Latitude", "Opening Times", "Stores"));
         headings.put("Vaccination Centres", Arrays.asList("ID", "Name", "Longitude", "Latitude", "Vaccines Per Hour", "Bookings", "Opening Times", "Stores"));
         headings.put("Vaccines", Arrays.asList("ID", "Name", "Doses Needed", "Days Between Doses", "Lifespans", "Exemptions"));
