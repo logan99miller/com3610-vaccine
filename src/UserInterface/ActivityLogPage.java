@@ -52,7 +52,7 @@ public class ActivityLogPage extends Page {
         logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
 
         if (log.size() == 0) {
-            logPanel.add(new JLabel("No data"));
+            logPanel.add(new JLabel(" No data"));
         }
         else {
 

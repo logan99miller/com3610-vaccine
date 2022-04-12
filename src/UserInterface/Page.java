@@ -46,7 +46,7 @@ public class Page implements ActionListener {
      * @return the panel with the added label and component
      */
     public static JPanel addLabelledComponent(JPanel panel, String label, JComponent component) {
-        panel.add(new JLabel(label));
+        panel.add(new JLabel(" " + label));
         panel.add(component);
         return panel;
     }

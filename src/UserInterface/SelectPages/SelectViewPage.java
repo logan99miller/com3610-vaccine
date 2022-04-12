@@ -10,7 +10,7 @@ import java.util.*;
 public class SelectViewPage extends SelectPage {
 
     public SelectViewPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
-        super(vaccineSystem, loggedInPage, "view");
+        super(vaccineSystem, loggedInPage, " View");
 
         HashMap<String, List<String>> keys = new HashMap<>();
         keys.put("Factories", Arrays.asList("Factory.factoryID", "Location.longitude", "Location.latitude", "Manufacturer.name", "Manufacturer.vaccineID", "Factory.vaccinesPerMin", "openingTimes", "stores"));

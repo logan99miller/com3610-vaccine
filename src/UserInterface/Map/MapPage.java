@@ -64,12 +64,24 @@ public class MapPage extends Page {
 
             JPanel framePanel = new JPanel();
             framePanel.setLayout(new BoxLayout(framePanel, BoxLayout.Y_AXIS));
-            framePanel.add(new JLabel("Factory: circle"));
-            framePanel.add(new JLabel("Transporter Location: square"));
-            framePanel.add(new JLabel("Distribution Centre: triangle"));
-            framePanel.add(new JLabel("Vaccination Centre: diamond"));
+            framePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            createPopupFrame(frame, framePanel, 400, 400);
+            JPanel gridPanel = new JPanel();
+            gridPanel.setLayout(new GridLayout(0, 2));
+
+            gridPanel.add(new JLabel(" Factory:"));
+            gridPanel.add(new JLabel(" Building with chimney"));
+            gridPanel.add(new JLabel(" Transporter Location:"));
+            gridPanel.add(new JLabel(" Van"));
+            gridPanel.add(new JLabel(" Distribution Centre:"));
+            gridPanel.add(new JLabel(" Square building"));
+            gridPanel.add(new JLabel(" Vaccination Centre:"));
+            gridPanel.add(new JLabel(" Vaccine"));
+            setMaxWidthMinHeight(gridPanel);
+
+            framePanel.add(gridPanel);
+
+            createPopupFrame(frame, framePanel, 400, 100);
         }
     }
 }

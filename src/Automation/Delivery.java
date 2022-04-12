@@ -107,11 +107,11 @@ public class Delivery {
     }
 
     private static HashMap<String, Object> getDestination(Data data, HashMap<String, Object> van) {
-        String originID = (String) van.get("Van.destinationID");
+        String destinationID = (String) van.get("Van.destinationID");
         HashMap<String, HashMap<String, Object>> destinations = new HashMap<>();
         destinations = Utils.mergeMaps(destinations, data.getVaccinationCentres(), "v");
         destinations = Utils.mergeMaps(destinations, data.getDistributionCentres(), "d");
-        HashMap<String, Object> destination = Utils.findMap(destinations, "Location.locationID", originID);
+        HashMap<String, Object> destination = Utils.findMap(destinations, "Location.locationID", destinationID);
         return destination;
     }
 
@@ -179,12 +179,12 @@ public class Delivery {
         String vaccineExpirationDateA = vaccineInStorageA.get("VaccineInStorage.expirationDate");
 
         String vaccineIDB = vaccineInStorageB.get("VaccineInStorage.vaccineID");
-        String vaccineExpirationDateB= vaccineInStorageB.get("VaccineInStorage.expirationDate");
+        String vaccineExpirationDateB = vaccineInStorageB.get("VaccineInStorage.expirationDate");
 
         if ((vaccineIDA.equals(vaccineIDB)) && (vaccineExpirationDateA.equals(vaccineExpirationDateB))) {
             int stockLevelA = Integer.parseInt(vaccineInStorageA.get("VaccineInStorage.stockLevel"));
             int stockLevelB = Integer.parseInt(vaccineInStorageB.get("VaccineInStorage.stockLevel"));
-            int stockLevel = stockLevelA + stockLevelB;
+            int stockLevel = stockLevelA - stockLevelB;
 
             vaccineInStorageA.put("VaccineInStorage.stockLevel", String.valueOf(stockLevel));
             vaccineInStorageA.put("VaccineInStorage.change", "change");

@@ -13,7 +13,7 @@ import java.util.Map;
 public class SelectAddPage extends SelectPage {
 
     public SelectAddPage(VaccineSystem vaccineSystem, LoggedInPage loggedInPage) {
-        super(vaccineSystem, loggedInPage, "add");
+        super(vaccineSystem, loggedInPage, " Add");
         addButtons(createPages());
     }
 
@@ -29,8 +29,8 @@ public class SelectAddPage extends SelectPage {
         pages.put("Distribution Centres", AddDistributionCentrePage.class);
         pages.put("Vaccination Centres", AddVaccinationCentrePage.class);
         pages.put("Bookings", AddBookingPage.class);
-        pages.put("Add Stocks", AddStockPage.class);
-        pages.put("Add Vaccination", AddVaccinationPage.class);
+        pages.put("Stocks", AddStockPage.class);
+        pages.put("Vaccination", AddVaccinationPage.class);
         return pages;
     }
 

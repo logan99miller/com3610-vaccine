@@ -58,7 +58,7 @@ public class Distance {
         return getDistance(longitudeA, latitudeA, longitudeB, latitudeB);
     }
 
-    private static double degreesToRadians(double degrees) {
+    public static double degreesToRadians(double degrees) {
         return degrees * (Math.PI / 180);
     }
 }

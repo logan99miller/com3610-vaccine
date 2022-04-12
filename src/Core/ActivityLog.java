@@ -13,15 +13,17 @@ public class ActivityLog {
     }
 
     public void add(String string, boolean warning) {
-        if (log.size() > LOG_SIZE) {
-            log.removeFirst();
-        }
+        if (!((log.contains(string)) || (log.contains(WARNING_PREFIX + string)))) {
+            if (log.size() > LOG_SIZE) {
+                log.removeFirst();
+            }
 
-        if (warning) {
-            string = WARNING_PREFIX + string;
-        }
+            if (warning) {
+                string = WARNING_PREFIX + string;
+            }
 
-        log.add(string);
+            log.add(string);
+        }
     }
 
     public void add(String string) {

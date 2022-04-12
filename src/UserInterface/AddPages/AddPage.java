@@ -56,7 +56,7 @@ public class AddPage extends Page {
         backButton = new JButton("Back");
         addButton(backButton, mainPanel);
 
-        mainPanel.add(new JLabel(title));
+        mainPanel.add(new JLabel(" " + title));
 
         inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
@@ -183,19 +183,19 @@ public class AddPage extends Page {
                 if (component instanceof JTextField) {
                     String text = ((JTextField) component).getText();
                     if (!checkRequiredInput(label, text)) {
-                        errorMessage("Fields marked with a * must be filled", displayError);
+                        errorMessage(" Fields marked with a * must be filled", displayError);
                         return false;
                     }
                     else if (!checkNumericInput(label, text)) {
-                        errorMessage("Fields marked with a - must have a numeric value", displayError);
+                        errorMessage(" Fields marked with a - must have a numeric value", displayError);
                         return false;
                     }
                     else if (!checkIntegerInput(label, text)) {
-                        errorMessage("Fields marked with a # must have an integer value", displayError);
+                        errorMessage(" Fields marked with a # must have an integer value", displayError);
                         return false;
                     }
                     else if (!checkDateInput(label, text)) {
-                        errorMessage("Dates must be input in the format YYYY-MM-DD", displayError);
+                        errorMessage(" Dates must be input in the format YYYY-MM-DD", displayError);
                         return false;
                     }
                 }

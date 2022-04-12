@@ -88,7 +88,7 @@ public class DistributionCentre extends DeliveryLocation {
         for (String key : vaccinationCentres.keySet()) {
             HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
 
-            getDemandFromVaccinationCentre(
+            demand += getDemandFromVaccinationCentre(
                 data, vaccinationCentre, distributionCentre, availabilities, bookablePeople, totalVaccinesPerHour,
                 totalCapacity, totalDistance, totalVaccinesNeeded
             );

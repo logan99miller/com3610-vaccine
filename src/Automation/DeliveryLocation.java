@@ -159,9 +159,8 @@ public class DeliveryLocation extends StorageLocation {
         String originType = getLocationType(origins.get(firstOriginKey));
 
         String destinationType = getLocationType(destination);
-        String destinationID = getID(destination);
 
-        activityLog.add("No " + originType + " available for " + destinationType + " " + destinationID + " to order from", true);
+        activityLog.add("No " + originType + " available for " + destinationType + " to order from", true);
     }
 
     /**
@@ -170,9 +169,8 @@ public class DeliveryLocation extends StorageLocation {
      */
     private static void addNoVansToActivityLog(ActivityLog activityLog, HashMap<String, Object> destination) {
         String destinationType = getLocationType(destination);
-        String destinationID = getID(destination);
 
-        activityLog.add("No vans available for " + destinationType + " " + destinationID + " to make and order", true);
+        activityLog.add("No vans available for " + destinationType + " to make and order", true);
     }
 
     /**

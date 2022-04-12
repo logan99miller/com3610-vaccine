@@ -8,8 +8,12 @@ import Data.Data;
 import Data.Utils;
 import Core.VaccineSystem;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,11 +22,15 @@ public class MapPanel extends JPanel {
 
     private HashMap<String, HashMap<String, Object>> allLocations, factories, transporterLocations, distributionCentres, vaccinationCentres, vans;
     private float xMin, yMin, xScale, yScale;
-    private final int HALF_ICON_SIZE = 5;
+    private final int HALF_ICON_SIZE = 10;
     private final int ICON_SIZE = 2 * HALF_ICON_SIZE;
+    private Image backgroundImage, vaccinationCentreImage, distributionCentreImage, transporterLocationImage, factoryImage;
 
     public MapPanel(VaccineSystem vaccineSystem, int width, int height) {
         this.setPreferredSize(new Dimension(width, height));
+
+        Border border = BorderFactory.createLineBorder(Color.black);
+        this.setBorder(border);
 
         Data data = vaccineSystem.getData();
 
@@ -41,6 +49,18 @@ public class MapPanel extends JPanel {
         Utils.mergeMaps(allLocations, factories, "f");
 
         setScaleAndMin();
+
+        try {
+            backgroundImage = ImageIO.read(new File("src/UserInterface/Map/mapBackground.png"));
+            vaccinationCentreImage = ImageIO.read(new File("src/UserInterface/Map/vaccinationCentre.png"));
+            distributionCentreImage = ImageIO.read(new File("src/UserInterface/Map/distributionCentre.png"));
+            transporterLocationImage = ImageIO.read(new File("src/UserInterface/Map/transporterLocation.png"));
+            factoryImage = ImageIO.read(new File("src/UserInterface/Map/factory.png"));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -100,28 +120,42 @@ public class MapPanel extends JPanel {
 
         switch(facilityType) {
             case "factory":
-                drawFactory(g, x, y);
+                g.drawImage(factoryImage, x, y, ICON_SIZE, ICON_SIZE, null);
+//                drawFactory(g, x, y);
                 break;
             case "transporterLocation":
-                drawTransporterLocation(g, x, y);
+                g.drawImage(transporterLocationImage, x, y, ICON_SIZE, ICON_SIZE, null);
+//                drawTransporterLocation(g, x, y);
                 break;
             case "distributionCentre":
-                drawDistributionCentre(g, x, y);
+                g.drawImage(distributionCentreImage, x, y, ICON_SIZE, ICON_SIZE, null);
+//                drawDistributionCentre(g, x, y);
                 break;
             case "vaccinationCentre":
-                drawVaccinationCentre(g, x, y);
+                g.drawImage(vaccinationCentreImage, x, y, ICON_SIZE, ICON_SIZE, null);
+//                drawVaccinationCentre(g, x, y);
                 break;
         }
     }
 
     private int getX(HashMap<String, Object> facility) {
         float longitude = Float.parseFloat((String) facility.get("Location.longitude"));
-        return HALF_ICON_SIZE + Math.round((longitude - xMin) * xScale);
+        return Math.round((longitude - xMin) * xScale);
+//        return HALF_ICON_SIZE + Math.round((longitude - xMin) * xScale);
     }
 
     private int getY(HashMap<String, Object> facility) {
         float latitude = Float.parseFloat((String) facility.get("Location.latitude"));
-        return HALF_ICON_SIZE + Math.round((latitude - yMin) * yScale);
+        return Math.round((latitude - yMin) * yScale);
+//        return HALF_ICON_SIZE + Math.round((latitude - yMin) * yScale);
+    }
+
+    private int getLineX(HashMap<String, Object> facility) {
+        return HALF_ICON_SIZE + getX(facility);
+    }
+
+    private int getLineY(HashMap<String, Object> facility) {
+        return HALF_ICON_SIZE + getY(facility);
     }
 
     /**
@@ -164,6 +198,10 @@ public class MapPanel extends JPanel {
      * Draws lines between the locations that vans are driving between to show a delivery is taking place
      */
     private void drawDeliveries(Graphics g) {
+        BasicStroke stroke = new BasicStroke(2);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setStroke(stroke);
+
         HashMap<String, Object> origin = new HashMap<>();
         HashMap<String, Object> destination = new HashMap<>();
         HashMap<String, Object> transporterLocation = new HashMap<>();
@@ -199,12 +237,12 @@ public class MapPanel extends JPanel {
 
             // Draws a delivery line between the transporter location and the origin
             if (deliveryStage.equals("toOrigin")) {
-                drawDeliveryLine(g, transporterLocation, origin, getProgress(van));
+                drawDeliveryLine(g2d, transporterLocation, origin, getProgress(van));
             }
 
             // Draws a delivery line between the origin and the destination
             else if (deliveryStage.equals("toDestination")) {
-                drawDeliveryLine(g, origin, destination, getProgress(van));
+                drawDeliveryLine(g2d, origin, destination, getProgress(van));
             }
         }
     }
@@ -226,24 +264,24 @@ public class MapPanel extends JPanel {
     /**
      * Draws a black line between the two given locations to represent a delivery and a purple line covering a certain percent
      * of the black line to show the progress the van has made so far on it's delivery
-     * @param g required to draw to the panel
+     * @param g2d required to draw to the panel
      * @param locationA the location to van is coming from
      * @param locationB the location the van is going to
      * @param progress how far the van is on its journey as a percentage from 0 to 1
      */
-    private void drawDeliveryLine(Graphics g, HashMap<String, Object> locationA, HashMap<String, Object> locationB, float progress) {
-        int aX = getX(locationA);
-        int aY = getY(locationA);
-        int bX = getX(locationB);
-        int bY = getY(locationB);
+    private void drawDeliveryLine(Graphics2D g2d, HashMap<String, Object> locationA, HashMap<String, Object> locationB, float progress) {
+        int aX = getLineX(locationA);
+        int aY = getLineY(locationA);
+        int bX = getLineX(locationB);
+        int bY = getLineY(locationB);
 
-        g.drawLine(aX, aY, bX, bY);
+        g2d.drawLine(aX, aY, bX, bY);
 
         // Draw the progress line
-        g.setColor(Color.MAGENTA);
+        g2d.setColor(Color.RED);
         int midX = Math.round((aX * (1 - progress)) + (bX * progress));
         int midY = Math.round((aY * (1 - progress)) + (bY * progress));
-        g.drawLine(aX, aY, midX, midY);
+        g2d.drawLine(aX, aY, midX, midY);
     }
 
     /**
@@ -252,54 +290,32 @@ public class MapPanel extends JPanel {
      */
     private void drawScale(Graphics g) {
         final int KM_PER_COORDINATE = 111;
+        final int BORDER = 10;
 
-        final int SIDE_LINE_HEIGHT = 5;
+        final int WIDTH = this.getPreferredSize().width;
+        final int HEIGHT = this.getPreferredSize().height;
 
         int longitudeLength = Math.round((xScale / KM_PER_COORDINATE));
         int latitudeLength = Math.round((yScale / KM_PER_COORDINATE));
 
-        drawLongitudeScale(g, 0, longitudeLength, 0, SIDE_LINE_HEIGHT, 20);
-        drawLatitudeScale(g, 0, SIDE_LINE_HEIGHT, SIDE_LINE_HEIGHT * 2, latitudeLength, 50);
+        int startX = BORDER;
+        int startY = HEIGHT - BORDER;
 
-    }
+        g.drawLine(startX, startY, startX + longitudeLength, startY);
+        g.drawString("1km", startX + (longitudeLength / 2), startY - 2);
 
-    /**
-     * Draws a line which represents a km in the x-axis
-     */
-    private void drawLongitudeScale(Graphics g, int startX, int xLength, int startY, int yLength, int labelHeight) {
-        int endX = startX + xLength;
+        startX = BORDER;
+        startY = HEIGHT - (2 * BORDER);
 
-        startY = startY + labelHeight;
-
-        int midY = startY + (yLength / 2);
-        int endY = startY + yLength;
-
-        g.drawLine(startX, startY, startX, endY);
-        g.drawLine(startX, midY, endX, midY);
-        g.drawLine(endX, startY, endX, endY);
-        g.drawString("1 km", startX, startY - labelHeight);
-    }
-
-    /**
-     * Draws a line which represents a km in the y-axis
-     */
-    private void drawLatitudeScale(Graphics g, int startX, int xLength, int startY, int yLength, int labelWidth) {
-
-        startX = startX + labelWidth;
-
-        int midX = startX + (xLength / 2);
-        int endX = startX + xLength;
-
-        int endY = startY + yLength;
-
-        g.drawLine(startX, startY, endX, startY);
-        g.drawLine(midX, startY, midX, endY);
-        g.drawLine(startX, endY, endX, endY);
-        g.drawString("1 km", startX - labelWidth, startY);
+        g.drawLine(startX, startY, startX, startY - latitudeLength);
+        g.drawString("1km", startX + 2, startY - (latitudeLength / 2));
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        g.drawImage(backgroundImage, 0, 0, null);
+
         drawDeliveries(g);
         drawFacilities(g, factories, "factory");
         drawFacilities(g, transporterLocations, "transporterLocation");

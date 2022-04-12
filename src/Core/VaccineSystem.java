@@ -58,7 +58,7 @@ public class VaccineSystem extends JFrame {
         simulationSpeed = 10;
 
         if (runAutomation) {
-            runAutomation();
+//            runAutomation();
         }
     }
 

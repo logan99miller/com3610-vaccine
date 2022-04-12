@@ -51,8 +51,7 @@ public class Booking {
     }
 
     private static HashMap<String, HashMap<String, Object>> filterPeopleByVaccineReceived(
-        HashMap<String, HashMap<String, Object>> people,
-        int numVaccinesReceived
+        HashMap<String, HashMap<String, Object>> people, int numVaccinesReceived
     ) {
 
         HashMap<String, HashMap<String, Object>> filteredPeople = new HashMap<>();

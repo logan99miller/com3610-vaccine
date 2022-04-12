@@ -57,7 +57,7 @@ public class ViewPage extends Page {
         mainPanel.add(createButtonPanel());
 
         if (maps.isEmpty()) {
-            noDataLabel = new JLabel("No data");
+            noDataLabel = new JLabel(" No data");
             mainPanel.add(noDataLabel);
         }
         else {
@@ -84,7 +84,7 @@ public class ViewPage extends Page {
         headings = getSubHeadings(tableName);
 
         if (maps.isEmpty()) {
-            mainPanel.add(new JLabel("No data"));
+            mainPanel.add(new JLabel(" No data"));
         }
         else {
             tableScrollPane = createTableScrollPane();
