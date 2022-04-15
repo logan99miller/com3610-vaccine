@@ -80,7 +80,7 @@ public class Availability {
 
             LocalDate date = week.get(day);
 
-            // Add the slots for each our in the current day
+            // Add the slots for each hour in the current day
             for (int i = 0; i < hoursOpen; i++) {
                 LocalTime hour = startTime.plusHours(i);
                 slots.put(date + " " + hour, 0);
@@ -100,7 +100,11 @@ public class Availability {
             HashMap<String, String> booking = bookings.get(key);
             String date = booking.get("Booking.date").substring(0, 16);
 
-            int existingBookings = slots.get(date);
+            int existingBookings = 0;
+            try {
+                existingBookings = slots.get(date);
+            }
+            catch (NullPointerException e) {}
 
             slots.put(date, existingBookings + 1);
         }

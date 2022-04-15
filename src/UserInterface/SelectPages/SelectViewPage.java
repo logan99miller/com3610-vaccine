@@ -29,7 +29,7 @@ public class SelectViewPage extends SelectPage {
         headings.put("Vaccination Centres", Arrays.asList("ID", "Name", "Longitude", "Latitude", "Vaccines Per Hour", "Bookings", "Opening Times", "Stores"));
         headings.put("Vaccines", Arrays.asList("ID", "Name", "Doses Needed", "Days Between Doses", "Lifespans", "Exemptions"));
         headings.put("People", Arrays.asList("ID", "Forename", "Surname", "DoB", "Bookings", "Medical Conditions", "Vaccines Received"));
-        headings.put("Vans", Arrays.asList("ID", "`Delivery Stage", "Total Time", "Remaining Time", "Transporter Location ID"));
+        headings.put("Vans", Arrays.asList("ID", "Delivery Stage", "Total Time", "Remaining Time", "Transporter Location ID"));
         headings.put("Bookings", Arrays.asList("ID", "Person ID", "Vaccination Centre ID", "Date"));
 
         for (String mapKey : keys.keySet()) {

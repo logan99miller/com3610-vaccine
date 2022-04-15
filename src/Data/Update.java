@@ -28,7 +28,7 @@ public class Update {
      * @param data needed to get the current date
      */
     public static void update(ActivityLog activityLog, VaccineSystem vaccineSystem, Data data) throws SQLException {
-        updateDateAndTime(data);
+        updateDateAndTime(vaccineSystem, data);
         updateRates(data);
         removeInvalidVanReferences(vaccineSystem);
         removeEmptyVaccinesInStorage(vaccineSystem);
@@ -39,9 +39,21 @@ public class Update {
     /**
      * Updates the current date and time
      */
-    private static void updateDateAndTime(Data data) {
-        data.setCurrentDate(LocalDate.now());
-        data.setCurrentTime(LocalTime.now());
+    private static void updateDateAndTime(VaccineSystem vaccineSystem, Data data) {
+        int updateRate = vaccineSystem.getUpdateRate();
+        int simulationSpeed = vaccineSystem.getSimulationSpeed();
+        
+        LocalDate currentDate = data.getCurrentDate();
+        LocalTime currentTime = data.getCurrentTime();
+        
+        LocalTime newTime = currentTime.plusSeconds((updateRate * simulationSpeed) / 1000);
+
+        if (newTime.isBefore(currentTime)) {
+            currentDate = currentDate.plusDays(1);
+            data.setCurrentDate(currentDate);
+        }
+
+        data.setCurrentTime(newTime);
     }
 
     /**
@@ -150,6 +162,7 @@ public class Update {
                     vaccineSystem.delete("vaccineInStorageID", ID, "VaccineInStorage");
 
                     activityLog.add(stockLevel + " vaccine(s) have expired and thrown away");
+                    System.out.println(stockLevel + " vaccine(s) have expired and thrown away");
                 }
             }
         }

@@ -47,7 +47,7 @@ public class DistributionCentre extends DeliveryLocation {
                 HashMap<String, Object> distributionCentre = distributionCentres.get(key);
 
                 int vaccinesNeeded = getVaccinesNeeded(
-                    data, distributionCentre, availabilities, bookablePeople, totalVaccinesPerHour, totalCapacity, totalDistance, totalVaccinesNeeded
+                    data, distributionCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, totalDistance, totalVaccinesNeeded
                 );
 
                 String vaccineID = "1";
@@ -76,26 +76,28 @@ public class DistributionCentre extends DeliveryLocation {
      */
     public static int getVaccinesNeeded(
         Data data, HashMap<String, Object> distributionCentre, HashMap<String, HashMap<String, Integer>> availabilities,
-        HashMap<String, HashMap<String, Object>> bookablePeople, int totalVaccinesPerHour, int totalCapacity,
-        double totalDistance, int totalVaccinesNeeded
+        HashMap<String, HashMap<String, Object>> bookablePeople, HashMap<String, HashMap<String, Object>> vans, int totalVaccinesPerHour,
+        int totalCapacity, double totalDistance, int totalVaccinesNeeded
     ) {
 
         HashMap<String, HashMap<String, Object>> vaccinationCentres = data.getVaccinationCentres();
 
         int demand = 0;
-        int capacity = getCapacity(distributionCentre);
+        int totalStock = getTotalStockInStorageLocation(distributionCentre, vans, null);
 
         for (String key : vaccinationCentres.keySet()) {
             HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
 
             demand += getDemandFromVaccinationCentre(
-                data, vaccinationCentre, distributionCentre, availabilities, bookablePeople, totalVaccinesPerHour,
+                data, vaccinationCentre, distributionCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour,
                 totalCapacity, totalDistance, totalVaccinesNeeded
             );
         }
 
-        if (demand > capacity) {
-            return demand - capacity;
+        System.out.println("DC demand & totalStock: " + demand + ", " + totalStock);
+
+        if (demand > totalStock) {
+            return demand - totalStock;
         }
         return 0;
     }
@@ -122,7 +124,7 @@ public class DistributionCentre extends DeliveryLocation {
     private static int getDemandFromVaccinationCentre(
         Data data, HashMap<String, Object> vaccinationCentre, HashMap<String, Object> distributionCentre,
         HashMap<String, HashMap<String, Integer>> availabilities, HashMap<String, HashMap<String, Object>> bookablePeople,
-        int totalVaccinesPerHour, int totalCapacity, double totalDistance, int totalVaccinesNeeded
+        HashMap<String, HashMap<String, Object>> vans, int totalVaccinesPerHour, int totalCapacity, double totalDistance, int totalVaccinesNeeded
     ) {
 
         // How many vaccines we need beyond the current vaccination centres needs
@@ -134,7 +136,7 @@ public class DistributionCentre extends DeliveryLocation {
         double distance = getDistance(vaccinationCentre, distributionCentre);
 
         int vaccinesNeeded = VaccinationCentre.getVaccinesNeeded(
-            vaccinationCentre, availabilities, bookablePeople, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate
+            vaccinationCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate
         );
 
         double proportionOfDistance = distance / totalDistance;
@@ -185,6 +187,7 @@ public class DistributionCentre extends DeliveryLocation {
 
         HashMap<String, HashMap<String, Integer>> availabilities = getAvailabilities(data);
         HashMap<String, HashMap<String, Object>> bookablePeople = getBookablePeople(data);
+        HashMap<String, HashMap<String, Object>> vans = data.getVans();
 
         int totalVaccinesPerHour = getTotalVaccinesPerHour(vaccinationCentres);
         int totalCapacity = getTotalCapacity(vaccinationCentres);
@@ -197,7 +200,7 @@ public class DistributionCentre extends DeliveryLocation {
             HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(keyI);
 
             totalVaccinesNeeded += VaccinationCentre.getVaccinesNeeded(
-                vaccinationCentre, availabilities, bookablePeople, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate
+                vaccinationCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate
             );
         }
 

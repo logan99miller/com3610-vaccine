@@ -55,16 +55,21 @@ public class Location {
      * @return
      */
     protected static String getLocationType(HashMap<String, Object> location) {
-        if (location.get("Factory.factoryID") != null) {
+        String factoryID = (String) location.get("Factory.factoryID");
+        String transporterLocationID = (String) location.get("TransporterLocation.transporterLocationID");
+        String distributionCentreID = (String) location.get("DistributionCentre.distributionCentreID");
+        String vaccinationCentreID = (String) location.get("VaccinationCentre.vaccinationCentreID");
+
+        if (!(factoryID == null)) {
             return "factory";
         }
-        if (location.get("TransporterLocation.transporterLocationID") != null) {
+        else if (!(transporterLocationID == null)) {
             return "transporter location";
         }
-        if (location.get("DistributionCentre.distributionCentreID") != null) {
+        else if (!(distributionCentreID == null)) {
             return "distribution centre";
         }
-        if (location.get("VaccinationCentre.vaccinationCentreID") != null) {
+        else if (!(vaccinationCentreID == null)) {
             return "vaccination centre";
         }
         return null;

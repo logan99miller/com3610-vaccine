@@ -33,6 +33,8 @@ public class Data {
 
         try {
             ActivityLog activityLog = vaccineSystem.getActivityLog();
+            currentDate = LocalDate.now();
+            currentTime = LocalTime.now();
             update(activityLog, vaccineSystem, this);
             read();
         }

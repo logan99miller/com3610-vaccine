@@ -43,6 +43,7 @@ public class Booking {
                     if ((minimumAge <= age) && (maximumAge >= age)) {
                         String personID = (String) person.get("Person.personID");
                         availabilities = simulateBooking(activityLog, data, personID, availabilities);
+
                     }
                 }
             }
@@ -80,13 +81,14 @@ public class Booking {
             if (value < vaccinesPerHour) {
                 slots.put(date, value + 1);
 
-                activityLog.add("Person " + personID + " booked in at " + vaccinationCentreID + " vaccination centre for " + date);
+                activityLog.add("Person " + personID + " booked in at vaccination centre " + vaccinationCentreID + " for " + date);
                 HashMap<String, String> booking = new HashMap<>();
                 booking.put("Booking.personID", personID);
                 booking.put("Booking.vaccinationCentreID", vaccinationCentreID);
                 booking.put("Booking.date", date);
                 booking.put("Booking.change", "change");
                 bookings.put("newID" + personID, booking);
+                break;
             }
         }
         vaccinationCentre.put("bookings", bookings);

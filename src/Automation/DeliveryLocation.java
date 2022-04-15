@@ -25,29 +25,31 @@ public class DeliveryLocation extends StorageLocation {
         ActivityLog activityLog, HashMap<String, HashMap<String, Object>> origins, HashMap<String, Object> destination,
         HashMap<String, HashMap<String, Object>> vans, int amount, String vaccineID
     ) {
-        HashMap<String, Object> res = getOriginAndVanWithShortestDistance(activityLog, origins, destination, vans, amount, vaccineID);
+        if (amount > 0) {
+            HashMap<String, Object> res = getOriginAndVanWithShortestDistance(activityLog, origins, destination, vans, amount, vaccineID);
 
-        if (res != null) {
-            double distance = (double) res.get("distance");
+            if (res != null) {
+                double distance = (double) res.get("distance");
 
-            HashMap<String, Object> origin = (HashMap<String, Object>) res.get("origin");
-            HashMap<String, Object> van = (HashMap<String, Object>) res.get("van");
+                HashMap<String, Object> origin = (HashMap<String, Object>) res.get("origin");
+                HashMap<String, Object> van = (HashMap<String, Object>) res.get("van");
 
-            HashMap<String, HashMap<String, Object>> vanStores = (HashMap<String, HashMap<String, Object>>) van.get("stores");
+                HashMap<String, HashMap<String, Object>> vanStores = (HashMap<String, HashMap<String, Object>>) van.get("stores");
 
-            String vanStoreKey = vanStores.keySet().iterator().next();
-            HashMap<String, Object> vanStore = vanStores.get(vanStoreKey);
-            String vanStoreID = (String) vanStore.get("Store.storeID");
+                String vanStoreKey = vanStores.keySet().iterator().next();
+                HashMap<String, Object> vanStore = vanStores.get(vanStoreKey);
+                String vanStoreID = (String) vanStore.get("Store.storeID");
 
-            HashMap<String, HashMap<String, Object>> vaccinesInStorage = getVaccinesInStorage(origin, amount, vanStoreID);
+                HashMap<String, HashMap<String, Object>> vaccinesInStorage = getVaccinesInStorage(origin, amount, vanStoreID);
 
-            vanStore.put("vaccinesInStorage", vaccinesInStorage);
-            vanStores.put(vanStoreKey, vanStore);
+                vanStore.put("vaccinesInStorage", vaccinesInStorage);
+                vanStores.put(vanStoreKey, vanStore);
 
-            addOrderToActivityLog(activityLog, van, origin, destination);
-            van = addOrderToVan(van, origin, destination, distance, vanStores);
+                addOrderToActivityLog(activityLog, van, origin, destination);
+                van = addOrderToVan(van, origin, destination, distance, vanStores);
 
-            vans.put((String) van.get("Van.vanID"), van);
+                vans.put((String) van.get("Van.vanID"), van);
+            }
         }
         return vans;
     }
@@ -170,7 +172,7 @@ public class DeliveryLocation extends StorageLocation {
     private static void addNoVansToActivityLog(ActivityLog activityLog, HashMap<String, Object> destination) {
         String destinationType = getLocationType(destination);
 
-        activityLog.add("No vans available for " + destinationType + " to make and order", true);
+        activityLog.add("No vans available for " + destinationType + " to make an order", true);
     }
 
     /**
@@ -205,7 +207,7 @@ public class DeliveryLocation extends StorageLocation {
 
     /**
      * Returns a hashmap containing all origins available to supply the given amount of vaccines of the given vaccineID type
-     * @param vans a hashmap of all origins, in the format HashMap<primaryKeyValue, HashMap<columName, databaseValue>>
+     * @param origins a hashmap of all origins, in the format HashMap<primaryKeyValue, HashMap<columName, databaseValue>>
      * @param vans a hashmap of all vans, in the format HashMap<primaryKeyValue, HashMap<columName, databaseValue>>
      * @param amount the amount of vaccines needed from the origin
      * @param vaccineID the type of vaccine needed from the origin
@@ -214,6 +216,9 @@ public class DeliveryLocation extends StorageLocation {
     private static HashMap<String, HashMap<String, Object>> getAvailableOrigins(
         HashMap<String, HashMap<String, Object>> origins, HashMap<String, HashMap<String, Object>> vans, int amount, String vaccineID
     ) {
+        int greatestStock = 0;
+        String greatestStockKey = "";
+
         HashMap<String, HashMap<String, Object>> availableOrigins = new HashMap<>();
 
         for (String key : origins.keySet()) {
@@ -223,7 +228,19 @@ public class DeliveryLocation extends StorageLocation {
             if (totalStock >= amount) {
                 availableOrigins.put(key, origin);
             }
+
+            if (totalStock >= greatestStock) {
+                greatestStock = totalStock;
+                greatestStockKey = key;
+            }
+
         }
+
+        if (availableOrigins.size() == 0) {
+            HashMap<String, Object>  origin = origins.get(greatestStockKey);
+            availableOrigins.put(greatestStockKey, origin);
+        }
+
         return availableOrigins;
     }
 
@@ -255,7 +272,7 @@ public class DeliveryLocation extends StorageLocation {
      * @param vaccineID the type of vaccine which we are counting the stock of
      * @return the total stock in the given storage location
      */
-    private static int getTotalStockInStorageLocation(
+    protected static int getTotalStockInStorageLocation(
         HashMap<String, Object> storageLocation, HashMap<String, HashMap<String, Object>> vans, String vaccineID
     ) {
         int stock = 0;

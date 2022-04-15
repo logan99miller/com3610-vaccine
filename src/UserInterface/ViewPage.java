@@ -215,7 +215,7 @@ public class ViewPage extends Page {
      */
     private JPanel addHeadings(JPanel tablePanel, boolean addDeleteButtons) {
         for (String heading : headings) {
-            tablePanel.add(new JLabel(heading));
+            tablePanel.add(new JLabel(heading + " "));
         }
 
         if (addDeleteButtons) {
@@ -242,7 +242,7 @@ public class ViewPage extends Page {
                 // a sub table
                 try {
                     String value = (String) map.get(keyJ);
-                    tablePanel.add(new JLabel(value));
+                    tablePanel.add(new JLabel(value + " "));
                 } catch (ClassCastException e) {
                     tablePanel.add(createViewButton(map, keyJ));
                 }

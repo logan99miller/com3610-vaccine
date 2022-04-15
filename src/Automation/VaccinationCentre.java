@@ -45,7 +45,7 @@ public class VaccinationCentre extends DeliveryLocation {
             for (String key : vaccinationCentres.keySet()) {
                 HashMap<String, Object> vaccinationCentre = vaccinationCentres.get(key);
 
-                int vaccinesNeeded = getVaccinesNeeded(vaccinationCentre, availabilities, bookablePeople, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
+                int vaccinesNeeded = getVaccinesNeeded(vaccinationCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
                 String vaccineID = "1";
                 vans = orderVaccine(activityLog, distributionCentres, vaccinationCentre, vans, vaccinesNeeded, vaccineID);
                 data.setVans(vans);
@@ -67,13 +67,14 @@ public class VaccinationCentre extends DeliveryLocation {
      */
     public static int getVaccinesNeeded(
         HashMap<String, Object> vaccinationCentre, HashMap<String, HashMap<String, Integer>> availabilities,
-        HashMap<String, HashMap<String, Object>> bookablePeople, int totalVaccinesPerHour, int totalCapacity, float predictedVaccinationRate
+        HashMap<String, HashMap<String, Object>> bookablePeople, HashMap<String, HashMap<String, Object>> vans,
+        int totalVaccinesPerHour, int totalCapacity, float predictedVaccinationRate
     ) {
 
         int vaccinesPerHour = Integer.parseInt((String) vaccinationCentre.get("VaccinationCentre.vaccinesPerHour"));
-        int capacity = getCapacity(vaccinationCentre);
+        int totalStock = getTotalStockInStorageLocation(vaccinationCentre, vans, null);
 
-        int expectedBookings = getExpectedBookings(vaccinesPerHour, capacity, bookablePeople.size(), totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
+        int expectedBookings = getExpectedBookings(vaccinesPerHour, totalStock, bookablePeople.size(), totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
 
         String vaccinationCentreID = (String) vaccinationCentre.get("VaccinationCentre.vaccinationCentreID");
         HashMap<String, Integer> availability = availabilities.get(vaccinationCentreID);
@@ -87,9 +88,10 @@ public class VaccinationCentre extends DeliveryLocation {
 
         // How many vaccines will be needed this week
         int demand = expectedBookings + numberOfBookings;
+        System.out.println("VC demand & totalStock: " + demand + ", " + totalStock);
 
-        if (demand > capacity) {
-            return demand - capacity;
+        if (demand > totalStock) {
+            return demand - totalStock;
         }
         return 0;
     }

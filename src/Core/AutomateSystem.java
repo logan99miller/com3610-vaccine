@@ -38,10 +38,16 @@ public class AutomateSystem {
         Delivery.update(this);
 
         try {
-            System.out.println("------------------------------------");
+//            System.out.println("----------" + data.getCurrentDate() + " " + data.getCurrentTime() + "----------");
+
             update(activityLog, vaccineSystem, data);
             data.write();
             data.read();
+
+            HashMap<String, HashMap<String, Object>> bookings = vaccineSystem.select(new String[]{"bookingID"}, "booking");
+            if (bookings.size() == 0) {
+                System.out.println("All vaccinations complete " + data.getCurrentDate() + " " + data.getCurrentTime());
+            }
         }
         catch (SQLException e) {
             e.printStackTrace();

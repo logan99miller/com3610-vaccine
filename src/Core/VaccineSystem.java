@@ -51,11 +51,11 @@ public class VaccineSystem extends JFrame {
         createInterface();
 
         // How often the system updates in milliseconds
-        updateRate = 10000;
+        updateRate = 1000;
 
         // How much current time is multiplied by to increase speed
         // E.g. simulationSpeed = 2 means every 1 minute in real life is 2 minutes in the system
-        simulationSpeed = 10;
+        simulationSpeed = 10000;
 
         if (runAutomation) {
             runAutomation();

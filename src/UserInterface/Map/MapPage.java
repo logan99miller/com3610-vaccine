@@ -31,13 +31,6 @@ public class MapPage extends Page {
         panelWidth = vaccineSystem.getWidth() - (BORDER * 2);
         panelHeight = vaccineSystem.getHeight() - HEADER_HEIGHT - (BORDER * 2);
 
-        createMapPanel();
-    }
-
-    /**
-     * Not included in the constructor as it is called when the map panel is refreshed
-     */
-    private void createMapPanel() {
         mapPanel = new MapPanel(vaccineSystem, panelWidth, panelHeight);
         mainPanel.add(mapPanel, BorderLayout.CENTER);
     }
@@ -46,8 +39,8 @@ public class MapPage extends Page {
      * Automatically called every time the system updates (defined by the updateRate)
      */
     public void refreshPage() {
-        mainPanel.remove(mapPanel);
-        createMapPanel();
+        mapPanel.refresh(vaccineSystem);
+        mapPanel.repaint();
 
         vaccineSystem.invalidate();
         vaccineSystem.validate();

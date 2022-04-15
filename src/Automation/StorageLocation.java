@@ -190,7 +190,7 @@ public class StorageLocation extends Location{
      * @param vaccineID the type of vaccine
      * @return the
      */
-    private static int getTotalStock(HashMap<String, Object> store, String vaccineID) {
+    protected static int getTotalStock(HashMap<String, Object> store, String vaccineID) {
         int stock = 0;
         HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccinesInStorage");
         if (vaccinesInStorage != null) {
@@ -217,7 +217,7 @@ public class StorageLocation extends Location{
     /**
      * Overloaded method for when the stock of all vaccine types is wanted
      */
-    private static int getTotalStock(HashMap<String, Object> store) {
+    protected static int getTotalStock(HashMap<String, Object> store) {
         return getTotalStock(store, null);
     }
 

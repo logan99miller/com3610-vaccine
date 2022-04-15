@@ -66,9 +66,9 @@ public class AddPage extends Page {
         submitButton = new JButton("Submit");
         addButton(submitButton, mainPanel);
 
-        mainPanel.add(new JLabel("Fields marked with a * are required"));
-        mainPanel.add(new JLabel("Fields marked with a # require an integer input"));
-        mainPanel.add(new JLabel("Fields marked with a - require a numeric input"));
+        mainPanel.add(new JLabel(" Fields marked with a * are required"));
+        mainPanel.add(new JLabel(" Fields marked with a # require an integer input"));
+        mainPanel.add(new JLabel(" Fields marked with a - require a numeric input"));
     }
 
     /**

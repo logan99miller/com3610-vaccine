@@ -21,7 +21,7 @@ public class DatabaseManager {
         Connection connection;
         Statement statement = null;
 
-        System.out.println(statementText);
+//        System.out.println(statementText);
 
         try {
             connection = DriverManager.getConnection(URL, user, password);

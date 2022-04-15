@@ -17,7 +17,7 @@ public class CheckInputs {
      * @return true if the input passes the check, false otherwise
      */
     public static boolean checkRequiredInput(String label, String text) {
-        if (label.startsWith("*") || (label.startsWith("-*")) || (label.startsWith("#*"))) {
+        if (label.contains("*")) {
             return !text.equals("");
         }
         return true;

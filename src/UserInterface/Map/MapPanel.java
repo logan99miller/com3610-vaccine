@@ -32,6 +32,22 @@ public class MapPanel extends JPanel {
         Border border = BorderFactory.createLineBorder(Color.black);
         this.setBorder(border);
 
+        refresh(vaccineSystem);
+
+        try {
+            backgroundImage = ImageIO.read(new File("src/UserInterface/Map/mapBackground.png"));
+            vaccinationCentreImage = ImageIO.read(new File("src/UserInterface/Map/vaccinationCentre.png"));
+            distributionCentreImage = ImageIO.read(new File("src/UserInterface/Map/distributionCentre.png"));
+            transporterLocationImage = ImageIO.read(new File("src/UserInterface/Map/transporterLocation.png"));
+            factoryImage = ImageIO.read(new File("src/UserInterface/Map/factory.png"));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void refresh(VaccineSystem vaccineSystem) {
         Data data = vaccineSystem.getData();
 
         factories = data.getFactories();
@@ -49,18 +65,6 @@ public class MapPanel extends JPanel {
         Utils.mergeMaps(allLocations, factories, "f");
 
         setScaleAndMin();
-
-        try {
-            backgroundImage = ImageIO.read(new File("src/UserInterface/Map/mapBackground.png"));
-            vaccinationCentreImage = ImageIO.read(new File("src/UserInterface/Map/vaccinationCentre.png"));
-            distributionCentreImage = ImageIO.read(new File("src/UserInterface/Map/distributionCentre.png"));
-            transporterLocationImage = ImageIO.read(new File("src/UserInterface/Map/transporterLocation.png"));
-            factoryImage = ImageIO.read(new File("src/UserInterface/Map/factory.png"));
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
     /**
@@ -156,42 +160,6 @@ public class MapPanel extends JPanel {
 
     private int getLineY(HashMap<String, Object> facility) {
         return HALF_ICON_SIZE + getY(facility);
-    }
-
-    /**
-     * Draws a circle
-     */
-    private void drawFactory(Graphics g, int x, int y) {
-        x -= HALF_ICON_SIZE;
-        y -= HALF_ICON_SIZE;
-        g.fillOval(x, y, ICON_SIZE, ICON_SIZE);
-    }
-
-    /**
-     * Draws a square
-     */
-    private void drawTransporterLocation(Graphics g, int x, int y) {
-        x -= HALF_ICON_SIZE;
-        y -= HALF_ICON_SIZE;
-        g.fillRect(x, y, ICON_SIZE, ICON_SIZE);
-    }
-
-    /**
-     * Draws a triangle
-     */
-    private void drawDistributionCentre(Graphics g, int x, int y) {
-        int[] xPoints = new int[] {x - HALF_ICON_SIZE, x, x + HALF_ICON_SIZE};
-        int[] yPoints = new int[] {y + HALF_ICON_SIZE, y - HALF_ICON_SIZE, y + HALF_ICON_SIZE};
-        g.fillPolygon(xPoints, yPoints, 3);
-    }
-
-    /**
-     * Draws a diamond
-     */
-    private void drawVaccinationCentre(Graphics g, int x, int y) {
-        int[] xPoints = new int[] {x - HALF_ICON_SIZE, x, x + HALF_ICON_SIZE, x};
-        int[] yPoints = new int[] {y, y - HALF_ICON_SIZE, y, y + HALF_ICON_SIZE};
-        g.fillPolygon(xPoints, yPoints, 4);
     }
 
     /**
