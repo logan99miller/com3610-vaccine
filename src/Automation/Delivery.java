@@ -47,6 +47,19 @@ public class Delivery {
             }
             van.put("Van.change", "change");
         }
+
+        // Used in simulations when some vans fail
+//        double random = Math.random();
+//        if (random < 0.05) {
+//            String vanID = (String) van.get("Van.vanID");
+//            String originID =f (String) van.get("Van.originID");
+//            String destinationID = (String) van.get("Van.destinationID");
+//            System.out.println(vanID + " going from "+ originID +" to " + destinationID + " failed to make delivery");
+//            van.put("Van.deliveryStage", "waiting");
+//            HashMap<String, Object> origin = getOrigin(data, van);
+//            removeVaccinesFromOrigin(origin, van);
+//        }
+
         return van;
     }
 

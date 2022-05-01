@@ -81,7 +81,7 @@ public class Booking {
             if (value < vaccinesPerHour) {
                 slots.put(date, value + 1);
 
-                activityLog.add("Person " + personID + " booked in at vaccination centre " + vaccinationCentreID + " for " + date);
+//                activityLog.add("Person " + personID + " booked in at vaccination centre " + vaccinationCentreID + " for " + date);
                 HashMap<String, String> booking = new HashMap<>();
                 booking.put("Booking.personID", personID);
                 booking.put("Booking.vaccinationCentreID", vaccinationCentreID);

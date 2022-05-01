@@ -45,10 +45,17 @@ public class DeliveryLocation extends StorageLocation {
                 vanStore.put("vaccinesInStorage", vaccinesInStorage);
                 vanStores.put(vanStoreKey, vanStore);
 
-                addOrderToActivityLog(activityLog, van, origin, destination);
-                van = addOrderToVan(van, origin, destination, distance, vanStores);
+                int stockLevel = 0;
+                for (String key : vanStores.keySet()) {
+                    HashMap<String, Object> store = vanStores.get(key);
+                    stockLevel += getTotalStock(store);
+                }
+                if (stockLevel > 0) {
+                    addOrderToActivityLog(activityLog, van, origin, destination);
+                    van = addOrderToVan(van, origin, destination, distance, vanStores);
 
-                vans.put((String) van.get("Van.vanID"), van);
+                    vans.put((String) van.get("Van.vanID"), van);
+                }
             }
         }
         return vans;
@@ -71,6 +78,13 @@ public class DeliveryLocation extends StorageLocation {
         van.put("Van.totalTime", travelTime);
         van.put("Van.remainingTime", travelTime);
         van.put("Van.change", "change");
+
+        int amount = 0;
+        for (String key : vanStores.keySet()) {
+            HashMap<String, Object> store = vanStores.get(key);
+            amount += getTotalStock(store);
+        }
+        System.out.println("Order from " + origin.get("Location.locationID") + " to " + destination.get("Location.locationID") + " of " + amount);
 
         return van;
     }
@@ -261,72 +275,6 @@ public class DeliveryLocation extends StorageLocation {
             }
         }
         return availableVans;
-    }
-
-    /**
-     * Gets the amount of vaccines in a given storage location by iterating through every store in the storage location and
-     * then removing any stocks currently being delivered to another storage location
-     * @param storageLocation in the format HashMap<columName, databaseValue>
-     * @param vans in the format HashMap<primaryKeyValue, HashMap<columName, databaseValue>>, used to get stock being delivered
-     *             to another storage location
-     * @param vaccineID the type of vaccine which we are counting the stock of
-     * @return the total stock in the given storage location
-     */
-    protected static int getTotalStockInStorageLocation(
-        HashMap<String, Object> storageLocation, HashMap<String, HashMap<String, Object>> vans, String vaccineID
-    ) {
-        int stock = 0;
-        HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) storageLocation.get("stores");
-
-        // Get the total stock currently in the storage location
-        for (String key : stores.keySet()) {
-            HashMap<String, Object> store = stores.get(key);
-            stock += getTotalStockInStore(store, vaccineID);
-        }
-
-        String storageLocationID = (String) storageLocation.get("StorageLocation.storageLocationID");
-
-        // Remove any stock which will shortly be delivered to another storage location
-        for (String key : vans.keySet()) {
-
-            HashMap<String, Object> van = vans.get(key);
-            String originID = (String) van.get("Van.originID");
-
-            if (originID != null) {
-                String deliveryStage = (String) van.get("Van.deliveryStage");
-
-                if (originID.equals(storageLocationID) && deliveryStage.equals("toOrigin")) {
-                    stock -= getTotalStockInStore(van, vaccineID);
-                }
-            }
-        }
-        return stock;
-    }
-
-    /**
-     * The amount of vaccines of the given vaccineID in the given store.
-     * @param store the store to get the total stock from, in the format HashMap<columName, databaseValue>
-     * @param neededVaccineID the type of vaccine we are interested in
-     * @return the amount of vaccines
-     */
-    private static int getTotalStockInStore(HashMap<String, Object> store, String neededVaccineID) {
-        int stock = 0;
-        HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccinesInStorage");
-
-        if (vaccinesInStorage != null) {
-            for (String key : vaccinesInStorage.keySet()) {
-                HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(key);
-
-                if (neededVaccineID != null) {
-                    String storedVaccineID = (String) vaccineInStorage.get("VaccineInStorage.vaccineID");
-
-                    if (storedVaccineID.equals(neededVaccineID)) {
-                        stock += Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
-                    }
-                }
-            }
-        }
-        return stock;
     }
 
     /**

@@ -93,7 +93,7 @@ public class LoggedInPage extends Page {
         cards.add(simulationPanel, getSanitizedButtonText(simulationPageButton));
 
         // Initial card when the user logs in
-        cardLayout.show(cards, "view");
+        cardLayout.show(cards, "mapview");
 
         return cards;
     }
@@ -119,8 +119,7 @@ public class LoggedInPage extends Page {
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == logoutButton) {
-            vaccineSystem.setPageName("login");
-            vaccineSystem.updatePage();
+            System.exit(0);
         }
 
         // Navigation panel buttons

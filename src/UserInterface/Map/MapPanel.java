@@ -12,7 +12,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,11 +34,11 @@ public class MapPanel extends JPanel {
         refresh(vaccineSystem);
 
         try {
-            backgroundImage = ImageIO.read(new File("src/UserInterface/Map/mapBackground.png"));
-            vaccinationCentreImage = ImageIO.read(new File("src/UserInterface/Map/vaccinationCentre.png"));
-            distributionCentreImage = ImageIO.read(new File("src/UserInterface/Map/distributionCentre.png"));
-            transporterLocationImage = ImageIO.read(new File("src/UserInterface/Map/transporterLocation.png"));
-            factoryImage = ImageIO.read(new File("src/UserInterface/Map/factory.png"));
+            backgroundImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream("mapBackground.png"));
+            vaccinationCentreImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream("vaccinationCentre.png"));
+            distributionCentreImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream("distributionCentre.png"));
+            transporterLocationImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream("transporterLocation.png"));
+            factoryImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream("factory.png"));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -125,19 +124,15 @@ public class MapPanel extends JPanel {
         switch(facilityType) {
             case "factory":
                 g.drawImage(factoryImage, x, y, ICON_SIZE, ICON_SIZE, null);
-//                drawFactory(g, x, y);
                 break;
             case "transporterLocation":
                 g.drawImage(transporterLocationImage, x, y, ICON_SIZE, ICON_SIZE, null);
-//                drawTransporterLocation(g, x, y);
                 break;
             case "distributionCentre":
                 g.drawImage(distributionCentreImage, x, y, ICON_SIZE, ICON_SIZE, null);
-//                drawDistributionCentre(g, x, y);
                 break;
             case "vaccinationCentre":
                 g.drawImage(vaccinationCentreImage, x, y, ICON_SIZE, ICON_SIZE, null);
-//                drawVaccinationCentre(g, x, y);
                 break;
         }
     }
@@ -145,13 +140,11 @@ public class MapPanel extends JPanel {
     private int getX(HashMap<String, Object> facility) {
         float longitude = Float.parseFloat((String) facility.get("Location.longitude"));
         return Math.round((longitude - xMin) * xScale);
-//        return HALF_ICON_SIZE + Math.round((longitude - xMin) * xScale);
     }
 
     private int getY(HashMap<String, Object> facility) {
         float latitude = Float.parseFloat((String) facility.get("Location.latitude"));
         return Math.round((latitude - yMin) * yScale);
-//        return HALF_ICON_SIZE + Math.round((latitude - yMin) * yScale);
     }
 
     private int getLineX(HashMap<String, Object> facility) {
@@ -205,12 +198,12 @@ public class MapPanel extends JPanel {
 
             // Draws a delivery line between the transporter location and the origin
             if (deliveryStage.equals("toOrigin")) {
-                drawDeliveryLine(g2d, transporterLocation, origin, getProgress(van));
+                drawDeliveryLine(g2d,origin, transporterLocation, getProgress(van));
             }
 
             // Draws a delivery line between the origin and the destination
             else if (deliveryStage.equals("toDestination")) {
-                drawDeliveryLine(g2d, origin, destination, getProgress(van));
+                drawDeliveryLine(g2d, destination, origin, getProgress(van));
             }
         }
     }
@@ -249,7 +242,7 @@ public class MapPanel extends JPanel {
         g2d.setColor(Color.RED);
         int midX = Math.round((aX * (1 - progress)) + (bX * progress));
         int midY = Math.round((aY * (1 - progress)) + (bY * progress));
-        g2d.drawLine(aX, aY, midX, midY);
+        g2d.drawLine(midX, midY, bX, bY);
     }
 
     /**
@@ -260,7 +253,6 @@ public class MapPanel extends JPanel {
         final int KM_PER_COORDINATE = 111;
         final int BORDER = 10;
 
-        final int WIDTH = this.getPreferredSize().width;
         final int HEIGHT = this.getPreferredSize().height;
 
         int longitudeLength = Math.round((xScale / KM_PER_COORDINATE));

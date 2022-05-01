@@ -185,6 +185,73 @@ public class StorageLocation extends Location{
     }
 
     /**
+     * Gets the amount of vaccines in a given storage location by iterating through every store in the storage location and
+     * then removing any stocks currently being delivered to another storage location
+     * @param storageLocation in the format HashMap<columName, databaseValue>
+     * @param vans in the format HashMap<primaryKeyValue, HashMap<columName, databaseValue>>, used to get stock being delivered
+     *             to another storage location
+     * @param vaccineID the type of vaccine which we are counting the stock of
+     * @return the total stock in the given storage location
+     */
+    protected static int getTotalStockInStorageLocation(
+            HashMap<String, Object> storageLocation, HashMap<String, HashMap<String, Object>> vans, String vaccineID
+    ) {
+        int stock = 0;
+        HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) storageLocation.get("stores");
+
+        // Get the total stock currently in the storage location
+        for (String key : stores.keySet()) {
+            HashMap<String, Object> store = stores.get(key);
+            stock += getTotalStockInStore(store, vaccineID);
+        }
+
+        String storageLocationID = (String) storageLocation.get("StorageLocation.storageLocationID");
+
+        // Remove any stock which will shortly be delivered to another storage location
+        for (String key : vans.keySet()) {
+
+            HashMap<String, Object> van = vans.get(key);
+            String originID = (String) van.get("Van.originID");
+
+            if (originID != null) {
+                String deliveryStage = (String) van.get("Van.deliveryStage");
+
+                if (originID.equals(storageLocationID) && deliveryStage.equals("toOrigin")) {
+                    stock -= getTotalStockInStore(van, vaccineID);
+                }
+            }
+        }
+        return stock;
+    }
+
+    /**
+     * The amount of vaccines of the given vaccineID in the given store.
+     * @param store the store to get the total stock from, in the format HashMap<columName, databaseValue>
+     * @param neededVaccineID the type of vaccine we are interested in
+     * @return the amount of vaccines
+     */
+    public static int getTotalStockInStore(HashMap<String, Object> store, String neededVaccineID) {
+        int stock = 0;
+        HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccinesInStorage");
+
+        if (vaccinesInStorage != null) {
+            for (String key : vaccinesInStorage.keySet()) {
+                HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(key);
+
+                if (neededVaccineID != null) {
+                    String storedVaccineID = (String) vaccineInStorage.get("VaccineInStorage.vaccineID");
+
+                    if (storedVaccineID.equals(neededVaccineID)) {
+                        stock += Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
+                    }
+                }
+                stock += Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
+            }
+        }
+        return stock;
+    }
+
+    /**
      * The total number of vaccines in the given store which are the given type of vaccine
      * @param store the store to get the total stock from
      * @param vaccineID the type of vaccine
@@ -234,5 +301,37 @@ public class StorageLocation extends Location{
         }
 
         return totalCapacity;
+    }
+
+    protected static HashMap<String, HashMap<String, Object>> simulateVaccineWastage(HashMap<String, HashMap<String, Object>> storageLocations) {
+//        for (String storageLocationKey : storageLocations.keySet()) {
+//            HashMap<String, Object> storageLocation = storageLocations.get(storageLocationKey);
+//
+//            // Used in simulations when some vaccine wastage occurs
+//            double random = Math.random();
+//            if (random < 0.02) {
+//                int wastage = 0;
+//                HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) storageLocation.get("stores");
+//                for (String storeKey : stores.keySet()) {
+//                    HashMap<String, Object> store = stores.get(storeKey);
+//                    HashMap<String, HashMap<String, Object>> vaccinesInStorage = (HashMap<String, HashMap<String, Object>>) store.get("vaccinesInStorage");
+//                    for (String vaccineInStorageKey : vaccinesInStorage.keySet()) {
+//                        HashMap<String, Object> vaccineInStorage = vaccinesInStorage.get(vaccineInStorageKey);
+//                        int stockLevel = Integer.parseInt((String) vaccineInStorage.get("VaccineInStorage.stockLevel"));
+//                        int newStockLevel = stockLevel - Math.round(stockLevel / 4);
+//                        wastage += newStockLevel - stockLevel;
+//                        vaccineInStorage.put("VaccineInStorage.stockLevel", String.valueOf(newStockLevel));
+//                        vaccinesInStorage.put(vaccineInStorageKey, vaccineInStorage);
+//                    }
+//                    store.put("vaccinesInStorage", vaccinesInStorage);
+//                    stores.put(storeKey, store);
+//                }
+//                storageLocation.put("stores", stores);
+//                String storageLocationID = (String) storageLocation.get("Location.locationID");
+//                System.out.println("StorageLocation " + storageLocationID + " wasted " + wastage + " vaccines");
+//            }
+//            storageLocations.put(storageLocationKey, storageLocation);
+//        }
+        return storageLocations;
     }
 }

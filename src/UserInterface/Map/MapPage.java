@@ -23,6 +23,7 @@ public class MapPage extends Page {
         mainPanel = new JPanel();
 
         keyButton = new JButton("Key");
+
         addButton(keyButton, mainPanel);
 
         final int BORDER = 10;

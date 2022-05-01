@@ -16,6 +16,7 @@ public class AutomateSystem {
     private int simulationSpeed;
     private HashMap<String, HashMap<String, Integer>> availabilities;
     private HashMap<String, HashMap<String, Object>> bookablePeople;
+    private boolean vaccinationCentreOrderedFirst = true;
 
     public void start(ActivityLog activityLog, VaccineSystem vaccineSystem) {
 
@@ -32,22 +33,31 @@ public class AutomateSystem {
         bookablePeople = People.getBookablePeople(data);
 
         Factory.updateStockLevels(this);
-        VaccinationCentre.orderVaccines(this);
-        DistributionCentre.orderVaccines(this);
         Booking.simulateBookings(this);
         Delivery.update(this);
 
+        if (vaccinationCentreOrderedFirst) {
+            DistributionCentre.orderVaccines(this);
+            VaccinationCentre.orderVaccines(this);
+        }
+        else {
+            VaccinationCentre.orderVaccines(this);
+            DistributionCentre.orderVaccines(this);
+        }
+        vaccinationCentreOrderedFirst = !vaccinationCentreOrderedFirst;
+
         try {
-//            System.out.println("----------" + data.getCurrentDate() + " " + data.getCurrentTime() + "----------");
+            System.out.println("----------" + data.getCurrentDate() + " " + data.getCurrentTime() + "----------");
 
             update(activityLog, vaccineSystem, data);
             data.write();
             data.read();
 
-            HashMap<String, HashMap<String, Object>> bookings = vaccineSystem.select(new String[]{"bookingID"}, "booking");
-            if (bookings.size() == 0) {
-                System.out.println("All vaccinations complete " + data.getCurrentDate() + " " + data.getCurrentTime());
-            }
+//            HashMap<String, HashMap<String, Object>> bookings = vaccineSystem.select(new String[]{"bookingID"}, "booking");
+//            if (bookings.size() == 0) {
+//                System.out.println("All vaccinations complete " + data.getCurrentDate() + " " + data.getCurrentTime());
+//                System.exit(0);
+//            }
         }
         catch (SQLException e) {
             e.printStackTrace();

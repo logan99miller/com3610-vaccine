@@ -50,10 +50,16 @@ public class DistributionCentre extends DeliveryLocation {
                     data, distributionCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, totalDistance, totalVaccinesNeeded
                 );
 
+                int stockLevel = getTotalStockInStorageLocation(distributionCentre, vans, null);
+                String id = (String) distributionCentre.get("DistributionCentre.distributionCentreID");
+                System.out.println("DC " + id + " stock level after van demand: " + stockLevel);
+
                 String vaccineID = "1";
                 vans = orderVaccine(activityLog, factories, distributionCentre, vans, vaccinesNeeded, vaccineID);
                 data.setVans(vans);
             }
+            distributionCentres = simulateVaccineWastage(distributionCentres);
+            data.setDistributionCentres(distributionCentres);
         }
     }
 
@@ -93,8 +99,6 @@ public class DistributionCentre extends DeliveryLocation {
                 totalCapacity, totalDistance, totalVaccinesNeeded
             );
         }
-
-        System.out.println("DC demand & totalStock: " + demand + ", " + totalStock);
 
         if (demand > totalStock) {
             return demand - totalStock;

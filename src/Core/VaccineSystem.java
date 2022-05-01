@@ -25,7 +25,7 @@ public class VaccineSystem extends JFrame {
     private ActivityLog activityLog;
     private LoggedInPage loggedInPage;
     private CardLayout cardLayout;
-    private JPanel cards;
+    private JPanel cards, loginPanel;
 
     /**
      * Starts the system
@@ -41,25 +41,22 @@ public class VaccineSystem extends JFrame {
     public VaccineSystem(String titleBarText, boolean runAutomation) {
         super(titleBarText);
 
-        user = "root";
-        password = "artstowerhas20";
-
-        data = new Data(this);
-        activityLog = new ActivityLog();
+        user = "";
+        password = "";
 
         configureWindow();
-        createInterface();
+
+        LoginPage loginPage = new LoginPage(this);
+        loginPanel = loginPage.getPanel();
+        this.add(loginPanel);
 
         // How often the system updates in milliseconds
-        updateRate = 1000;
+        updateRate = 20000;
 
         // How much current time is multiplied by to increase speed
         // E.g. simulationSpeed = 2 means every 1 minute in real life is 2 minutes in the system
-        simulationSpeed = 10000;
+        simulationSpeed = 100;
 
-        if (runAutomation) {
-            runAutomation();
-        }
     }
 
     /**
@@ -67,18 +64,23 @@ public class VaccineSystem extends JFrame {
      * to a population and automatically refresh the map and activity log pages
      */
     private void runAutomation() {
+        Thread automationThread = new Thread() {
+            public void run() {
+                while (true) {
+                    automateSystem.run();
+                    loggedInPage.autoRefresh();
+                    try {
+                        Thread.sleep(updateRate);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+
         automateSystem = new AutomateSystem();
         automateSystem.start(activityLog, this);
-
-        while (true) {
-            automateSystem.run();
-            loggedInPage.autoRefresh();
-            try {
-                Thread.sleep(updateRate);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        automationThread.start();
     }
 
     private void configureWindow() {
@@ -90,6 +92,8 @@ public class VaccineSystem extends JFrame {
     }
 
     private void createInterface() {
+        this.remove(loginPanel);
+
         cardLayout = new CardLayout();
         cards = new JPanel(cardLayout);
 
@@ -265,6 +269,19 @@ public class VaccineSystem extends JFrame {
         }
 
         return statementText;
+    }
+
+    public void login(String user, String password) {
+
+        this.user = user;
+        this.password = password;
+        this.pageName = "main";
+
+        data = new Data(this);
+        activityLog = new ActivityLog();
+
+        createInterface();
+        runAutomation();
     }
 
     // Get and set methods

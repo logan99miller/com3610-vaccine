@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 import static Automation.Availability.getAvailabilities;
 import static Automation.People.getBookablePeople;
+import static Data.Utils.getAllVaccinesInStorage;
 
 public class VaccinationCentre extends DeliveryLocation {
 
@@ -47,9 +48,16 @@ public class VaccinationCentre extends DeliveryLocation {
 
                 int vaccinesNeeded = getVaccinesNeeded(vaccinationCentre, availabilities, bookablePeople, vans, totalVaccinesPerHour, totalCapacity, predictedVaccinationRate);
                 String vaccineID = "1";
+
+                int stockLevel = getTotalStockInStorageLocation(vaccinationCentre, vans, null);
+                String id = (String) vaccinationCentre.get("VaccinationCentre.vaccinationCentreID");
+                System.out.println("VC " + id + " stock level after van demand: " + stockLevel);
+
                 vans = orderVaccine(activityLog, distributionCentres, vaccinationCentre, vans, vaccinesNeeded, vaccineID);
                 data.setVans(vans);
             }
+            vaccinationCentres = simulateVaccineWastage(vaccinationCentres);
+            data.setVaccinationCentres(vaccinationCentres);
         }
     }
 
@@ -88,7 +96,6 @@ public class VaccinationCentre extends DeliveryLocation {
 
         // How many vaccines will be needed this week
         int demand = expectedBookings + numberOfBookings;
-        System.out.println("VC demand & totalStock: " + demand + ", " + totalStock);
 
         if (demand > totalStock) {
             return demand - totalStock;

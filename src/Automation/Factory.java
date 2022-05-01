@@ -19,16 +19,22 @@ public class Factory extends StorageLocation {
         int simulationSpeed = automateSystem.getSimulationSpeed();
 
         HashMap<String, HashMap<String, Object>> factories = data.getFactories();
+        HashMap<String, HashMap<String, Object>> vans = data.getVans();
 
         if (factories != null) {
             for (String key : factories.keySet()) {
                 HashMap<String, Object> factory = factories.get(key);
                 HashMap<String, HashMap<String, String>> openingTimes = (HashMap<String, HashMap<String, String>>) factory.get("openingTimes");
 
+                int stockLevel = StorageLocation.getTotalStockInStorageLocation(factory, vans, null);
+                String id = (String) factory.get("Factory.factoryID");
+                System.out.println("Factory " + id + " stock level after van demand: " + stockLevel);
+
                 if (isOpen(data, openingTimes)) {
                     factories.put(key, updateStockLevel(data, factory, updateRate, simulationSpeed));
                 }
             }
+            factories = simulateVaccineWastage(factories);
             data.setFactories(factories);
         }
     }

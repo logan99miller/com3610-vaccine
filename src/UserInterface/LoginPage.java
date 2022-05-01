@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class LoginPage extends Page {
 
@@ -26,8 +27,6 @@ public class LoginPage extends Page {
         userField = new JTextField();
         passwordField = new JPasswordField();
         submitButton = new JButton("Submit");
-
-        userField.setText("root");
 
         addLabelledComponent(gridPanel, "User:", userField);
         addLabelledComponent(gridPanel, "Password", passwordField);
@@ -52,11 +51,8 @@ public class LoginPage extends Page {
 
             // If given credentials allow a successful connection, then user can access system
             try (Connection ignored = DriverManager.getConnection(url, user, password)) {
-                vaccineSystem.setUser(user);
-                vaccineSystem.setPassword(password);
-                vaccineSystem.setPageName("main");
-                vaccineSystem.updatePage();
-            } catch (Exception ex) {
+                vaccineSystem.login(user, password);
+            } catch (SQLException ex) {
                 errorMessage("Incorrect database login details");
             }
         }

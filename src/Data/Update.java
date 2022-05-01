@@ -5,6 +5,8 @@
  */
 package Data;
 
+import Automation.DeliveryLocation;
+import Automation.StorageLocation;
 import Core.ActivityLog;
 import Core.VaccineSystem;
 
@@ -237,17 +239,29 @@ public class Update {
      * person has received a vaccine.
      * @param vaccineSystem needed to modify the database
      * @param booking the booking which has been completed, in the format HashMap<columnName, databaseValue>
-     * @param vaccinationCentre the vaccination centre the appointment occured at, in the format HashMap<columnName, databaseValue>
+     * @param vaccinationCentre the vaccination centre the appointment occurred at, in the format HashMap<columnName, databaseValue>
      */
     private static void completeAppointment(VaccineSystem vaccineSystem, HashMap<String, Object> booking, HashMap<String, Object> vaccinationCentre) throws SQLException {
         String bookingID = (String) booking.get("Booking.bookingID");
 
-        HashMap<String, Object> bestVaccineInStorage = getBestVaccinesInStorage(vaccinationCentre);
+        HashMap<String, HashMap<String, Object>> stores = (HashMap<String, HashMap<String, Object>>) vaccinationCentre.get("stores");
+        int totalStock = 0;
+        for (String key : stores.keySet()) {
+            totalStock += StorageLocation.getTotalStockInStore(stores.get(key), null);
+        }
 
-        vaccineSystem.delete("bookingID", bookingID, "Booking");
+        if (totalStock > 1) {
+            System.out.println("Appointment completed successfully");
+            HashMap<String, Object> bestVaccineInStorage = getBestVaccinesInStorage(vaccinationCentre);
 
-        reduceStockLevels(vaccineSystem, bestVaccineInStorage);
-        addVaccineReceived(vaccineSystem, booking, bestVaccineInStorage);
+            vaccineSystem.delete("bookingID", bookingID, "Booking");
+
+            reduceStockLevels(vaccineSystem, bestVaccineInStorage);
+            addVaccineReceived(vaccineSystem, booking, bestVaccineInStorage);
+        }
+        else {
+            System.out.println("Appointment missed due to lack of stock");
+        }
     }
 
     /**
