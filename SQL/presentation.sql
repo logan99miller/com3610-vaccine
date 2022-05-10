@@ -23,7 +23,7 @@ DELETE FROM VaccineExemption;
 DELETE FROM VaccineReceived;
 DELETE FROM Simulation;
 
--- Simulaton values
+-- Simulation values
 INSERT INTO Simulation(simulationID, actualBookingRate, actualAttendanceRate, predictedVaccinationRate) VALUES (1, 0.6, 0.9, 0.8);
 
 -- Create vaccines

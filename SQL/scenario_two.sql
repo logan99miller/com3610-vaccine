@@ -21,7 +21,7 @@ DELETE FROM VaccineExemption;
 DELETE FROM VaccineReceived;
 DELETE FROM Simulation;
 
--- Simulaton values
+-- Simulation values
 INSERT INTO Simulation(simulationID, actualBookingRate, actualAttendanceRate, predictedVaccinationRate) VALUES (1, 0.6, 0.9, 0.8);
 
 -- Create vaccines
@@ -193,25 +193,3 @@ INSERT INTO Person (forename, surname, DoB) VALUES ('a', 'b', '1946-01-01');
 INSERT INTO Person (forename, surname, DoB) VALUES ('a', 'b', '2013-01-01');
 INSERT INTO Person (forename, surname, DoB) VALUES ('a', 'b', '1956-01-01');
 INSERT INTO Person (forename, surname, DoB) VALUES ('a', 'b', '1969-01-01');
-
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Hanna', 'Davison', '1970-10-12');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Nicky', 'Benson', '2011-08-07');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Fred', 'Davies', '1998-10-12');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Karen', 'Hault', '2002-11-12');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('John', 'Bickerton', '2003-09-04');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Jack', 'Anfield', '1984-03-08');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Theo', 'Dayes', '1997-07-01');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Adam', 'Fletcher', '1963-11-10');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Richard', 'Whitehall', '1950-10-11');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Molly', 'Locke', '1980-03-21');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Rebecca', 'Richardson', '2001-11-12');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Sarah', 'Meadly', '1956-10-2');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Tom', 'Cameron', '1942-05-02');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Polly', 'Johnson', '1939-01-02');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Paige', 'Corbyn', '1950-10-12');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Jackie', 'Slater', '1971-08-02');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Tim', 'Bray', '1979-09-17');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Tracey', 'Murphy', '1999-10-04');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Emma', 'Mannign', '1984-02-06');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Beverly', 'West', '1988-11-11');
--- INSERT INTO Person (forename, surname, DoB) VALUES ('Frank', 'Sawyer', '2021-10-05');

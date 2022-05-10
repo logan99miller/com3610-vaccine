@@ -14,7 +14,7 @@ class DatabaseManagerTest {
         String statementText = "INSERT INTO TestOne (varOne, varTwo) VALUES (9, 60)";
         String URL = "jdbc:mysql://127.0.0.1:3306/vaccine_system";
         String user = "root";
-        String password = "artstowerhas20";
+        String password = "password";
         DatabaseManager.executeUpdate(statementText, URL, user, password);
     }
 
@@ -24,7 +24,7 @@ class DatabaseManagerTest {
         String[] columnNames = new String[] {"varOne"};
         String URL = "jdbc:mysql://127.0.0.1:3306/vaccine_system";
         String user = "root";
-        String password = "artstowerhas20";
+        String password = "password";
 
         HashMap<String, Object> subMap = new HashMap<>();
         subMap.put("varOne", 11);
