@@ -1,3 +1,8 @@
+# Abstract
+The COVID-19 outbreak has highlighted the importance of governments quickly and efficiently vaccinating a population. A competent software system helps coordinate and monitor a vaccine programme. This project aims to develop a software system that allows staff to support the supply, distribution, and inoculation of vaccines to a population in real time by adding and viewing data from a database, and tracking vaccinations, deliveries, and any issues that may need addressing. The system will also automate much of the process, such as stock management and appointment booking, and contain the ability to simulate a vaccination rollout with large populations at greater than real time speeds to test the system’s automation algorithms.
+
+This report researches which software engineering techniques and methodologies are best suited to this project, as well as existing solutions and algorithms, and how they could be modified to meet the project’s aims. The project’s objectives are stated as a set of requirements, and the design, implementation, and testing of the software is documented. This includes database, class, and activity diagrams, design mock- ups, detailed explanations and pseudocode of any algorithms used, unit, system and acceptance testing, and the results and analysis of several scenarios to test the quality of automation. The system produced was of high quality and performed well in different scenarios, however additional work could be done to further improve the automation and consider more details and edge cases involved in vaccine distribution.
+
 # Installing and runnning the system
 As the system requires an SQL database several steps are required before
 launching the application. First an SQL server must be setup. This can be
