@@ -1,3 +1,4 @@
+# Installing and runnning the system
 As the system requires an SQL database several steps are required before
 launching the application. First an SQL server must be setup. This can be
 achieved by installing MySQL Community Edition
